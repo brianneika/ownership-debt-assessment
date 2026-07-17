@@ -45,3 +45,19 @@ Copy `plans/tasks/TEMPLATE.md` to `plans/tasks/<short-kebab-name>.md` and fill i
 with the user. A good task has a one-sentence **Objective** and a **Methods /
 background** section that points at the right files and the relevant part of the
 master plan.
+
+**Interview the user before you write the task doc — don't just transcribe the first
+ask.** Ask clarifying questions until the objective and the intended user experience
+are genuinely clear, then draft the doc. Probe things like:
+
+- **What & why** — what does "done" look like, and what problem does it solve? How
+  does it ladder up to the master plan?
+- **User experience** — who's the user here, what should the flow feel like from
+  their side, and what are the edge cases or states we need to handle?
+- **Scope** — what's explicitly in vs. out for this task? What's a follow-up?
+- **Where it lives** — which files/areas are involved, and are there existing
+  patterns to follow?
+
+Ask a few at a time, reflect the answers back, and only write the task file once the
+two of you agree on the shape. It's fine to say "before I write this up, a few
+questions…"
