@@ -42,5 +42,6 @@ judgment.)
 ## Creating a task
 
 Copy `plans/tasks/TEMPLATE.md` to `plans/tasks/<short-kebab-name>.md` and fill it in
-with the user. A good task has a clear goal, a definition of done, and a checklist of
-steps.
+with the user. A good task has a one-sentence **Objective** and a **Methods /
+background** section that points at the right files and the relevant part of the
+master plan.
