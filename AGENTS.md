@@ -38,13 +38,22 @@ judgment.)
    source of truth for status.**
 3. When the work is done, set the task's status to `Done` (with the date) rather than
    deleting the file. Completed tasks are the project's history.
+4. **Commit and push to `main` as each modular feature/task is completed** — one
+   coherent commit per finished task (include the updated task doc), so `main` always
+   reflects the current state. Don't let finished work sit uncommitted.
 
 ## Creating a task
 
-Copy `plans/tasks/TEMPLATE.md` to `plans/tasks/<short-kebab-name>.md` and fill it in
-with the user. A good task has a one-sentence **Objective** and a **Methods /
+Copy `plans/tasks/TEMPLATE.md` to a new file named `YYYYMMDD-task-name.md` (the date
+it was created, then a short kebab-case name — e.g. `20260717-email-gate-validation.md`)
+and fill it in with the user. A good task has a one-sentence **Objective** and a **Methods /
 background** section that points at the right files and the relevant part of the
 master plan.
+
+**Keep each task modular and single in focus** — one coherent feature/change per task
+doc. If the user asks for several unrelated things at once, don't cram them into one
+task: confirm whether they'd like to split them into separate task docs (one per
+concern) before writing anything.
 
 **Interview the user before you write the task doc — don't just transcribe the first
 ask.** Ask clarifying questions until the objective and the intended user experience
