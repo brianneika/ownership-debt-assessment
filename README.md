@@ -1,5 +1,24 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Planning & tasks
+
+This repo tracks its roadmap and work-in-progress as markdown in [`plans/`](plans/) —
+a lightweight, in-repo issue tracker:
+
+- [`plans/master-plan.md`](plans/master-plan.md) — the north-star vision for the codebase.
+- [`plans/tasks/`](plans/tasks/) — one file per unit of work; start from
+  [`TEMPLATE.md`](plans/tasks/TEMPLATE.md).
+
+**Before changing code, work against a task.** If there isn't one yet, define it in
+`plans/tasks/` first. See the "Planning workflow" section of
+[`AGENTS.md`](AGENTS.md) for the full convention.
+
+## Application Flow
+
+For a full walkthrough of the app — assessment → email capture → CRM record → booking —
+including mermaid diagrams and per-stage entry points, see
+[plans/application-flow.md](plans/application-flow.md).
+
 ## Getting Started
 
 First, run the development server:
