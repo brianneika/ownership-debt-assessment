@@ -651,10 +651,10 @@ These are saved in `createAssessmentSession()` at `src/app/assessment/actions.ts
 | Section A–H question text | No | No | No dynamic substitution in question text |
 | Section G profile badge | No | No | Shows "Solo Owner track" or "Team Leader track" (not their name) |
 | Results page | No | No | No personalization |
-| Webhook payload (`src/lib/webhook.ts:130`) | **Yes** | **Yes** | `respondent.full_name = A001`, `respondent.company_name = A002` |
+| HubSpot contact sync (`src/lib/hubspot.ts`) | **Yes** | **Yes** | `firstname`/`lastname` split from A001, `company` = A002 |
 | Admin session detail | Not inspected | Not inspected | Data is in DB, admin may display it |
 
-**In summary: the respondent's name and business name are captured and sent to the downstream webhook (`LOVABLE_INGEST_URL`), but they are not used anywhere in the assessment UI, question wording, or results page for personalization or dynamic text substitution.**
+**In summary: the respondent's name and business name are captured and synced to HubSpot as contact properties (via `upsertHubspotContact`, once an email is submitted on the results page), but they are not used anywhere in the assessment UI, question wording, or results page for personalization or dynamic text substitution.**
 
 The phrase "named owner" that appears throughout Mode B questions (Q001–Q072) refers to the person who owns each workflow — it is a generic term in the question text, not a slot populated with any name the respondent entered. No name substitution is implemented.
 
@@ -691,9 +691,9 @@ The phrase "named owner" that appears throughout Mode B questions (Q001–Q072) 
 
 ### Email / contact capture
 
-**There is no email field anywhere in the assessment.** The landing page collects name and business name only. No email is captured during the flow. The webhook payload at completion sets `respondent.email: null`.
+**There is no email field anywhere in the assessment.** The landing page collects name and business name only. No email is captured during the flow, and nothing is sent to the CRM at completion.
 
-The only way to reach a respondent post-assessment is via the `LOVABLE_INGEST_URL` webhook receiver, which receives `respondent.full_name` and `respondent.company_name` but no contact method.
+The only way to reach a respondent post-assessment is via the HubSpot contact created when they submit their email on the results page (`captureEmail` → `upsertHubspotContact`). If they never submit an email, no CRM record exists and there is no contact method.
 
 ---
 
