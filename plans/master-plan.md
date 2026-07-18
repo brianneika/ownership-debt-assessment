@@ -70,6 +70,8 @@ CTA (Google Calendar; the sale happens off-platform in the call).
 ## Roadmap / themes
 
 Roughly in order. Each theme becomes one or more tasks in [`tasks/`](tasks/).
+Concrete sequencing, dependencies, and decision gates live in
+[implementation-plan.md](implementation-plan.md).
 
 1. **Stabilize what's shipped.** Land the in-flight tasks: HubSpot prod
    verification ([replace-lovable-with-hubspot](tasks/replace-lovable-with-hubspot.md)),
