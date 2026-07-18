@@ -1,6 +1,6 @@
 # Replace Lovable CRM with HubSpot
 
-**Status:** In progress — local end-to-end verified 2026-07-18; remaining: Vercel `HUBSPOT_ACCESS_TOKEN` + prod redeploy/verify <!-- Not started | In progress | Blocked | Done -->
+**Status:** Done (2026-07-18) — verified end-to-end locally and in production <!-- Not started | In progress | Blocked | Done -->
 
 ## Objective
 
@@ -125,6 +125,16 @@ Running log — check things off and note decisions as you go.
     (`http://localhost:3000/admin/sessions/…` — localhost because local
     `APP_BASE_URL`; prod builds from the Vercel value). `captureEmail` completed
     in ~1.3s, no errors logged. Test contact can be deleted from HubSpot.
-- Remaining (manual, Bri): add `HUBSPOT_ACCESS_TOKEN` to Vercel (Sensitive),
-  redeploy so the env changes take effect, then re-run a quick verify against
-  the production deployment.
+- 2026-07-18 (later) — **Prod was silently broken, now fixed and verified.**
+  Bri had added `HUBSPOT_ACCESS_TOKEN` + `APP_BASE_URL` to Vercel and redeployed,
+  but a prod test submission produced no HubSpot contact and no error logs. Root
+  cause: the HubSpot code had never been committed — it was sitting uncommitted
+  in the working tree, so the redeploy shipped the old Lovable code (whose env
+  vars were gone → silent no-op by design). Fix: committed the task (`c7b6879`),
+  pushed to `main` (note: the Vercel project is **not** git-connected — deploys
+  are CLI-only via `vercel --prod`), deployed, and re-verified end-to-end on
+  prod: contact **521510905572** created for
+  `brianne+claude-prod-test@workmansuccess.com` with the correct
+  `https://ownership-assessment-delta.vercel.app/admin/sessions/…` results link.
+  Both test contacts (521420345051 local-URL, 521510905572 prod) can be deleted
+  from HubSpot.
