@@ -66,9 +66,10 @@ first two: the verify pass establishes what state the live DB is actually in
    their breakdown. Exit check: a pre-migration session's scores are
    byte-identical after.
 3. **[Consent capture at the email gate](tasks/20260718-email-gate-consent-capture.md)**
-   (new, from the campaign task's consent flag) — an optional checkbox, a
-   column, a HubSpot property. Ship before S so campaign respondents are
-   nurture-eligible. Never blocks the report (respondent flow is sacred).
+   (decided 2026-07-18: by-submission disclosure, no checkbox) — disclosure
+   text replaces the "report-only" promise, a `consented_at` column, a HubSpot
+   property. Ship before S so campaign respondents are nurture-eligible. Adds
+   zero friction (respondent flow is sacred).
 4. **Custom domain** — `ownership-assessment-delta.vercel.app` → a real domain
    before marketing email links to it (flagged in the campaign task; small
    Vercel config change, no task doc needed unless it grows).
@@ -134,7 +135,7 @@ gets hired.
 | --- | --- | --- | --- |
 | Campaign copy + send date | Bri + WSS | Day S (everything downstream) | Open |
 | Call-prep interview (what's on screen during a call?) | Bri | Phase 1 build | Open — can happen any time |
-| Consent checkbox copy | Bri (legal-lite review) | Phase 0 item 3 | Open |
+| Consent mechanism + copy | Bri | Phase 0 item 3 | **Resolved 2026-07-18** — by-submission disclosure; draft copy in the task doc, final wording pass pending |
 | Email provider for app-sent mail | Bri + dev | 2b, Phase 3 | Open — WSS's platform covers only *their* sends |
 | "Didn't sign up" signal | Bri | Phase 3 | Open |
 | Coach roles & visibility scope | Bri | User management build | Open — only when hiring nears |
