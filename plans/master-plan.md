@@ -60,7 +60,9 @@ CTA (Google Calendar; the sale happens off-platform in the call).
 - **Rough:** CRM delivery is fire-and-forget (an outage silently drops the lead —
   though the email survives in Supabase), email validation is client-side only,
   and the OQI dimension labels don't match what the Mode B questions measure
-  (relabel task drafted).
+  (relabel task drafted). The admin session page — the working surface for the
+  sales call — under-serves it: scores but little answer-level insight, and
+  admin login is a single env-credentialed account with no way to add users.
 - **Absent (by design, so far):** any notion of a returning respondent. Sessions
   are single-shot; nothing links two sessions by the same person. This is the
   main structural gap between today's app and the coaching-tool vision.
@@ -78,17 +80,31 @@ Roughly in order. Each theme becomes one or more tasks in [`tasks/`](tasks/).
    the relabel especially, since honest dimension names are a prerequisite for
    showing clients their breakdown over time.
 2. **Retakes & progress.** The core of the vision: let the same team leader take
-   the assessment more than once and see the delta. Needs a way to link sessions
-   to a person (likely keyed off the captured email at first), a retake entry
-   point, and a results view that shows movement per score and per dimension.
+   the assessment more than once and see the delta. Decided 2026-07-18: the
+   pre-sale assessment *is* the baseline (no fresh retake at engagement start);
+   clients retake **after each completed workflow**, pushed by the coach as an
+   emailed tokenized link (no client login — email stays the identity key); each
+   retake's results page shows movement vs. baseline and last time, leaning on
+   per-workflow ODS so the delta is attributable to the workflow just coached.
+   Task: [20260718-retake-push-and-linking](tasks/20260718-retake-push-and-linking.md).
 3. **Coach-facing views.** Evolve the admin area from an internal inspection tool
    into a surface a coach actually works from: their clients' latest scores,
-   per-client history and dimension breakdowns, and trends across retakes.
+   per-client history and dimension breakdowns, and trends across retakes. Two
+   pieces graduate ahead of the rest because the admin page is already the sales
+   call's working surface: a **master admin who can add coach/user accounts** as
+   the team grows
+   ([20260718-admin-user-management](tasks/20260718-admin-user-management.md)),
+   and **answer-level insight / "how we can help" diagnostics** on the session
+   page so the call can actually move the client forward
+   ([20260718-admin-call-prep-insight](tasks/20260718-admin-call-prep-insight.md)).
 
 The funnel side (results emails, booking polish, durable CRM delivery, richer
 HubSpot data) stays on the radar as supporting work but is not a driving theme
 right now — items graduate from the "rough" list above into tasks as they start
-to hurt.
+to hurt. One funnel item is queued explicitly: prospects who **don't sign up**
+get a 30-day nudge to retake and compare — especially their Section H urgency
+answers ([20260718-30-day-nurture-retake](tasks/20260718-30-day-nurture-retake.md));
+it reuses the retake-push mechanism, so it sequences after theme 2's core.
 
 ## Out of scope
 

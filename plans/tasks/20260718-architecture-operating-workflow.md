@@ -31,3 +31,11 @@ actual codebase) and the operating workflow (how changes move from idea to
     them yet.
   - Kept the respondent journey detail in `application-flow.md` (linked, not
     duplicated); `architecture.md` covers structure + process instead.
+- [x] Iteration with Brianne (2026-07-18): added the client-journey section as
+      the doc's top altitude (audience is coaches/stakeholders + devs + agents).
+      Decisions captured: pre-sale assessment = baseline; retakes after each
+      completed workflow via coach-pushed tokenized email link (no client
+      login); delta is client-visible on the results page; 30-day nurture
+      nudge for no-signup prospects. Spawned four task stubs
+      (retake-push-and-linking, admin-user-management, admin-call-prep-insight,
+      30-day-nurture-retake) and folded them into the master plan roadmap.

@@ -1,9 +1,69 @@
 # Architecture & Operating Workflow
 
 _Companion to [master-plan.md](master-plan.md) (the "why") and
-[application-flow.md](application-flow.md) (the respondent's journey step by
-step). This doc answers two questions: **how is the system built** (architecture)
-and **how do we change it** (operating workflow)._
+[application-flow.md](application-flow.md) (the in-app respondent flow step by
+step). This doc answers three questions, in order of altitude: **what is the
+client's journey** (the product operating workflow), **how is the system built**
+(architecture), and **how do we change it** (dev workflow)._
+
+## The client journey
+
+One person, two chapters: the **team leader** arrives as a prospect and — if
+coaching works out — becomes a coaching client using the same instrument over
+time. Solid arrows are live today; dashed arrows are the target state from the
+[master plan](master-plan.md).
+
+```mermaid
+flowchart LR
+    subgraph P1["① Prospect — live today"]
+        direction TB
+        Mkt([Marketing touch]) --> Take["Takes assessment<br/>anonymous, no account"]
+        Take --> Teaser["Sees Ownership Debt<br/>score (teaser)"]
+        Teaser --> Email["Trades email for<br/>full breakdown + DRS"]
+        Email --> Book["Books a consultation<br/>(Google Calendar)"]
+    end
+
+    subgraph P2["② Sale — live today, off-platform"]
+        direction TB
+        Call["Consultation call —<br/>coach works from the<br/>admin session page"]
+        Call --> Sign["Signs up<br/>(DIY program / coaching)"]
+        Call -.->|no signup| Nudge["30-day nudge:<br/>retake & compare —<br/>is it more urgent now?"]
+    end
+
+    subgraph P3["③ Coaching client — target state"]
+        direction TB
+        Base["Prospect assessment<br/>= the baseline<br/>(no fresh intake retake)"]
+        Base -.-> Work["Work one workflow<br/>(Listing Launch, Seller Comm,<br/>File Opening, Lender Tracking)"]
+        Work -.->|workflow completed| Push["Coach pushes the<br/>next assessment"]
+        Push -.-> Retake["Client retakes<br/>(emailed link, no login)"]
+        Retake -.-> Delta["Results show movement:<br/>per-workflow ODS ↓, DRS ↑"]
+        Delta -.-> Work
+        Retake -.-> Review["Coach reviews progress<br/>across all their clients"]
+    end
+
+    Book --> Call
+    Sign -.-> Base
+    Nudge -.-> Take
+```
+
+The retake cadence lines up with the instrument: the scoring engine already
+computes **per-workflow ODS** (a `dimension_scores` row per workflow C–F), so a
+retake after completing a workflow directly measures the workflow that was just
+coached — the delta is attributable, not vague.
+
+What the system does at each stage (client-visible vs. behind the scenes):
+
+| Stage | The client experiences | Behind the scenes | Status |
+| --- | --- | --- | --- |
+| Takes assessment | ~10-min branching questionnaire that speaks their language (Listing Launch, TCs) | Session + answers saved as they go; questions branch on who owns each workflow | **Live** |
+| Sees teaser → email gate | ODS score free; full breakdown costs an email | Scores computed once at submit; email saved to the session | **Live** |
+| Email captured | Nothing — no interruption | HubSpot contact upserted (name, company, results link); coach/sales sees the lead | **Live** |
+| Consultation call | Coach discusses their specific results | Coach works from the admin session page (linked from the HubSpot contact). **Known gaps:** (a) single env-credentialed admin — no master admin who can add users as the team grows (`admin_users` is the landing zone); (b) the page shows scores but not enough answer-level insight to really drive the call — needs diagnostics / "how we can help" content (`recommendation_templates` is the landing zone) | **Live — needs work** |
+| No signup → nurture | 30 days later, an invitation to retake and see what's changed — especially how urgent it feels now (Section H reflections) | Scheduled email with a retake link tied to their earlier session | **Target** |
+| Baseline | Their pre-sale assessment *is* the starting measurement — no retake at engagement start | Sessions linked to a person (keyed off email at first) — `respondents` comes alive | **Target** |
+| Retakes | After finishing each workflow, a fresh assessment arrives by email — click the link, no login | Coach hits "send retake" on the client's page; a tokenized link opens a new session pre-linked to the same respondent | **Target** |
+| Progress view | Each retake's results page shows movement vs. baseline and last time — per score and per workflow | Delta view over the linked sessions' `dimension_scores` | **Target** |
+| Coach review | Progress discussed with real numbers in coaching sessions | Admin becomes the coach's surface: client roster, history, trends; master admin manages coach accounts | **Target** |
 
 ## System architecture (current)
 
