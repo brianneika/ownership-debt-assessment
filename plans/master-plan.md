@@ -1,6 +1,6 @@
 # Master Plan
 
-_Last updated: 2026-07-18_
+_Last updated: 2026-07-19_
 
 ## Vision
 
@@ -107,6 +107,16 @@ to hurt. One funnel item is queued explicitly: prospects who **don't sign up**
 get a 30-day nudge to retake and compare — especially their Section H urgency
 answers ([20260718-30-day-nurture-retake](tasks/20260718-30-day-nurture-retake.md));
 it reuses the retake-push mechanism, so it sequences after theme 2's core.
+
+## Related projects
+
+- **VAI website** — sibling repo `../vai-website`
+  ([github.com/brianneika/vai-website](https://github.com/brianneika/vai-website)),
+  the marketing front door destined for `vainexus.com`. The VAI brand story
+  (VAI is the Tongan word for water — the brand's heartbeat) and the top-of-funnel
+  strategy live in that repo's `plans/master-plan.md`. This repo is the
+  **instrument**; the website is the reason people pick it up. Neither repo
+  modifies the other.
 
 ## Out of scope
 
