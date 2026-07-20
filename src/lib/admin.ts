@@ -180,6 +180,20 @@ export async function fetchCompletedSessions(): Promise<SessionListItem[]> {
   });
 }
 
+// ─── Respondent name (lightweight — for the PDF document title) ─────────────────
+
+export async function fetchSessionName(sessionId: string): Promise<string | null> {
+  const supabase = getSupabaseServer();
+  const { data } = await supabase
+    .from('answers')
+    .select('text_value, questions!inner(question_key)')
+    .eq('session_id', sessionId)
+    .eq('questions.question_key', 'A001')
+    .limit(1)
+    .maybeSingle();
+  return (data as { text_value: string | null } | null)?.text_value ?? null;
+}
+
 // ─── Detail view ──────────────────────────────────────────────────────────────
 
 export async function fetchSessionDetail(sessionId: string): Promise<SessionDetail | null> {

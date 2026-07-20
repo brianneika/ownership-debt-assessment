@@ -1,10 +1,24 @@
 import type { ReactNode } from 'react';
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { fetchSessionDetail, type WorkflowDetail } from '@/lib/admin';
+import { fetchSessionDetail, fetchSessionName, type WorkflowDetail } from '@/lib/admin';
 import { buildStartHere, OQI_DIMENSION_NAMES, RED_FLAG_THRESHOLD } from '@/lib/insight';
+import PrintControls from './PrintControls';
 
 export const dynamic = 'force-dynamic';
+
+// The document <title> seeds the print dialog's suggested PDF filename, so make
+// it the respondent's name rather than the route path.
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ sessionId: string }>;
+}): Promise<Metadata> {
+  const { sessionId } = await params;
+  const name = await fetchSessionName(sessionId);
+  return { title: name ? `Ownership Report — ${name}` : 'Ownership Report' };
+}
 
 const BAND_CLASSES: Record<string, string> = {
   '#22c55e': 'bg-green-50 text-green-700 border-green-200',
@@ -201,7 +215,7 @@ export default async function SessionDetailPage({
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
+      <header className="no-print bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/admin" className="text-sm text-gray-500 hover:text-gray-900 font-medium flex items-center gap-1.5">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -209,18 +223,21 @@ export default async function SessionDetailPage({
             </svg>
             Back to dashboard
           </Link>
-          <form method="POST" action="/api/auth/logout">
-            <button type="submit" className="text-sm text-gray-500 hover:text-gray-900 font-medium transition-colors">
-              Log out
-            </button>
-          </form>
+          <div className="flex items-center gap-5">
+            <PrintControls />
+            <form method="POST" action="/api/auth/logout">
+              <button type="submit" className="text-sm text-gray-500 hover:text-gray-900 font-medium transition-colors">
+                Log out
+              </button>
+            </form>
+          </div>
         </div>
       </header>
 
       <main className="max-w-4xl mx-auto px-6 py-8 space-y-6">
 
         {/* Respondent header */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+        <div className="report-section bg-white rounded-xl border border-gray-100 shadow-sm p-6">
           <div className="flex items-start justify-between mb-4">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">{detail.name}</h1>
@@ -248,7 +265,7 @@ export default async function SessionDetailPage({
 
         {/* Start Here — call-prep insight (display-only, thresholds/copy in src/lib/insight.ts) */}
         {startHere && (
-          <div className="bg-white rounded-xl border border-indigo-200 shadow-sm p-6 space-y-4">
+          <div className="report-section bg-white rounded-xl border border-indigo-200 shadow-sm p-6 space-y-4" data-audience="internal">
             <div>
               <p className="text-xs font-semibold uppercase tracking-widest text-indigo-500 mb-1.5">Start Here</p>
               <h2 className="text-lg font-bold text-gray-900">{startHere.quadrant.title}</h2>
@@ -319,7 +336,7 @@ export default async function SessionDetailPage({
         )}
 
         {/* Overall scores */}
-        <div className="grid sm:grid-cols-2 gap-4">
+        <div className="report-section grid sm:grid-cols-2 gap-4">
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
             <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2 flex items-center gap-1.5">
               Ownership Debt Score
@@ -341,8 +358,17 @@ export default async function SessionDetailPage({
           </div>
         </div>
 
+        {/* Score legend — client PDF only, so the scores never read as bare
+            numbers without framing. Static copy, always renders in client mode. */}
+        <p className="print-client-only report-section text-xs text-gray-500">
+          <span className="font-semibold text-gray-700">How to read these:</span>{' '}
+          Ownership Debt Score — lower is better (less of the business depends on you).
+          {' · '}
+          Delegation Readiness Score — higher is better (the team is more ready to take work on).
+        </p>
+
         {/* Workflow breakdown */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+        <div className="report-section bg-white rounded-xl border border-gray-100 shadow-sm p-6" data-audience="internal">
           <h2 className="text-sm font-bold text-gray-900 mb-4">Workflow Breakdown</h2>
           <div className="grid sm:grid-cols-2 gap-4">
             {detail.workflows.map((wf) => (
@@ -426,7 +452,7 @@ export default async function SessionDetailPage({
         </div>
 
         {/* Red flags — every scored answer ≤ threshold after reverse-scoring */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+        <div className="report-section bg-white rounded-xl border border-gray-100 shadow-sm p-6" data-audience="internal">
           <div className="flex items-center gap-2 mb-4">
             <h2 className="text-sm font-bold text-gray-900">Red Flags</h2>
             <span className={`px-2 py-0.5 rounded-full text-xs font-semibold border ${detail.redFlags.length > 0 ? 'bg-red-50 text-red-700 border-red-200' : 'bg-green-50 text-green-700 border-green-200'}`}>
@@ -455,7 +481,7 @@ export default async function SessionDetailPage({
         </div>
 
         {/* DRS profile + category breakdown */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+        <div className="report-section bg-white rounded-xl border border-gray-100 shadow-sm p-6" data-audience="internal">
           <div className="flex items-center gap-2 mb-4">
             <h2 className="text-sm font-bold text-gray-900">Delegation Readiness Breakdown</h2>
             <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-100">
@@ -490,8 +516,12 @@ export default async function SessionDetailPage({
         {/* How we can help — band descriptions + recommendation_templates copy.
             Hidden entirely until migration 007's seed is applied. */}
         {hasRecommendations && (
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-            <h2 className="text-sm font-bold text-gray-900 mb-4">How We Can Help</h2>
+          <div className="report-section bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+            {/* Coach-facing heading (screen + internal PDF) vs. the client-facing
+                framing (client PDF only) — the band descriptions below are
+                client-safe; the recommendation_templates bodies are not. */}
+            <h2 className="text-sm font-bold text-gray-900 mb-4" data-audience="internal">How We Can Help</h2>
+            <h2 className="print-client-only text-sm font-bold text-gray-900 mb-4">What your scores mean</h2>
             <div className="space-y-4">
               {(detail.ods?.bandDescription || detail.recommendations.ods.length > 0) && (
                 <div>
@@ -501,9 +531,13 @@ export default async function SessionDetailPage({
                   {detail.ods?.bandDescription && (
                     <p className="text-sm text-gray-600 mb-1.5">{detail.ods.bandDescription}</p>
                   )}
-                  {detail.recommendations.ods.map((body, i) => (
-                    <p key={i} className="text-sm text-gray-800 whitespace-pre-line">{body}</p>
-                  ))}
+                  {detail.recommendations.ods.length > 0 && (
+                    <div data-audience="internal">
+                      {detail.recommendations.ods.map((body, i) => (
+                        <p key={i} className="text-sm text-gray-800 whitespace-pre-line">{body}</p>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
               {(detail.drs?.bandDescription || detail.recommendations.drs.length > 0) && (
@@ -514,9 +548,13 @@ export default async function SessionDetailPage({
                   {detail.drs?.bandDescription && (
                     <p className="text-sm text-gray-600 mb-1.5">{detail.drs.bandDescription}</p>
                   )}
-                  {detail.recommendations.drs.map((body, i) => (
-                    <p key={i} className="text-sm text-gray-800 whitespace-pre-line">{body}</p>
-                  ))}
+                  {detail.recommendations.drs.length > 0 && (
+                    <div data-audience="internal">
+                      {detail.recommendations.drs.map((body, i) => (
+                        <p key={i} className="text-sm text-gray-800 whitespace-pre-line">{body}</p>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -524,7 +562,7 @@ export default async function SessionDetailPage({
         )}
 
         {/* Section H — context */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+        <div className="report-section bg-white rounded-xl border border-gray-100 shadow-sm p-6" data-audience="internal">
           <h2 className="text-sm font-bold text-gray-900 mb-4">Context & Priorities</h2>
 
           <div className="grid sm:grid-cols-2 gap-4 mb-4">

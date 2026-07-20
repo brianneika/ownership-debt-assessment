@@ -24,3 +24,57 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* ─── Report PDF / print styles ──────────────────────────────────────────────
+   Used by the admin session report (src/app/admin/sessions/[sessionId]).
+   PrintControls sets body[data-print-mode="internal" | "client"] before
+   window.print(); these rules decide what lands in the PDF. */
+
+/* Client-only report bits (score legend, "what your scores mean" heading) are
+   never shown on screen — only revealed in the client PDF (see @media print). */
+.print-client-only {
+  display: none;
+}
+
+@media print {
+  /* Drop app chrome (sticky header, print toolbar) from the output. */
+  .no-print {
+    display: none !important;
+  }
+
+  /* White page, full width — no gray app background or max-width gutter. */
+  body {
+    background: #fff !important;
+  }
+
+  /* Force colors so band pills / progress bars keep their fills in print. */
+  main {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Keep report cards from splitting across a page boundary mid-row. */
+  .report-section {
+    break-inside: avoid;
+  }
+
+  /* Reveal the collapsed <details> answer blocks so the internal PDF carries
+     the full answer detail (they're collapsed by default in the UI). */
+  details > *:not(summary) {
+    display: block !important;
+  }
+
+  /* Client PDF: reveal the client-only framing… */
+  body[data-print-mode="client"] .print-client-only {
+    display: block;
+  }
+
+  /* …and strip every internal-only section from it. */
+  body[data-print-mode="client"] [data-audience="internal"] {
+    display: none !important;
+  }
+
+  @page {
+    margin: 1.5cm;
+  }
+}
