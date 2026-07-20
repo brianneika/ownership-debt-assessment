@@ -35,7 +35,9 @@ team leaders to take the assessment — with the goal of landing **5–10 foundi
   question bank and workload.
 - Voice source: the assessment landing page (`src/app/assessment/page.tsx`) —
   "ownership debt", "a clear picture of where your business depends on you",
-  "your single highest-leverage move." ~8–10 minutes to complete.
+  "your single highest-leverage move." ~15 minutes to complete (adaptive — the
+  more delegated the respondent, the longer their version; see the timing note
+  in the deliverable).
 - Prod URL today: `https://ownership-assessment-delta.vercel.app`; campaign
   will use `https://assessment.vainexus.com` — see the custom-domain flag below.
 
@@ -45,6 +47,17 @@ team leaders to take the assessment — with the goal of landing **5–10 foundi
 - [x] Draft campaign: 3-email sequence, A/B subject lines, send plan, UTM
   scheme, deliverability checklist, cohort pitch notes.
 - [ ] Bri reviews/edits copy; confirm from-name and send dates with WSS.
+- [x] Corrected time estimate "~8 min" → **"~15 minutes"** across all copy
+  (2026-07-20). The assessment is adaptive: fixed sections (A/B/G/H) + workflow
+  sections C–F that expand by detected mode (Mode A=5 Q, Mode B=18 Q, Mode C=3 Q
+  each). Realistic range ~12–22 min; a fully-delegated team leader (all Mode B)
+  answers ~100 questions (~20 min) — the *target buyer gets the longest version*.
+  Old "8–10 min" was under-promising and an abandonment risk. No empirical data
+  (only quick test sessions exist). Reframed length as a feature ("adapts to your
+  business, the more delegated the deeper it goes") + paired with "saved as you
+  go." Updated: deliverable emails 1–3 + timing rule, landing page
+  `src/app/assessment/page.tsx`, `docs/question-bank-export.md`.
+  **Landing-page copy change needs a `vercel --prod` deploy to go live** (Bri's OK).
 - [x] Custom domain `assessment.vainexus.com` — live (2026-07-18):
   - [x] Attached to the Vercel project (`vercel domains add`).
   - [x] Bri added the CNAME at GoDaddy (`assessment` →
@@ -101,6 +114,17 @@ Running log — check things off and note decisions as you go.
   `ownership-assessment-delta.vercel.app` still 200 (existing HubSpot links
   intact). New HubSpot `assessment_results_url` values now use the new domain.
   Remaining: copy review + WSS send coordination.
+- 2026-07-20 — **Copy rewrite pass to match deployed assessment.** Reconciled all
+  three emails against the live results page (`src/app/results/[sessionId]`).
+  Fixed the core mismatch: emails promised one "Ownership Assessment Score" + a
+  "single highest-leverage move" in the free results, but the deployed product
+  delivers **two** scores (Ownership Debt Score teaser → email gate → Delegation
+  Readiness Score) and **no** written move/breakdown — the move + 90-day plan
+  live on the consultation call. Reframed to diagnosis (free scores) vs.
+  prescription (call), corrected score names/plurals in emails 1–3, updated the
+  conversion-path row, and added a "What respondents actually get" reference
+  block to keep future copy honest. Email 1's angle (the mirror) stands as the
+  Day-0 opener. Still awaiting Bri's final copy sign-off + WSS send coordination.
 - 2026-07-18 (later) — **Sender split decided:** WSS sends email 1 from their
   platform; emails 2–3 will be sent from **VAI's HubSpot** instead of WSS's
   system (supersedes the "WSS sends all three" decision above). Building those

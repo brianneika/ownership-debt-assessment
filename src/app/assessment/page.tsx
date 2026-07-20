@@ -3,8 +3,8 @@ import { createAssessmentSession } from './actions';
 
 const EXPECT_ITEMS = [
   {
-    title: '~8–10 minutes',
-    desc: 'Complete in one sitting across 8 sections',
+    title: '~15 minutes',
+    desc: 'Adapts to your business across 8 sections — saved as you go, so a refresh will not lose your progress',
     icon: (
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
         <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />

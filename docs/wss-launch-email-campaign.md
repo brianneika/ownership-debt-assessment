@@ -15,8 +15,8 @@ consultation call, not in the email._
 | --- | --- |
 | Audience | WSS list — real estate team leaders / team owners |
 | Sequence | 3 emails over ~9 days |
-| Single CTA (all emails) | Take the free Ownership Assessment (~8 minutes) |
-| Conversion path | Email → assessment → teaser score → email gate → full results → book consultation call → cohort pitch on the call |
+| Single CTA (all emails) | Take the free Ownership Assessment (~15 minutes) |
+| Conversion path | Email → assessment → **Ownership Debt Score** teaser → email gate → **Delegation Readiness Score** unlocked → book consultation call → cohort pitch on the call |
 | Goal | 5–10 founding done-with-you cohort members |
 
 **Assessment URL:** **`https://assessment.vainexus.com`** — this is
@@ -42,6 +42,44 @@ Notes:
   buttons), short paragraphs, mobile-first (most agents read on phones).
 - WSS's platform handles unsubscribe link + physical address (CAN-SPAM).
 
+## What respondents actually get (keep the copy honest)
+
+The email promises must match the live results page
+(`src/app/results/[sessionId]`). What it delivers, verified against the deployed
+build (2026-07-20):
+
+- **Two scores, both 0–100** — not one "assessment score":
+  - **Ownership Debt Score (ODS)** — *lower is better* (0 = fully delegated, 100
+    = entirely owner-dependent). This is the **teaser**, shown before the email
+    gate.
+  - **Delegation Readiness Score (DRS)** — *higher is better*. This is what
+    **unlocks after the email gate**.
+- The page header respondents see is **"Your Ownership Debt Results."**
+- **There is no written "breakdown" and no prescribed "highest-leverage move" in
+  the free results** — just the two scores, their band labels, and a **Book a
+  Session** button. The highest-leverage move and the 90-day plan are delivered
+  **on the consultation call**, not on the results page.
+
+**Timing rule for all copy:** say **"about 15 minutes,"** not "8." The assessment
+is adaptive — the workflow sections expand based on how the business is set up, so
+the more delegated a team leader is (named owners across their workflows), the
+*longer* their version runs (~100 questions, ~20 min at the high end). Quoting a
+number they blow past at question 60 breaks the promise and drives abandonment.
+Frame the length as the reason the result is good, not an apology: *it adapts to
+your business, so the more you've built, the deeper it goes.* Always pair the time
+estimate with the honest reassurance already true in the product — **your answers
+save as you go**, so a refresh or dropped connection won't lose any progress.
+**Do NOT promise "come back later" / "pick it back up"** — there is no resume flow
+yet: leaving and returning to the link starts a brand-new session, so that claim
+is untrue until the resume task ships (see
+`plans/tasks/20260720-assessment-save-resume.md`).
+
+**Framing rule for all copy:** the free results are the *diagnosis* (two scores —
+where you depend on you, how ready you are to hand it off); the **call** is the
+*prescription* (your one highest-leverage move + 90-day plan). Never promise the
+"move" or a written breakdown as part of the free results — that both breaks the
+promise at the payoff and removes the reason to book the call.
+
 ## Link tracking (UTMs)
 
 Tag every link so sessions can be attributed:
@@ -60,7 +98,7 @@ Tag every link so sessions can be attributed:
 - A: `How much of your business still runs through you?`
 - B: `{{first_name}}, could your team run a closing without you?`
 
-**Preview text:** `A free 8-minute diagnostic shows you exactly where — and the one move that changes it.`
+**Preview text:** `A free 15-minute diagnostic that adapts to your business and gives you two numbers: how much it depends on you, and how ready you are to change that.`
 
 > {{first_name}},
 >
@@ -75,25 +113,31 @@ Tag every link so sessions can be attributed:
 > **ownership debt** — all the decisions, systems, and know-how that still live
 > only in your head. Every team carries some. Most leaders have no idea how much.
 >
-> We built a free assessment that measures it. Ten minutes, eight sections,
-> built specifically for real estate team leaders — it walks through how your
-> listings launch, how your transactions close, and how your people escalate,
-> then shows you:
+> We built a free assessment that measures it. Set aside about 15 minutes — it
+> adapts to how your business actually runs, so the more you've delegated, the
+> deeper it goes. Built specifically for real estate team leaders, it walks
+> through how your listings launch, how your transactions close, and how your
+> people escalate, then gives you two numbers:
 >
-> - **Your Ownership Assessment Score** — a clear picture of exactly where your
->   business depends on you
-> - **Your single highest-leverage move** — the one place to start paying the
->   debt down
+> - **Your Ownership Debt Score** — how much your business still depends on you
+>   personally, across your four core workflows (lower is better)
+> - **Your Delegation Readiness Score** — how prepared you and your team actually
+>   are to carry that ownership if you handed it over
+>
+> Together they show you exactly where you stand today. From the results page you
+> can book a call to turn those numbers into your single highest-leverage next
+> move — but the scores are yours either way.
 >
 > **[Take the free assessment →]({{ASSESSMENT_URL}}?utm_content=email1)**
 >
-> It takes about 8 minutes, and your answers save as you go.
+> It takes about 15 minutes, and your answers save as you go — a refresh or
+> dropped connection won't cost you any progress.
 >
 > — {{sender_name}}
 > Workman Success Systems
 >
-> P.S. There's no pitch inside the assessment — you answer questions, you get
-> your score and your breakdown. What you do with it is up to you.
+> P.S. There's no pitch inside the assessment — you answer the questions, you get
+> your scores. What you do with them is up to you.
 
 ---
 
@@ -103,7 +147,7 @@ Tag every link so sessions can be attributed:
 - A: `3 signs your team can't run without you`
 - B: `The vacation test (most team leaders fail it)`
 
-**Preview text:** `If any of these sound familiar, it's worth 8 minutes to find out how deep it goes.`
+**Preview text:** `If any of these sound familiar, it's worth 15 minutes to find out how deep it goes.`
 
 > {{first_name}},
 >
@@ -125,10 +169,12 @@ Tag every link so sessions can be attributed:
 > None of these mean you've built something bad. They mean you've built something
 > that *depends on you* — and there's a real number for how much.
 >
-> Our free Ownership Assessment measures it in about 8 minutes and hands you the
-> single highest-leverage move to start fixing it.
+> Our free Ownership Assessment measures it in about 15 minutes and gives you two
+> numbers: your **Ownership Debt Score** — how much still runs through you — and
+> your **Delegation Readiness Score** — how ready your team is to take it off your
+> plate.
 >
-> **[Get your score →]({{ASSESSMENT_URL}}?utm_content=email2)**
+> **[Get your scores →]({{ASSESSMENT_URL}}?utm_content=email2)**
 >
 > — {{sender_name}}
 > Workman Success Systems
@@ -149,7 +195,7 @@ Tag every link so sessions can be attributed:
 > do it this week instead of someday.
 >
 > We're forming a **founding cohort: 10 team leaders** who won't just get their
-> score — they'll work through their results with us directly, step by step,
+> scores — they'll work through their results with us directly, step by step,
 > until the highest-leverage pieces of their business actually run without them.
 >
 > Because it's the founding group, two things are true:
@@ -164,7 +210,7 @@ Tag every link so sessions can be attributed:
 > cohort is a fit. No fit, no pitch — the score and your breakdown are yours
 > either way.
 >
-> **[Take the assessment (8 minutes) →]({{ASSESSMENT_URL}}?utm_content=email3)**
+> **[Take the assessment (15 minutes) →]({{ASSESSMENT_URL}}?utm_content=email3)**
 >
 > When the 10 spots are taken, they're taken.
 >

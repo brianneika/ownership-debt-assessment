@@ -679,7 +679,7 @@ The phrase "named owner" that appears throughout Mode B questions (Q001–Q072) 
 
 | Title | Description |
 |-------|-------------|
-| ~8–10 minutes | Complete in one sitting across 8 sections |
+| ~15 minutes | Adapts to your business across 8 sections — saved as you go, so a refresh will not lose your progress |
 | Saved as you go | Answers are saved automatically as you select them |
 | Your results | Your Ownership Assessment Score: a clear picture of where your business depends on you, and your single highest-leverage move to change it. |
 
