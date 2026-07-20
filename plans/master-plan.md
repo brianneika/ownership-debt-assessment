@@ -110,7 +110,7 @@ it reuses the retake-push mechanism, so it sequences after theme 2's core.
 
 ## Related projects
 
-- **VAI website** — sibling repo `../vai-website`
+- **VAI website** — sibling repo `../../vai-website` (in `Code Folder/`)
   ([github.com/brianneika/vai-website](https://github.com/brianneika/vai-website)),
   the marketing front door destined for `vainexus.com`. The VAI brand story
   (VAI is the Tongan word for water — the brand's heartbeat) and the top-of-funnel
