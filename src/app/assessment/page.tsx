@@ -4,7 +4,7 @@ import { createAssessmentSession } from './actions';
 const EXPECT_ITEMS = [
   {
     title: '~15 minutes',
-    desc: 'Adapts to your business across 8 sections — saved as you go, so a refresh will not lose your progress',
+    desc: "Eight sections that adapt to how your business runs — the more you've delegated, the deeper it goes. Set aside 15 minutes to do it in one sitting.",
     icon: (
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
         <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -12,17 +12,17 @@ const EXPECT_ITEMS = [
     ),
   },
   {
-    title: 'Saved as you go',
-    desc: 'Answers are saved automatically as you select them',
+    title: 'Built for real estate teams',
+    desc: 'Walks through how your listings launch, your transactions close, and your people escalate.',
     icon: (
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h4v-6h4v6h4a1 1 0 001-1V10" />
       </svg>
     ),
   },
   {
-    title: 'Your results',
-    desc: 'Your Ownership Assessment Score: a clear picture of where your business depends on you, and your single highest-leverage move to change it.',
+    title: 'Two scores you keep',
+    desc: 'Your Ownership Debt Score (how much the business still depends on you) and your Delegation Readiness Score (how ready your team is to carry it) — plus your single highest-leverage next move.',
     icon: (
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
         <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />

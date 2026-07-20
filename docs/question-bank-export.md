@@ -679,9 +679,9 @@ The phrase "named owner" that appears throughout Mode B questions (Q001–Q072) 
 
 | Title | Description |
 |-------|-------------|
-| ~15 minutes | Adapts to your business across 8 sections — saved as you go, so a refresh will not lose your progress |
-| Saved as you go | Answers are saved automatically as you select them |
-| Your results | Your Ownership Assessment Score: a clear picture of where your business depends on you, and your single highest-leverage move to change it. |
+| ~15 minutes | Eight sections that adapt to how your business runs — the more you've delegated, the deeper it goes. Set aside 15 minutes to do it in one sitting. |
+| Built for real estate teams | Walks through how your listings launch, your transactions close, and your people escalate. |
+| Two scores you keep | Your Ownership Debt Score (how much the business still depends on you) and your Delegation Readiness Score (how ready your team is to carry it) — plus your single highest-leverage next move. |
 
 **Form section label:** Let's get started
 

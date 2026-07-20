@@ -1,6 +1,6 @@
 # Assessment landing "What to expect" — honest copy + intake fields
 
-**Status:** Not started <!-- Not started | In progress | Blocked | Done -->
+**Status:** Done (2026-07-20) <!-- Not started | In progress | Blocked | Done -->
 
 ## Objective
 
@@ -78,7 +78,8 @@ promise has to match the real experience, and the intake stays frictionless.
 
 Running log — check things off and note decisions as you go.
 
-- [ ] Rewrite `EXPECT_ITEMS` (3 items) per copy above; remove save-as-you-go language
-- [ ] Confirm intake form unchanged (name + business, no phone)
-- [ ] Verify card wording matches results page + launch email
-- [ ] Commit + push to `main`
+- [x] Rewrite `EXPECT_ITEMS` (3 items) per copy above; remove save-as-you-go language (2026-07-20)
+- [x] Confirm intake form unchanged (name + business, no phone) — form left untouched
+- [x] Verify card wording matches results page + launch email — score names align with `EmailGate.tsx` and the campaign doc
+- [x] Also synced the mirrored "What to expect" table in `docs/question-bank-export.md`
+- [x] Commit + push to `main`, then `vercel --prod` deploy
