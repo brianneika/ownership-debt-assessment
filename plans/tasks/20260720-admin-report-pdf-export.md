@@ -188,3 +188,8 @@ Running log — check things off and note decisions as you go.
       the client strip, the `Ownership Report — {name}` filename, and that the
       on-screen view resets after print/cancel.
 - [x] Commit + push to `main` (include this task doc)
+- [x] Deployed to prod (`npx vercel --prod`) — assessment.vainexus.com, 2026-07-20.
+- [x] Follow-up (Bri feedback): internal PDF pushed the tall **Start Here**
+      section whole onto page 2, leaving page 1 half blank. Fixed by giving it a
+      `.report-section-flow` variant (`break-inside: auto`, children kept intact)
+      so it flows across the page break. Redeployed.
