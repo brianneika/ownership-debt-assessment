@@ -1,6 +1,6 @@
 # Fix the OQI dimension label mismatch
 
-**Status:** Done (2026-07-19) — pending prod deploy, see final log entry <!-- Not started | In progress | Blocked | Done -->
+**Status:** Done (2026-07-19) <!-- Not started | In progress | Blocked | Done -->
 
 ## Objective
 
@@ -155,3 +155,9 @@ Running log — check things off and note decisions as you go.
   `OQI_WEIGHTS` keys are the old slugs; a Mode B assessment submitted on prod
   before the next deploy would compute an empty dimension breakdown. Deploy
   `main` via `npx vercel --prod` (with Bri's OK) promptly.
+- 2026-07-19 (later) — **Deployed to prod** with Bri's OK
+  (`dpl_BFk7zaxhkhV86Q3Vxs5kqkV8Qp1y`, READY, target production). Smoke check:
+  `https://assessment.vainexus.com` → 307 → `/assessment` → 200. Code and DB
+  now agree on the new slug set; the empty-breakdown window is closed. Task
+  complete — only remaining nicety is Bri's 10-second admin visual check of
+  the dimension display names on her next Mode B session view.
