@@ -1,8 +1,8 @@
 # Admin session page: call-prep insight
 
-**Status:** Code complete — Slices 1–3 built 2026-07-19 ("implement this plan"
-green-light). Awaiting Bri: copy approval pass, run migration 007, Slice 4
-decision. Deployed to prod: **no** (deploy is CLI-only, needs Bri's OK).
+**Status:** Shipped — Slices 1–3 built, copy approved by Bri, and deployed to
+prod (assessment.vainexus.com) 2026-07-19. Remaining: Bri runs migration 007
+in Supabase (unlocks the "How We Can Help" card), and the Slice 4 decision.
 
 ## Objective
 
@@ -124,13 +124,15 @@ own task doc if Bri confirms.
 
 ## Open for Bri
 
-- [ ] **Copy approval pass** on all guidance text (quadrant/lever/first-move
-  copy in `src/lib/insight.ts`; band descriptions + coaching bodies in
-  migration 007) before it backs a real call. All draft-marked in-file.
-- [ ] **Run migration 007** in Supabase SQL Editor (after copy approval).
+- [x] **Copy approval pass** — approved 2026-07-19 (step-plan revision).
+- [ ] **Run migration 007** in Supabase SQL Editor — paste the contents of
+  `supabase/migrations/007_seed_band_guidance.sql`, run, and check the two
+  verify queries commented at the bottom (12 described bands, 8 templates).
+  Until then the "How We Can Help" card stays hidden; everything else works.
 - [ ] **Slice 4**: green-light a separate task for client-facing results
   guidance?
-- [ ] **Deploy**: `npx vercel --prod` when ready (not done).
+- [x] **Deploy**: `npx vercel --prod` run 2026-07-19 with Bri's OK — live on
+  assessment.vainexus.com (deployment ownership-assessment-gz6il52id).
 
 ## Progress
 
