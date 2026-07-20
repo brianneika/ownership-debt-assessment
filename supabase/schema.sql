@@ -140,6 +140,11 @@ create table assessment_sessions (
   wf_d_mode      text check (wf_d_mode in ('A','B','C')),
   wf_e_mode      text check (wf_e_mode in ('A','B','C')),
   wf_f_mode      text check (wf_f_mode in ('A','B','C')),
+  -- Captured at the results email gate (migration 003)
+  respondent_email text,
+  -- When the respondent granted VAI email consent by submitting the gate
+  -- (migration 006). Null = gated pre-consent-capture: off-limits for marketing.
+  consented_at   timestamptz,
   started_at     timestamptz not null default now(),
   completed_at   timestamptz,
   last_active_at timestamptz not null default now(),

@@ -16,6 +16,7 @@ export async function upsertHubspotContact(
   email: string,
   fullName: string | null,
   companyName: string | null,
+  consentedAt: string | null,
 ): Promise<void> {
   const token = process.env.HUBSPOT_ACCESS_TOKEN;
   const baseUrl = process.env.APP_BASE_URL;
@@ -25,6 +26,11 @@ export async function upsertHubspotContact(
     email,
     assessment_results_url: `${baseUrl.replace(/\/+$/, '')}/admin/sessions/${sessionId}`,
   };
+
+  // Custom date property (must exist in the HubSpot portal before this ships —
+  // an unknown property fails the whole upsert). Date-picker properties take
+  // YYYY-MM-DD; the exact timestamp of record lives in Supabase.
+  if (consentedAt) properties.email_consent_date = consentedAt.slice(0, 10);
 
   // Split full name into first/last on the first space. Only send properties we
   // actually have — an empty string would wipe existing values on upsert.

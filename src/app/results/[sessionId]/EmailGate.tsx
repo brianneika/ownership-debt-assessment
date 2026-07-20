@@ -188,6 +188,11 @@ export function EmailGate({
         </form>
 
         {error && <p className="mt-2 text-xs text-red-600">{error}</p>}
+
+        <p className="mt-3 text-xs text-gray-400">
+          By submitting, you agree that VAILeverage may email you your results and
+          occasional delegation insights. Unsubscribe anytime.
+        </p>
       </div>
     </>
   );

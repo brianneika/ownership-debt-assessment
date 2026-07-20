@@ -171,7 +171,7 @@ export default function AssessmentLandingPage() {
             className="text-xs text-center mt-4"
             style={{ color: 'var(--avai-ink-faint)' }}
           >
-            Your answers are private and used only to generate your report.
+            Your answers are private — we use them to build your personalized report.
           </p>
         </form>
 

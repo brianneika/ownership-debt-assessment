@@ -5,12 +5,23 @@ import { upsertHubspotContact } from '@/lib/hubspot';
 
 export async function captureEmail(sessionId: string, email: string): Promise<void> {
   const trimmed = email.trim().toLowerCase();
+  // Submitting the gate IS the consent (by-submission disclosure shown under
+  // the field) — the submission time is the consent timestamp.
+  const consentedAt = new Date().toISOString();
   const supabase = getSupabaseServer();
 
-  await supabase
+  const { error } = await supabase
     .from('assessment_sessions')
-    .update({ respondent_email: trimmed })
+    .update({ respondent_email: trimmed, consented_at: consentedAt })
     .eq('id', sessionId);
+  if (error) {
+    console.error('[captureEmail] session update failed:', error);
+    // Never lose the email itself (e.g. deployed before migration 006 ran).
+    await supabase
+      .from('assessment_sessions')
+      .update({ respondent_email: trimmed })
+      .eq('id', sessionId);
+  }
 
   // Sync the lead to HubSpot now that we have a real email. Contact info only —
   // scores stay in Supabase; the full picture lives at /admin/sessions/[id].
@@ -30,7 +41,7 @@ export async function captureEmail(sessionId: string, email: string): Promise<vo
     }
 
     await Promise.race([
-      upsertHubspotContact(sessionId, trimmed, fullName, companyName),
+      upsertHubspotContact(sessionId, trimmed, fullName, companyName, consentedAt),
       new Promise<void>((_, reject) =>
         setTimeout(() => reject(new Error('hubspot timeout')), 5000),
       ),

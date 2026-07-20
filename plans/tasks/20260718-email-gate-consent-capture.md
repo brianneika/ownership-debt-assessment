@@ -1,6 +1,7 @@
 # Email-gate consent capture
 
-**Status:** Not started
+**Status:** In progress — code complete 2026-07-19; awaiting Bri (migration 006,
+HubSpot property, deploy) before the final verify
 
 ## Objective
 
@@ -45,13 +46,54 @@ this ships.
   - Store *when* consent was granted, not just that it was — the cutover date
     separates emailable from off-limits contacts.
 
+## Implementation notes (2026-07-19)
+
+- **The "report-only" line wasn't at the gate.** "Your answers are private and
+  used only to generate your report" lives on the intake form
+  (`src/app/assessment/page.tsx`), not `EmailGate.tsx` — the gate itself made
+  no promise. Softened the intake line to "Your answers are private — we use
+  them to build your personalized report." (keeps the privacy reassurance,
+  drops the "only" claim that contradicts emailing results/insights). The
+  disclosure was added under the gate's email field as planned.
+- Disclosure ships with the draft copy verbatim; Bri can still tweak wording —
+  it's one string in `EmailGate.tsx`.
+- `captureEmail` stamps `consented_at` (server time, ISO) in the same update as
+  `respondent_email`; if that update errors (e.g. deployed before migration 006
+  runs), it falls back to saving the email alone — consent capture must never
+  cost us the lead.
+- HubSpot: new **contact date property `email_consent_date`** (YYYY-MM-DD; the
+  exact timestamp of record stays in Supabase). ⚠️ The property must exist in
+  the HubSpot portal *before* deploy — an unknown property fails the whole
+  upsert (contact wouldn't be created at all).
+- Also mirrored `respondent_email` (migration 003) into `supabase/schema.sql` —
+  it had been missed there; `consented_at` is mirrored too.
+- Verified locally (2026-07-19): build passes; no new lint errors; dev-server
+  render shows the disclosure on a real ungated session's gate and the new
+  intake copy; read-only prod check confirms `consented_at` not yet in the
+  live DB (migration 006 prepared, unapplied).
+
+## Rollout order (Bri)
+
+1. Apply migration 006 in Supabase (SQL editor):
+   `supabase/migrations/006_add_consented_at.sql`.
+2. Create the HubSpot contact property: Settings → Data Management →
+   Properties → Contact properties → Create property. Label **"Email consent
+   date"** (internal name must come out `email_consent_date`), group Contact
+   information, field type **Date picker**.
+3. Deploy: `npx vercel --prod` (git push does not deploy).
+4. Final verify: submit a test email at a gate → `consented_at` set in
+   Supabase, `Email consent date` set on the HubSpot contact, report unlocks
+   as before.
+
 ## Progress
 
 - [x] Opt-in mechanism + draft copy decided with Bri (2026-07-18, see
       Decisions)
-- [ ] Final wording pass on the disclosure line
-- [ ] Migration: `consented_at` field
-- [ ] EmailGate disclosure text + captureEmail persistence
-- [ ] HubSpot consent property + include in upsert
+- [x] Final wording pass on the disclosure line (shipped draft copy verbatim;
+      still tweakable — single string in `EmailGate.tsx`)
+- [x] Migration: `consented_at` field (006 — written, not yet applied)
+- [x] EmailGate disclosure text + captureEmail persistence
+- [x] HubSpot consent property + include in upsert (code side; portal property
+      creation is rollout step 2)
 - [ ] Verify: submission records the timestamp in Supabase + HubSpot; the
-      report unlocks exactly as before
+      report unlocks exactly as before (blocked on rollout steps 1–3)
