@@ -1,6 +1,6 @@
 # Narrative Source of Truth — the story under the assessment
 
-**Status:** In progress <!-- plan drafted 2026-07-20; defining the spine with Bri before writing the full narrative doc -->
+**Status:** Done (2026-07-20) <!-- spine confirmed by Bri; narrative doc written -->
 
 ## Objective
 
@@ -77,7 +77,7 @@ people they hired. The problem is the leader.* Swapping in a new admin (or a
 tool) without changing the leader just re-runs the same failure with a new name
 on it.
 
-### E. The 4 things (PROPOSED — Bri to refine wording)
+### E. The 4 things (CONFIRMED by Bri 2026-07-20)
 *If they don't do these four, the same issues happen no matter who — or what —
 they hire.* Mapped to the DRS categories so the story and the score agree; the
 first two are literally Bri's "head and heart":
@@ -121,20 +121,21 @@ Four layers, so it's not just "you lose deals":
 
 ---
 
-## Open for Bri
+## Open for Bri (follow-ups, not blockers)
 
-- [ ] **Confirm / refine the 4 things** (section E) — names and wording. Everything
-  downstream keys off these, so this is the gate before the full draft.
-- [ ] Any per-workflow pain in section F to sharpen with a real client story?
-- [ ] Is there a WSS stat or a real benchmark you'd stand behind for the "hired and
-  failed" moment, or keep it purely self-recognition?
+- [ ] A real client story to weave into one of the four workflow pains (section F)
+  would sharpen it — drop one in and I'll fold it into the narrative doc.
+- [ ] If a defensible WSS stat surfaces for the "hired and failed" moment, we can
+  add it; the doc is written to lead with self-recognition without it.
 
 ## Progress
 
 - [x] Interview: deliverable = narrative source-of-truth doc; 4-things = define
   together; stats = self-recognition-first (2026-07-20).
 - [x] Draft the spine with proposed answers (this doc, 2026-07-20).
-- [ ] Confirm the 4 things.
-- [ ] Write `docs/narrative-source-of-truth.md` from the confirmed spine.
-- [ ] Cross-check consistency with the email campaign + reading-results docs.
-- [ ] Commit (task doc + narrative doc together).
+- [x] Bri confirmed the 4 things (2026-07-20).
+- [x] Wrote `docs/narrative-source-of-truth.md` from the confirmed spine
+  (2026-07-20).
+- [x] Cross-checked consistency with the email campaign + reading-results docs
+  (diagnosis-vs-prescription, ODS/DRS direction, the four workflow names).
+- [ ] Commit (task doc + narrative doc together) — pending Bri's go.
