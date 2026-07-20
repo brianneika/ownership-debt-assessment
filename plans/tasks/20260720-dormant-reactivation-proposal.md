@@ -52,6 +52,8 @@ segment of the WSS database as a bounded 1-week test, with a fair revenue split.
 - [ ] Bri sends / delivers the ask to Verl; record his answer here.
 - [ ] If yes: define the dormant segment in WSS's platform, set send dates,
   confirm from-name (Verl) on email 1, wire UTMs, brief on 100/day throttle.
+  → execution runbook + marketing heads-up:
+  [20260720-dormant-segment-build](20260720-dormant-segment-build.md).
 - [ ] Run the week; track sessions started, emails captured, calls booked,
   cohort yeses (see the campaign doc's "What to measure").
 - [ ] Day-7 review with Verl: numbers + whether it becomes a standing arrangement.
