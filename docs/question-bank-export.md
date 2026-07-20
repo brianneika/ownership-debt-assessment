@@ -21,7 +21,6 @@
 8. [Named User / Dynamic Text](#named-user--dynamic-text)
 9. [Landing Page Copy & Contact Capture](#landing-page-copy--contact-capture)
 10. [Scoring Formulas Reference](#scoring-formulas-reference)
-11. [OQI Dimension Mismatch (Known Issue)](#oqi-dimension-mismatch-known-issue)
 
 ---
 
@@ -188,37 +187,42 @@ The 18 questions per workflow are grouped into 6 OQI dimensions as follows:
 
 | OQI Dimension | DB Slug | Weight | Questions per workflow | DB Keys (Section C) |
 |---|---|---|---|---|
-| Financial Accountability | `FA` | 0.20 | Q001–Q003 | Q001, Q002, Q003 |
-| Role Accountability | `RA` | 0.22 | Q004–Q006 | Q004, Q005, Q006 |
+| Decision Ownership | `DO` | 0.20 | Q001–Q003 | Q001, Q002, Q003 |
+| Independent Execution | `IE` | 0.22 | Q004–Q006 | Q004, Q005, Q006 |
 | Systems & Checklists | `SC` | 0.18 | Q007–Q009 | Q007, Q008, Q009 |
-| Execution & Training | `ET` | 0.15 | Q010–Q012 | Q010, Q011, Q012 |
+| Escalation & Coverage | `EC` | 0.15 | Q010–Q012 | Q010, Q011, Q012 |
 | Outcome Accountability | `OA` | 0.15 | Q013–Q015 | Q013, Q014, Q015 |
-| Culture & Communication | `CC` | 0.10 | Q016–Q018 | Q016, Q017, Q018 |
+| Confidence & Track Record | `CT` | 0.10 | Q016–Q018 | Q016, Q017, Q018 |
 
-> **⚠️ OQI Dimension Label Mismatch** — see [section below](#oqi-dimension-mismatch-known-issue).
+> **⚠️ Maintenance rule** — these slugs were relabeled by migration
+> `005_relabel_oqi_dimensions.sql` (2026-07-18) after the original seed's labels
+> drifted from the rewritten question copy. Any future migration that touches
+> Mode B `question_text` must re-verify `oqi_dimension` still matches the
+> content, and slugs must **never** be reused with a new meaning (retired slugs:
+> `FA`, `RA`, `ET`, `CC`).
 
 #### Full Question List (Section C / Listing Launch as template)
 
 | Key (C) | Key (D) | Key (E) | Key (F) | OQI Dim | Per-Q Weight | Question Text (workflow name in brackets) |
 |---------|---------|---------|---------|---------|-------|---|
-| Q001 | Q019 | Q037 | Q055 | FA | 0.07 | Does your named owner have the authority to make decisions within the [Workflow] workflow without checking with you first? |
-| Q002 | Q020 | Q038 | Q056 | FA | 0.07 | Can your named owner send final communications to clients, vendors, lenders, or title on [Workflow] matters without your review or approval? |
-| Q003 | Q021 | Q039 | Q057 | FA | 0.07 | If your named owner makes a mistake on a [Workflow] decision, are they responsible for resolving it — or does it come back to you? |
-| Q004 | Q022 | Q040 | Q058 | RA | 0.07 | In the last 30 days, how often did your named owner make a [Workflow] decision and act on it without consulting you first? |
-| Q005 | Q023 | Q041 | Q059 | RA | 0.07 | When something unexpected happens inside the [Workflow] workflow, who takes the first action? |
-| Q006 | Q024 | Q042 | Q060 | RA | 0.07 | When your named owner encounters a [Workflow] problem, do they typically bring you a recommended solution or ask you what to do? |
+| Q001 | Q019 | Q037 | Q055 | DO | 0.07 | Does your named owner have the authority to make decisions within the [Workflow] workflow without checking with you first? |
+| Q002 | Q020 | Q038 | Q056 | DO | 0.07 | Can your named owner send final communications to clients, vendors, lenders, or title on [Workflow] matters without your review or approval? |
+| Q003 | Q021 | Q039 | Q057 | DO | 0.07 | If your named owner makes a mistake on a [Workflow] decision, are they responsible for resolving it — or does it come back to you? |
+| Q004 | Q022 | Q040 | Q058 | IE | 0.07 | In the last 30 days, how often did your named owner make a [Workflow] decision and act on it without consulting you first? |
+| Q005 | Q023 | Q041 | Q059 | IE | 0.07 | When something unexpected happens inside the [Workflow] workflow, who takes the first action? |
+| Q006 | Q024 | Q042 | Q060 | IE | 0.07 | When your named owner encounters a [Workflow] problem, do they typically bring you a recommended solution or ask you what to do? |
 | Q007 | Q025 | Q043 | Q061 | SC | 0.06 | Is there a current, documented SOP for the [Workflow] workflow that your named owner follows step by step? |
 | Q008 | Q026 | Q044 | Q062 | SC | 0.06 | Are the routine communications inside [Workflow] — client updates, confirmations, reminders — templated so your named owner doesn't write them from scratch? |
 | Q009 | Q027 | Q045 | Q063 | SC | 0.06 | If your named owner hits an unusual situation inside [Workflow], do they have documentation or a decision guide — or do they call you? |
-| Q010 | Q028 | Q046 | Q064 | ET | 0.05 | Does your named owner know exactly which [Workflow] situations they should handle independently versus bring to you? |
-| Q011 | Q029 | Q047 | Q065 | ET | 0.05 | In the last 60 days, did your named owner escalate a [Workflow] issue to you that they should have handled within their own authority? |
-| Q012 | Q030 | Q048 | Q066 | ET | 0.05 | If your named owner were out for a full day, is there a backup person who knows the [Workflow] escalation thresholds well enough to keep it moving? |
+| Q010 | Q028 | Q046 | Q064 | EC | 0.05 | Does your named owner know exactly which [Workflow] situations they should handle independently versus bring to you? |
+| Q011 | Q029 | Q047 | Q065 | EC | 0.05 | In the last 60 days, did your named owner escalate a [Workflow] issue to you that they should have handled within their own authority? |
+| Q012 | Q030 | Q048 | Q066 | EC | 0.05 | If your named owner were out for a full day, is there a backup person who knows the [Workflow] escalation thresholds well enough to keep it moving? |
 | Q013 | Q031 | Q049 | Q067 | OA | 0.05 | When something goes wrong inside [Workflow] — a missed deadline, a client issue, a dropped step — who is accountable to you for the outcome? |
 | Q014 | Q032 | Q050 | Q068 | OA | 0.05 | Does your named owner have a clear, measurable standard they're held to for [Workflow] results — not just 'did you do the steps' but 'did it go well'? |
 | Q015 | Q033 | Q051 | Q069 | OA | 0.05 | If your named owner consistently underperforms on [Workflow], is there a documented structure for coaching, correction, or responsibility reassignment? |
-| Q016 | Q034 | Q052 | Q070 | CC | 0.03 | How confident are you that your named owner has the skills and knowledge to run [Workflow] reliably without your involvement? |
-| Q017 | Q035 | Q053 | Q071 | CC | 0.03 | Based on your named owner's behavior — not just their words — how confident do they seem in managing [Workflow] independently? |
-| Q018 | Q036 | Q054 | Q072 | CC | 0.03 | Has your named owner successfully managed [Workflow] independently, with outcomes at or above your standard, for at least 90 days? |
+| Q016 | Q034 | Q052 | Q070 | CT | 0.03 | How confident are you that your named owner has the skills and knowledge to run [Workflow] reliably without your involvement? |
+| Q017 | Q035 | Q053 | Q071 | CT | 0.03 | Based on your named owner's behavior — not just their words — how confident do they seem in managing [Workflow] independently? |
+| Q018 | Q036 | Q054 | Q072 | CT | 0.03 | Has your named owner successfully managed [Workflow] independently, with outcomes at or above your standard, for at least 90 days? |
 
 **Shared scored option sets:**
 
@@ -771,28 +775,3 @@ Score bands:
 `reverse_scored = true` means the raw answer is transformed before averaging: `effective_value = 4 − raw_value`. Currently applies to:
 - RCC3, RCD3, RCE3, RCF3 (Mode C fallthrough frequency — high fallthrough = high debt)
 
----
-
-## OQI Dimension Mismatch (Known Issue)
-
-The DB column `oqi_dimension` was set during the original seed (`seed-questions.sql`) with placeholder labels that map the 18 Mode B questions to 6 dimensions as:
-
-- Q001–Q003: FA (Financial Accountability)
-- Q004–Q006: RA (Role Accountability)
-- Q007–Q009: SC (Systems & Checklists)
-- Q010–Q012: ET (Execution & Training)
-- Q013–Q015: OA (Outcome Accountability)
-- Q016–Q018: CC (Culture & Communication)
-
-`seed-questions-v2.sql` subsequently replaced all question text with final copy from the live question bank, but **did not update the `oqi_dimension` column**. The actual content of the final questions does not match these labels:
-
-| Keys | DB Dimension Label | Actual question content |
-|------|-------------------|------------------------|
-| Q001–Q003 | FA (Financial Accountability) | Decision authority, communication approval, mistake ownership — closer to Role Accountability |
-| Q004–Q006 | RA (Role Accountability) | Recent independent action frequency, first responder role, solution vs asking — closer to Execution pattern |
-| Q007–Q009 | SC (Systems & Checklists) | SOP existence, communication templates, decision guide — correctly SC |
-| Q010–Q012 | ET (Execution & Training) | Escalation clarity, over-escalation frequency, backup capability — closer to Authority Framework |
-| Q013–Q015 | OA (Outcome Accountability) | Outcome accountability, measurable standards, accountability structure — correctly OA |
-| Q016–Q018 | CC (Culture & Communication) | Your confidence in them, their behavioral confidence, 90-day track record — closer to ET/track record |
-
-This mismatch means OQI sub-dimension breakdown labels shown to admins (and in webhook payloads) are named incorrectly relative to the questions they reflect. The overall OQI score is unaffected (it sums all 18 questions regardless of label), but per-dimension sub-scores (stored in `score_breakdowns`) are misattributed.

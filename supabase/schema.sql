@@ -37,7 +37,7 @@ create table questions (
   is_scored          boolean not null default true,
   -- workflow mode this question belongs to (null = applies regardless of mode, e.g. Section A/B/G/H)
   mode               text check (mode in ('A','B','C')),
-  oqi_dimension      text check (oqi_dimension in ('FA','RA','SC','ET','OA','CC')),
+  oqi_dimension      text check (oqi_dimension in ('DO','IE','SC','EC','OA','CT')),
   drs_category       text check (drs_category in (
                        'Willingness','Delegation Quality','Team Capacity',
                        'Authority Framework','Transfer Readiness',

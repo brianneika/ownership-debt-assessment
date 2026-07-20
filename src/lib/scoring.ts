@@ -15,7 +15,7 @@ import { createClient } from '@supabase/supabase-js';
 
 export type WorkflowKey = 'C' | 'D' | 'E' | 'F';
 export type WorkflowMode = 'A' | 'B' | 'C';
-type OqiDimension = 'FA' | 'RA' | 'SC' | 'ET' | 'OA' | 'CC';
+type OqiDimension = 'DO' | 'IE' | 'SC' | 'EC' | 'OA' | 'CT';
 export type DrsCategory =
   | 'Willingness'
   | 'Delegation Quality'
@@ -83,12 +83,12 @@ export interface ScoringResult {
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const OQI_WEIGHTS: Record<OqiDimension, number> = {
-  FA: 0.20,
-  RA: 0.22,
-  SC: 0.18,
-  ET: 0.15,
-  OA: 0.15,
-  CC: 0.10,
+  DO: 0.20, // Decision Ownership          (Q001–Q003 per workflow)
+  IE: 0.22, // Independent Execution       (Q004–Q006)
+  SC: 0.18, // Systems & Checklists        (Q007–Q009)
+  EC: 0.15, // Escalation & Coverage       (Q010–Q012)
+  OA: 0.15, // Outcome Accountability      (Q013–Q015)
+  CT: 0.10, // Confidence & Track Record   (Q016–Q018)
 };
 
 const DRS_TEAM_WEIGHTS: Partial<Record<DrsCategory, number>> = {

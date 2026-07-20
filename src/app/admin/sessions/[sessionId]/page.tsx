@@ -51,6 +51,17 @@ function InfoTooltip({ text }: { text: string }) {
   );
 }
 
+// Sessions scored before migration 005 had their breakdown labels relabeled in
+// place; unknown slugs fall back to the raw label.
+const OQI_DIMENSION_NAMES: Record<string, string> = {
+  DO: 'Decision Ownership',
+  IE: 'Independent Execution',
+  SC: 'Systems & Checklists',
+  EC: 'Escalation & Coverage',
+  OA: 'Outcome Accountability',
+  CT: 'Confidence & Track Record',
+};
+
 const ODS_TOOLTIP = 'Ownership Debt Score — measures how dependent this workflow is on the team leader. Higher score = more dependent.';
 const OQI_TOOLTIP = 'Ownership Quality Index — measures how well-documented, accountable, and transferable this workflow is. Higher score = more transferable.';
 
@@ -220,7 +231,7 @@ export default async function SessionDetailPage({
                           {wf.oqiBreakdown.map((d) => (
                             <div key={d.label}>
                               <div className="flex justify-between items-center mb-0.5">
-                                <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">{d.label}</span>
+                                <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">{OQI_DIMENSION_NAMES[d.label] ?? d.label}</span>
                                 <span className="text-[10px] text-gray-400 tabular-nums">{d.normalizedScore.toFixed(0)}</span>
                               </div>
                               <div className="h-1 bg-gray-100 rounded-full overflow-hidden">

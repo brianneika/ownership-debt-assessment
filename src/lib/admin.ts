@@ -30,7 +30,7 @@ export interface SessionListItem {
 }
 
 export interface OqiDimensionScore {
-  label: string; // 'FA' | 'RA' | 'SC' | 'ET' | 'OA' | 'CC'
+  label: string; // 'DO' | 'IE' | 'SC' | 'EC' | 'OA' | 'CT' (pre-005 rows were relabeled by the migration)
   weight: number;
   normalizedScore: number;
 }
