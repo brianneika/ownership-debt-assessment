@@ -83,7 +83,9 @@ in VAI's HubSpot (email 1 stays a hand-off doc for WSS's own platform).
 
 ## Out of scope (follow-ups)
 
-- A/B subject test setup, lists/suppression segments, scheduling/workflows.
+- Lists/suppression segments, scheduling/workflows. (Email 1's A/B is now
+  **in scope** as a build sheet — see 2026-07-20 log; A/B for VAI's emails 2–3
+  stays out.)
 - Consent opt-in checkboxes at the email gate + HubSpot consent properties
   (already flagged in the campaign task).
 - Any changes to email 1 or WSS's platform.
@@ -116,3 +118,13 @@ Running log — check things off and note decisions as you go.
   token (default `there`), inlined `utm_content=email1` URL, full body. Notes the
   WSS→WSS consent picture (cleaner than 2–3) and the past-client "welcome back"
   variant for the dormant segment.
+- 2026-07-20 — **Email 1 reworked into a full-content A/B test** (Bri's call). Retired
+  the old single-body "the mirror" open (and its subject A/B). New test is two
+  distinct emotional angles: **Variant A "The handoff that came back"** (you hired
+  help and ended up doing it yourself anyway → reframed as ownership debt / readiness,
+  not a hiring failure) vs **Variant B "What it's costing you"** (the ongoing physical
+  and emotional price of being the only one who can do the work). 50/50 split, winner
+  by **clicks not opens**, per-variant UTMs (`email1-scar` / `email1-cost`) so
+  downstream completion is visible per angle. Copy is em-dash-free per Bri. Email 1
+  sheet rewritten to match; this supersedes the "mirror" copy in
+  [docs/wss-launch-email-campaign.md](../../docs/wss-launch-email-campaign.md).

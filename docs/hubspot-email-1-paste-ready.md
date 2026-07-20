@@ -1,15 +1,37 @@
-# HubSpot build sheet — Email 1 (WSS's HubSpot, WSS voice)
+# HubSpot build sheet — Email 1 A/B test (WSS's HubSpot, WSS voice)
 
-_Paste-ready copy for building the Day-0 launch draft by hand in **WSS's** HubSpot
-Marketing Email editor. Source copy:
-[wss-launch-email-campaign.md](./wss-launch-email-campaign.md) (Email 1 — "The mirror").
-Companion to the VAI-side sheet, [hubspot-emails-2-3-paste-ready.md](./hubspot-emails-2-3-paste-ready.md)._
+_Paste-ready copy for building the Day-0 launch email as an **A/B test** by hand in
+**WSS's** HubSpot Marketing Email editor. This is a full-content A/B (two different
+angles, not just a subject swap). Companion to the VAI-side sheet,
+[hubspot-emails-2-3-paste-ready.md](./hubspot-emails-2-3-paste-ready.md)._
 
 **This email sends from WSS's platform, not VAI's.** It goes to WSS's own list
-(the full launch segment, or the dormant-reactivation segment — same copy) under
-WSS's existing consent and unsubscribe. VAI's HubSpot only ever receives
-assessment gate opt-ins. Emails 2 & 3 are the ones that send from VAI's HubSpot —
-build those from the companion sheet.
+(the full launch segment, or the dormant-reactivation segment) under WSS's existing
+consent and unsubscribe. VAI's HubSpot only ever receives assessment gate opt-ins.
+Emails 2 & 3 are the ones that send from VAI's HubSpot — build those from the
+companion sheet.
+
+**Supersedes the old "the mirror" open** from
+[wss-launch-email-campaign.md](./wss-launch-email-campaign.md). That single-body,
+subject-only draft is retired. The test below is the launch Email 1.
+
+---
+
+## The test
+
+One email, two variants, testing which emotional angle pulls team leaders into the
+assessment:
+
+- **Variant A — "The handoff that came back."** Names a scar they've already lived:
+  they hired help and ended up doing it themselves anyway. Reframes it as ownership
+  debt / readiness, not a hiring failure.
+- **Variant B — "What it's costing you."** Names the ongoing physical and emotional
+  price of being the only one who can do the work, then reframes it as measurable.
+
+Split 50/50, pick the winner on **assessment starts (link clicks), not opens**
+(Apple Mail Privacy Protection inflates opens). Links are tagged per variant
+(`utm_content=email1-scar` vs `email1-cost`) so downstream completion is visible per
+angle too.
 
 ---
 
@@ -27,8 +49,8 @@ true before the real send:
    (SPF/DKIM/DMARC); confirm HubSpot auto-suppression of hard bounces / unengaged
    is on (Settings → Marketing → Email). On the colder dormant segment, honor the
    ~100/day throttle + day-1 bounce-rate go/no-go from the segment-build task.
-4. **Suppress on clicks, not opens** for the follow-up sends (Apple Mail Privacy
-   Protection inflates opens) — set this up when you schedule email 2.
+4. **Winner metric = clicks, not opens.** Set the A/B winner criteria to click-through
+   in HubSpot before you schedule.
 
 ---
 
@@ -36,71 +58,113 @@ true before the real send:
 
 | Field | Value |
 | --- | --- |
-| **From name** | A real WSS person — `Verl Workman`, or person-from-brand `Verl at Workman Success`. Bri/WSS confirms. |
+| **Test type** | HubSpot A/B email, **full content** (Variant A vs Variant B below), 50/50 split |
+| **Winner metric** | Click-through rate (not open rate) |
+| **From name** | A real WSS person — `Verl Workman`, or person-from-brand `Verl at Workman Success`. Bri/WSS confirms. Same for both variants. |
 | **From / reply-to address** | A **monitored** WSS inbox — at this scale, replies are hot leads |
 | **Send** | Day 0, Tue or Wed, 9–11am recipient-local. Full segment (or frozen dormant static list). |
 | **Send frequency / footer** | HubSpot auto-appends WSS's CAN-SPAM footer + unsubscribe — leave it on |
-| **First-name token** | Insert HubSpot's **First name** personalization token with a **default value of `there`** so a missing name reads "Hi there," not "Hi ," |
+| **First-name token** | Insert HubSpot's **First name** personalization token with a **default value of `there`** so a missing name reads "Hi there," not "Hi ," (used in both bodies) |
 
-**Personalization token:** where the copy below shows `{{ contact.firstname }}`,
-use HubSpot's *Personalize → Contact → First name* with default `there`. Note
-Subject **B** also uses the first-name token — same setup in the subject field.
+**Personalization token:** where the copy shows `{{ contact.firstname }}`, use
+HubSpot's *Personalize → Contact → First name* with default `there`. Neither
+subject line uses the token, so the subject fields are plain text.
 
-**A/B note:** build with **Subject A** as the default; Subject B is provided for
-the A/B test if WSS wants to run one.
-
-**Formatting:** `**bold**` = bold. `*italic*` = italic. The **[Button: …]** line
-is a HubSpot **Button module** (not inline text); the **Plain link** line goes
-right under it as normal text, because some clients strip buttons.
+**Formatting:** `**bold**` = bold. `*italic*` = italic. The **[Button: …]** line is
+a HubSpot **Button module** (not inline text); the **Plain link** line goes right
+under it as normal text, because some clients strip buttons.
 
 ---
 
-## Email 1 — The mirror (Day 0)
+## Variant A — The handoff that came back
 
 | Field | Value |
 | --- | --- |
-| **Subject (A)** | `How much of your business still runs through you?` |
-| **Subject B** (for A/B) | `{{ contact.firstname }}, could your team run a closing without you?` |
-| **Preview text** | `A free 15-minute diagnostic that adapts to your business and gives you two numbers: how much it depends on you, and how ready you are to change that.` |
-| **Button URL & Plain link** | `https://assessment.vainexus.com?utm_source=wss&utm_medium=email&utm_campaign=ownership-assessment-launch&utm_content=email1` |
+| **Subject** | `Hired an admin and ended up doing it yourself anyway?` |
+| **Preview text** | `It probably wasn't a hiring problem. A free 15-minute diagnostic shows you the real reason the work keeps coming back to you.` |
+| **Button URL & Plain link** | `https://assessment.vainexus.com?utm_source=wss&utm_medium=email&utm_campaign=ownership-assessment-launch&utm_content=email1-scar` |
 
 **Body:**
 
 {{ contact.firstname }},
 
-Here's a question most team leaders can't answer honestly: **if you disappeared for two weeks, what would actually break?**
+Be honest: have you ever hired someone to take work off your plate, an admin, an assistant, a transaction coordinator, and six months later you were doing most of it yourself again?
 
-Not "would the team survive" — what specifically would stall? Which listings wouldn't launch? Which escalations would sit unanswered? Which deals would quietly die because the one person who knows how to unstick them was gone?
+Maybe they handed it back one task at a time. Maybe you took it back because explaining it took longer than just doing it. Either way you landed in the same place: *I guess it has to be me.*
 
-We call the gap between "I have a team" and "my business runs without me" **ownership debt** — all the decisions, systems, and know-how that still live only in your head. Every team carries some. Most leaders have no idea how much.
+Here's what almost nobody tells you. That wasn't a hiring problem. You can't hand off what only lives in your head. The systems, the judgment calls, the "just-know-how-I-like-it," if that never left your brain, no hire on earth was going to carry it.
 
-We built a free assessment that measures it. Set aside about 15 minutes — it adapts to how your business actually runs, so the more you've delegated, the deeper it goes. Built specifically for real estate team leaders, it walks through how your listings launch, how your transactions close, and how your people escalate, then gives you two numbers:
+That gap has a name. We call it **ownership debt**, all the decisions and know-how your business still needs you personally for. And there's a second thing that decides whether your next hire actually sticks: how ready the work is to be owned by someone other than you.
 
-- **Your Ownership Debt Score** — how much your business still depends on you personally, across your four core workflows (lower is better)
-- **Your Delegation Readiness Score** — how prepared you and your team actually are to carry that ownership if you handed it over
+We built a free assessment that measures both. Set aside about 15 minutes. It adapts to how your business actually runs, so the more you've delegated, the deeper it goes. It walks through how your listings launch, how your transactions close, and how your people escalate, then gives you two numbers:
 
-Together they show you exactly where you stand today. From the results page you can book a call to turn those numbers into your single highest-leverage next move — but the scores are yours either way.
+- **Your Ownership Debt Score:** how much your business still depends on you personally across your four core workflows (lower is better)
+- **Your Delegation Readiness Score:** how prepared you and your team actually are to carry that ownership if you handed it over
+
+Together they show you why the last handoff came back, and exactly what has to be true for the next one to stick.
 
 **[Button: Take the free assessment →]**
 
-Plain link: `https://assessment.vainexus.com?utm_source=wss&utm_medium=email&utm_campaign=ownership-assessment-launch&utm_content=email1`
+Plain link: `https://assessment.vainexus.com?utm_source=wss&utm_medium=email&utm_campaign=ownership-assessment-launch&utm_content=email1-scar`
 
-It takes about 15 minutes, and your answers save as you go — a refresh or dropped connection won't cost you any progress.
+It takes about 15 minutes, and your answers save as you go, so a refresh or dropped connection won't cost you any progress.
 
-— *[WSS sender name]*
+*Verl Workman*
 Workman Success Systems
 
-P.S. There's no pitch inside the assessment — you answer the questions, you get your scores. What you do with them is up to you.
+P.S. There's no pitch inside the assessment. You answer the questions, you get your scores. What you do with them is up to you.
+
+---
+
+## Variant B — What it's costing you
+
+| Field | Value |
+| --- | --- |
+| **Subject** | `You can keep doing it all yourself. Here's what that costs.` |
+| **Preview text** | `A free 15-minute diagnostic that gives you two numbers: how much your business still runs through you, and how ready it is to change that.` |
+| **Button URL & Plain link** | `https://assessment.vainexus.com?utm_source=wss&utm_medium=email&utm_campaign=ownership-assessment-launch&utm_content=email1-cost` |
+
+**Body:**
+
+{{ contact.firstname }},
+
+You can keep running everything yourself. Plenty of team leaders do. The business still closes, the checks still come, the machine still works.
+
+But you already know what it costs, because you pay it every day.
+
+It's the vacation where you're answering escalations from the pool. The deal that would have quietly died if you'd been unreachable for one afternoon. The 9pm inbox, because you're the only one who can unstick the thing. The quiet math that your business can only ever grow as big as you can personally carry.
+
+That cost isn't just in the P&L. It's in your body, and it's at your dinner table.
+
+Here's the part worth sitting with: this doesn't have to be the price of having a team. The reason it all still runs through you usually isn't effort or talent. It's two things you can actually measure. How much of the business still depends on you personally, and how ready your people are to own the parts you'd hand off.
+
+We built a free assessment that measures both. Set aside about 15 minutes. It adapts to how your business actually runs and walks through how your listings launch, how your transactions close, and how your people escalate, then gives you two numbers:
+
+- **Your Ownership Debt Score:** how much your business still depends on you personally across your four core workflows (lower is better)
+- **Your Delegation Readiness Score:** how prepared you and your team actually are to carry that ownership if you handed it over
+
+Together they show you exactly what staying the same is costing you, and the highest-leverage place to start changing it.
+
+**[Button: See what it's costing you →]**
+
+Plain link: `https://assessment.vainexus.com?utm_source=wss&utm_medium=email&utm_campaign=ownership-assessment-launch&utm_content=email1-cost`
+
+It takes about 15 minutes, and your answers save as you go, so a refresh or dropped connection won't cost you any progress.
+
+*Verl Workman*
+Workman Success Systems
+
+P.S. There's no pitch inside the assessment. You answer the questions, you get your scores. What you do with them is up to you.
 
 ---
 
 ## Dormant-segment variant (past clients)
 
-If this email is going to the **dormant-reactivation** segment, the segment splits
-into cold subscribers and past clients (see
+If this test goes to the **dormant-reactivation** segment, the segment splits into
+cold subscribers and past clients (see
 [plans/tasks/20260720-dormant-reactivation-segment.md](../plans/tasks/20260720-dormant-reactivation-segment.md)).
-The copy above is built for **cold / never-bought** contacts and needs no change.
-**Past clients** should get a "welcome back" opener that acknowledges the prior
-WSS relationship instead of the cold "the mirror" open — draft that variant
-separately and tag its link `utm_content=reactivation-pastclient` (vs.
-`-cold`) so completion rates are visible per sub-segment.
+Variants A and B above are written for **cold / never-bought** contacts and need no
+change. **Past clients** should get a "welcome back" opener that acknowledges the
+prior WSS relationship before landing into the same two-score payoff. Draft that
+opener separately and tag its links `utm_content=reactivation-pastclient` (vs.
+`-cold`) so completion rates stay visible per sub-segment.
