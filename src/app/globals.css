@@ -58,6 +58,16 @@ body {
     break-inside: avoid;
   }
 
+  /* Tall sections (Start Here) flow across the page boundary instead of being
+     pushed whole onto the next page and leaving the previous one half blank.
+     Its direct children stay intact so the break lands between blocks. */
+  .report-section-flow {
+    break-inside: auto;
+  }
+  .report-section-flow > * {
+    break-inside: avoid;
+  }
+
   /* Reveal the collapsed <details> answer blocks so the internal PDF carries
      the full answer detail (they're collapsed by default in the UI). */
   details > *:not(summary) {

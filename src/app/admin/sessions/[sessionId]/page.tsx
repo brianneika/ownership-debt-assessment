@@ -265,7 +265,7 @@ export default async function SessionDetailPage({
 
         {/* Start Here — call-prep insight (display-only, thresholds/copy in src/lib/insight.ts) */}
         {startHere && (
-          <div className="report-section bg-white rounded-xl border border-indigo-200 shadow-sm p-6 space-y-4" data-audience="internal">
+          <div className="report-section-flow bg-white rounded-xl border border-indigo-200 shadow-sm p-6 space-y-4" data-audience="internal">
             <div>
               <p className="text-xs font-semibold uppercase tracking-widest text-indigo-500 mb-1.5">Start Here</p>
               <h2 className="text-lg font-bold text-gray-900">{startHere.quadrant.title}</h2>
