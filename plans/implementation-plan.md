@@ -66,10 +66,10 @@ first two: the verify pass establishes what state the live DB is actually in
    their breakdown. Exit check: a pre-migration session's scores are
    byte-identical after.
 3. **[Consent capture at the email gate](tasks/20260718-email-gate-consent-capture.md)**
-   (decided 2026-07-18: by-submission disclosure, no checkbox) — disclosure
-   text replaces the "report-only" promise, a `consented_at` column, a HubSpot
-   property. Ship before S so campaign respondents are nurture-eligible. Adds
-   zero friction (respondent flow is sacred).
+   (✅ done 2026-07-19, live in prod and verified end-to-end) — disclosure
+   text at the gate, `consented_at` column (migration 006), HubSpot
+   `email_consent_date` property. Consent eligibility runs from the
+   2026-07-20T03:26Z deploy onward; earlier respondents stay off-limits.
 4. **Custom domain** — `ownership-assessment-delta.vercel.app` → a real domain
    before marketing email links to it (flagged in the campaign task; small
    Vercel config change, no task doc needed unless it grows).

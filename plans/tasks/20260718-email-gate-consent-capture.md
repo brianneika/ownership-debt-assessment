@@ -1,7 +1,8 @@
 # Email-gate consent capture
 
-**Status:** In progress — code complete 2026-07-19; awaiting Bri (migration 006,
-HubSpot property, deploy) before the final verify
+**Status:** Done (2026-07-19) — live in prod; end-to-end verified (Supabase
+`consented_at` + HubSpot `email_consent_date` both recorded on a test
+submission, report unlocked as before)
 
 ## Objective
 
@@ -74,16 +75,19 @@ this ships.
 
 ## Rollout order (Bri)
 
-1. Apply migration 006 in Supabase (SQL editor):
-   `supabase/migrations/006_add_consented_at.sql`.
-2. Create the HubSpot contact property: Settings → Data Management →
-   Properties → Contact properties → Create property. Label **"Email consent
-   date"** (internal name must come out `email_consent_date`), group Contact
-   information, field type **Date picker**.
-3. Deploy: `npx vercel --prod` (git push does not deploy).
-4. Final verify: submit a test email at a gate → `consented_at` set in
-   Supabase, `Email consent date` set on the HubSpot contact, report unlocks
-   as before.
+1. ~~Apply migration 006 in Supabase~~ — done 2026-07-19 (verified read-only:
+   column present in live DB).
+2. ~~Create the HubSpot contact property~~ — done 2026-07-19 (verified via
+   API: `email_consent_date`, type date, Contact information group).
+3. ~~Deploy: `npx vercel --prod`~~ — done 2026-07-19; live pages confirmed
+   serving the disclosure + new intake copy.
+4. ~~Final verify~~ — done 2026-07-19: Bri submitted `test2@example.com` at
+   session `741dca88`'s gate on prod; read-only check confirmed
+   `consented_at = 2026-07-20T03:28:56Z` in Supabase and
+   `email_consent_date = 2026-07-20` on the HubSpot contact; report unlocked
+   as before. **Consent-eligibility cutover: gate submissions from
+   2026-07-20T03:26Z (deploy time) onward are emailable; earlier ones are
+   permanently off-limits.**
 
 ## Progress
 
@@ -95,5 +99,5 @@ this ships.
 - [x] EmailGate disclosure text + captureEmail persistence
 - [x] HubSpot consent property + include in upsert (code side; portal property
       creation is rollout step 2)
-- [ ] Verify: submission records the timestamp in Supabase + HubSpot; the
-      report unlocks exactly as before (blocked on rollout steps 1–3)
+- [x] Verify: submission records the timestamp in Supabase + HubSpot; the
+      report unlocks exactly as before (2026-07-19, see rollout step 4)
