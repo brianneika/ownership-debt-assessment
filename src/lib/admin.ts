@@ -11,6 +11,13 @@ import {
   type DrsCategoryScore,
   type WorkflowMode,
 } from './scoring';
+import {
+  extractRedFlags,
+  extractWorkflowDiagnostics,
+  type InsightAnswer,
+  type RedFlag,
+  type WorkflowDiagnostics,
+} from './insight';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -18,6 +25,7 @@ export interface ScoreSummary {
   score: number;
   bandLabel: string | null;
   bandColor: string | null;
+  bandDescription: string | null;
 }
 
 export interface SessionListItem {
@@ -43,10 +51,12 @@ export interface WorkflowDetail {
   ods: ScoreSummary | null;
   oqi: ScoreSummary | null;
   oqiBreakdown: OqiDimensionScore[]; // only populated for Mode B
+  diagnostics: WorkflowDiagnostics | null; // mode-appropriate answer detail
 }
 
 export interface SectionHDetail {
   urgency: string | null;       // Q087 label
+  urgencyValue: number | null;  // Q087 raw 1–5
   goal: string | null;          // Q088 label
   consultantNote: string | null; // Q089
   successVision: string | null;  // Q090
@@ -67,16 +77,27 @@ export interface SessionDetail {
   drsCategoryBreakdown: DrsCategoryScore[];
   workflows: WorkflowDetail[];
   sectionH: SectionHDetail;
+  redFlags: RedFlag[];
+  // "How we can help" bodies from recommendation_templates, keyed to the
+  // overall ODS / DRS band. Empty until migration 007's seed is applied.
+  recommendations: { ods: string[]; drs: string[] };
 }
 
 // ─── Shared helpers ───────────────────────────────────────────────────────────
+
+interface ScoreBandJoin {
+  label: string;
+  color_hex: string;
+  description?: string | null;
+}
 
 interface DimensionScoreRow {
   session_id: string;
   workflow_key: string | null;
   normalized_score: number;
+  score_band_id?: number | null;
   dimensions: { slug: string } | { slug: string }[];
-  score_bands: { label: string; color_hex: string } | { label: string; color_hex: string }[] | null;
+  score_bands: ScoreBandJoin | ScoreBandJoin[] | null;
 }
 
 function unwrapOne<T>(v: T | T[] | null): T | null {
@@ -91,6 +112,7 @@ function toScoreSummary(row: DimensionScoreRow | undefined): ScoreSummary | null
     score: row.normalized_score,
     bandLabel: band?.label ?? null,
     bandColor: band?.color_hex ?? null,
+    bandDescription: band?.description ?? null,
   };
 }
 
@@ -174,7 +196,7 @@ export async function fetchSessionDetail(sessionId: string): Promise<SessionDeta
   const [{ data: scores }, { data: answers }, { data: breakdowns }] = await Promise.all([
     supabase
       .from('dimension_scores')
-      .select('session_id, workflow_key, normalized_score, dimensions(slug), score_bands(label, color_hex)')
+      .select('session_id, workflow_key, normalized_score, score_band_id, dimensions(slug), score_bands(label, color_hex, description)')
       .eq('session_id', sessionId)
       .returns<DimensionScoreRow[]>(),
     supabase
@@ -185,6 +207,7 @@ export async function fetchSessionDetail(sessionId: string): Promise<SessionDeta
         answer_type,
         questions (
           question_key,
+          question_text,
           section,
           mode,
           oqi_dimension,
@@ -267,6 +290,13 @@ export async function fetchSessionDetail(sessionId: string): Promise<SessionDeta
     F: session.wf_f_mode,
   };
 
+  // Normalize answer rows for the insight helpers (unwrap the questions join)
+  const insightAnswers: InsightAnswer[] = allAnswers.flatMap((a) => {
+    const q = unwrapOne(a.questions);
+    if (!q) return [];
+    return [{ score_value: a.score_value, text_value: a.text_value, answer_type: a.answer_type, question: q }];
+  });
+
   const workflows: WorkflowDetail[] = (['C', 'D', 'E', 'F'] as WorkflowKey[]).map((key) => ({
     key,
     name: WORKFLOW_NAMES[key],
@@ -275,6 +305,7 @@ export async function fetchSessionDetail(sessionId: string): Promise<SessionDeta
     ods: toScoreSummary(byWorkflow[key]?.ods),
     oqi: toScoreSummary(byWorkflow[key]?.oqi),
     oqiBreakdown: oqiBreakdownByWorkflow[key],
+    diagnostics: wfModes[key] ? extractWorkflowDiagnostics(insightAnswers, key, wfModes[key]!) : null,
   }));
 
   const drsProfile = session.drs_profile ?? null;
@@ -293,6 +324,24 @@ export async function fetchSessionDetail(sessionId: string): Promise<SessionDeta
         ? calcDrsCategoryBreakdown(allAnswers as AnswerRow[], drsProfile)
         : [];
 
+  // "How we can help" copy for the overall ODS / DRS bands (dormant table
+  // until migration 007's seed runs — empty arrays render as a hidden section)
+  const recommendations: SessionDetail['recommendations'] = { ods: [], drs: [] };
+  const odsBandId = overall.ods?.score_band_id ?? null;
+  const drsBandId = overall.drs?.score_band_id ?? null;
+  const bandIds = [odsBandId, drsBandId].filter((id): id is number => id !== null);
+  if (bandIds.length > 0) {
+    const { data: recs } = await supabase
+      .from('recommendation_templates')
+      .select('score_band_id, body, priority')
+      .in('score_band_id', bandIds)
+      .order('priority', { ascending: true });
+    for (const rec of recs ?? []) {
+      if (rec.score_band_id === odsBandId) recommendations.ods.push(rec.body);
+      if (rec.score_band_id === drsBandId) recommendations.drs.push(rec.body);
+    }
+  }
+
   return {
     sessionId,
     name: textFor('A001') ?? '(unnamed)',
@@ -309,9 +358,12 @@ export async function fetchSessionDetail(sessionId: string): Promise<SessionDeta
     workflows,
     sectionH: {
       urgency: labelFor('Q087'),
+      urgencyValue: findAnswer('Q087')?.score_value ?? null,
       goal: labelFor('Q088'),
       consultantNote: textFor('Q089'),
       successVision: textFor('Q090'),
     },
+    redFlags: extractRedFlags(insightAnswers),
+    recommendations,
   };
 }
