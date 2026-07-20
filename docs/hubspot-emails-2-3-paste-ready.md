@@ -51,7 +51,7 @@ right under it as normal text, because some clients strip buttons.
 | --- | --- |
 | **Subject (A)** | `3 signs your team can't run without you` |
 | **Subject B** (for later A/B) | `The vacation test (most team leaders fail it)` |
-| **Preview text** | `If any of these sound familiar, it's worth 8 minutes to find out how deep it goes.` |
+| **Preview text** | `If any of these sound familiar, it's worth 15 minutes to find out how deep it goes.` |
 | **Button URL & Plain link** | `https://assessment.vainexus.com?utm_source=wss&utm_medium=email&utm_campaign=ownership-assessment-launch&utm_content=email2` |
 
 **Body:**
@@ -68,9 +68,9 @@ Three signs a team still runs through its leader:
 
 None of these mean you've built something bad. They mean you've built something that *depends on you* — and there's a real number for how much.
 
-Our free Ownership Assessment measures it in about 8 minutes and hands you the single highest-leverage move to start fixing it.
+Our free Ownership Assessment measures it in about 15 minutes and gives you two numbers: your **Ownership Debt Score** — how much still runs through you — and your **Delegation Readiness Score** — how ready your team is to take it off your plate.
 
-**[Button: Get your score →]**
+**[Button: Get your scores →]**
 
 Plain link: `https://assessment.vainexus.com?utm_source=wss&utm_medium=email&utm_campaign=ownership-assessment-launch&utm_content=email2`
 
@@ -94,7 +94,7 @@ Workman Success Systems
 
 One last note about the Ownership Assessment, because there's now a reason to do it this week instead of someday.
 
-We're forming a **founding cohort: 10 team leaders** who won't just get their score — they'll work through their results with us directly, step by step, until the highest-leverage pieces of their business actually run without them.
+We're forming a **founding cohort: 10 team leaders** who won't just get their scores — they'll work through their results with us directly, step by step, until the highest-leverage pieces of their business actually run without them.
 
 Because it's the founding group, two things are true:
 
@@ -103,7 +103,7 @@ Because it's the founding group, two things are true:
 
 Getting in is simple: take the assessment, and book the results call you'll be offered at the end. We'll walk through your score together and see whether the cohort is a fit. No fit, no pitch — the score and your breakdown are yours either way.
 
-**[Button: Take the assessment (8 minutes) →]**
+**[Button: Take the assessment (15 minutes) →]**
 
 Plain link: `https://assessment.vainexus.com?utm_source=wss&utm_medium=email&utm_campaign=ownership-assessment-launch&utm_content=email3`
 

@@ -56,8 +56,8 @@ in VAI's HubSpot (email 1 stays a hand-off doc for WSS's own platform).
 - [ ] Run it; verify both drafts render correctly in HubSpot's preview
   (desktop + mobile) and personalization tokens resolve.
 - [ ] Bri reviews drafts in HubSpot; iterate copy via the script if needed.
-- [ ] Hand off email 1 (unchanged, WSS-sent) — already fully specified in the
-  campaign doc.
+- [ ] Hand off email 1 (unchanged, WSS-sent) — paste-ready build sheet for WSS's
+  HubSpot: [docs/hubspot-email-1-paste-ready.md](../../docs/hubspot-email-1-paste-ready.md).
 
 ## Flags / risks
 
@@ -104,3 +104,15 @@ Running log — check things off and note decisions as you go.
   Tokens converted to HubSpot syntax (`{{ contact.firstname }}` w/ default),
   full UTM strings inlined. The API-script steps above are superseded by the UI
   build; audience/consent/deliverability flags still stand before any send.
+- 2026-07-20 — Reconciled the emails 2–3 paste-ready sheet to the corrected
+  campaign copy before hand-building: "8 minutes" → "~15 minutes" (email 2 preview
+  + body, email 3 button), and email 2's stale one-score "single highest-leverage
+  move" line → the two-score framing (Ownership Debt + Delegation Readiness);
+  "score" → "scores" in the email 2 button and email 3 body. Sheet now matches
+  the source doc.
+- 2026-07-20 — Added the **Email 1** companion build sheet for WSS's HubSpot:
+  [docs/hubspot-email-1-paste-ready.md](../../docs/hubspot-email-1-paste-ready.md).
+  Mirrors the emails 2–3 sheet — subject A/B, preview, `{{ contact.firstname }}`
+  token (default `there`), inlined `utm_content=email1` URL, full body. Notes the
+  WSS→WSS consent picture (cleaner than 2–3) and the past-client "welcome back"
+  variant for the dormant segment.
