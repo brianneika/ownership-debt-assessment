@@ -1,6 +1,6 @@
 # Implementation Plan
 
-_Last updated: 2026-07-18_
+_Last updated: 2026-07-19_
 
 _Sequencing companion to [master-plan.md](master-plan.md) (why) and
 [architecture.md](architecture.md) (what/how it's built). This doc holds the
@@ -91,6 +91,14 @@ incrementally right up to call day.
 "how do we actually help this person."
 
 ## Phase 2 — Retake push & respondent linking
+
+**Proof first:** a live pilot with 3–5 existing WSS clients validates the
+retake/delta concept ahead of the full build —
+[coaching-poc-pilot](tasks/20260719-coaching-poc-pilot.md) (added
+2026-07-19). It builds the minimum slice of 2a + 2c plus a manual-send
+version of 2b (admin-generated tokenized link, no app email), so it runs
+without the email-provider gate and can start now, in parallel with Phase
+0/1. Its code lands as the foundation the full phase finishes on.
 
 **[Retake push & linking](tasks/20260718-retake-push-and-linking.md)** — the
 structural core, needed by the first completed cohort workflow. Three slices,
