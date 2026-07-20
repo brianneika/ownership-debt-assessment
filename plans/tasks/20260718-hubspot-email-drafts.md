@@ -95,3 +95,12 @@ Running log — check things off and note decisions as you go.
 - 2026-07-18 — Task defined with Bri: sender split (WSS sends email 1, VAI's
   HubSpot sends emails 2–3), drafts created via API, emails-only scope.
   Flagged the audience/consent gaps that must be resolved before sending.
+- 2026-07-20 — Build method changed: instead of the Marketing Email API script,
+  Bri is hand-building the drafts in HubSpot's UI (assisted by Claude in
+  Chrome). Produced a paste-ready build sheet:
+  [docs/hubspot-emails-2-3-paste-ready.md](../../docs/hubspot-emails-2-3-paste-ready.md).
+  Sender framing decided: **WSS coach voice** — from-name a real WSS person,
+  body signed "Workman Success Systems"; VAI's HubSpot is just the sending tool.
+  Tokens converted to HubSpot syntax (`{{ contact.firstname }}` w/ default),
+  full UTM strings inlined. The API-script steps above are superseded by the UI
+  build; audience/consent/deliverability flags still stand before any send.
