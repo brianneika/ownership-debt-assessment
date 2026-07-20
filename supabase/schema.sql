@@ -112,27 +112,28 @@ create table recommendation_templates (
   created_at    timestamptz not null default now()
 );
 
--- Coach-facing "how we can help" copy per overall ODS / DRS band,
--- shown on the admin session page. Seeded by migration 007.
+-- Coach-facing "how we can help" step plans per overall ODS / DRS band,
+-- shown on the admin session page. Seeded by migration 007. Bodies are
+-- newline-separated steps (rendered with whitespace-pre-line).
 insert into recommendation_templates (score_band_id, body, priority)
 select b.id, v.body, 1
 from (values
   ('ods', 'Optimized',
-   'Coaching focus: protect the position. Keep documentation current as the team grows, review ownership assignments quarterly, and watch leading indicators so debt doesn''t quietly rebuild during the next growth push.'),
+   E'Plan: protect the position while growing.\n1. Put a quarterly ownership review on the calendar: every workflow, its named owner, and whether the SOP is current.\n2. Make each workflow''s owner responsible for keeping its SOP updated — documentation changes with the process, not after it.\n3. Watch the two early-warning signs: approvals creeping back to the leader, and new work arriving without a named owner.\n4. Retake the assessment after each growth push (new hire, volume jump) to catch debt rebuilding early.'),
   ('ods', 'Developing',
-   'Coaching focus: finish the incomplete handoffs. Identify the two or three workflows that still route through the leader, close the authority gap on each — not just the tasks — and set a 90-day target for full transfer.'),
+   E'Plan: finish the incomplete handoffs (90-day target).\n1. List the workflows where decisions or final steps still route through the leader — usually two or three.\n2. For each, close the authority gap in writing: what the owner decides alone, what escalates, and the exact threshold.\n3. Move every remaining "final approval" step to the owner, with a written quality standard in its place.\n4. Target: in 90 days, zero routine approvals on the leader''s plate.'),
   ('ods', 'Elevated',
-   'Coaching focus: a structured transfer program. Rank workflows by debt, take the highest-debt workflow through document → train → transfer, and coach the leader on staying out of re-delegated work. Expect visible time recovery within one to two workflow cycles.'),
+   E'Plan: a structured transfer program, one workflow at a time.\n1. Rank the four workflows by debt (the Start Here panel does this) and take the highest first.\n2. Run document → train → transfer: a 2-week SOP sprint, the owner runs it shadowed, then solo with authority in writing.\n3. Set the standard for "done well" and a weekly 15-minute check-in so quality stays visible without the leader in the work.\n4. Time-box each transfer to 30–45 days, then move to the next workflow.\nExpect visible time recovery after one or two cycles.'),
   ('ods', 'Critical',
-   'Coaching focus: immediate relief plus systematic buildout. Start with the single highest-debt workflow to prove the transfer pattern, while building the readiness foundation — SOPs, authority guardrails, capacity — to sustain it. High urgency, high impact.'),
+   E'Plan: get the first workflow off the leader''s plate fast, then systematize.\n1. Pick the single highest-debt workflow (named in Start Here) and put a 30-day transfer date on it this week.\n2. Document it as the leader runs it — a checklist SOP plus templates for the routine communications.\n3. Name the owner, transfer the decision authority in writing, and define the 2–3 situations that still escalate.\n4. Hold a weekly 15-minute review for the first month; log every time work bounces back to the leader and why.\n5. Repeat with the next workflow — one per 30–45 day cycle — while readiness work closes the gaps behind it.'),
   ('drs', 'Not Ready',
-   'Coaching focus: build the foundation before transferring work. Start with willingness (control coaching) if that''s the weak category; otherwise systems and capacity. Delegation attempts before readiness will bounce back and reinforce "it''s faster to do it myself."'),
+   E'Plan: build readiness before transferring work — early transfers will bounce back and reinforce "it''s faster to do it myself."\n1. Start with the weakest readiness category (named in Start Here) and work only that lever for 30 days.\n2. In parallel, document one workflow so a transfer is ready the moment readiness is.\n3. Hand off one small, low-risk task now as a practice rep — outcome standard defined, leader hands-off for 30 days.\n4. Reassess at 60 days; start real transfers when the weakest category clears 50.'),
   ('drs', 'Developing',
-   'Coaching focus: make delegation stick. Formalize handoffs — a defined "done," transferred authority, documented guardrails — and coach the leader through not taking work back when execution differs from their way.'),
+   E'Plan: make delegation stick.\n1. Formalize the next handoff on one page: what "done well" looks like, the decisions the owner makes alone, and the check-in cadence — no verbal handoffs.\n2. Coach the leader through the itch to intervene: different-from-my-way is not a miss; only a miss against the written standard is.\n3. Log every piece of work that comes back to the leader and what triggered it — the pattern names the next fix.\n4. As delegated scope grows, add written guardrails so authority keeps pace with responsibility.'),
   ('drs', 'Emerging',
-   'Coaching focus: convert readiness into transfers. The foundation is in place — pick the first workflow, run a clean handoff with standards and authority, and set a retake cadence so progress is visible.'),
+   E'Plan: convert readiness into transfers now.\n1. Pick the first workflow (Start Here names it) and run a clean handoff: SOP, written standard, transferred authority.\n2. Write the escalation line so the owner knows exactly what still comes to the leader — everything else doesn''t.\n3. Review weekly for the first month, then monthly.\n4. Schedule the retake now, so progress shows up on the scores while momentum is high.'),
   ('drs', 'Ready',
-   'Coaching focus: velocity. Readiness isn''t the constraint — sequence the transfers, set outcome standards, and redirect the leader''s recovered time toward the growth work only they can do.')
+   E'Plan: velocity — readiness isn''t the constraint, sequencing is.\n1. Map all high-debt workflows into a transfer sequence for the next quarter, highest ODS first.\n2. Transfer with outcome standards, not task lists — the owner owns the result, not the checklist.\n3. Make the payoff explicit: list the growth work the leader''s recovered hours go to, so the time doesn''t refill with noise.\n4. Retake after each transferred workflow to confirm the debt actually moved.')
 ) as v(slug, label, body)
 join dimensions d on d.slug = v.slug
 join score_bands b on b.dimension_id = d.id and b.label = v.label;

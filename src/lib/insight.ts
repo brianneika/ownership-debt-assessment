@@ -261,32 +261,82 @@ const QUADRANTS: Record<QuadrantKey, Omit<QuadrantCopy, 'key'>> = {
 };
 
 // Weakest-DRS-category levers, for the build_readiness quadrant. Covers both
-// team and solo profile categories.
-const READINESS_LEVERS: Record<string, string> = {
-  'Willingness':
-    'Control coaching — practice releasing outcomes (not just tasks) and keeping delegated work delegated.',
-  'Delegation Quality':
-    "Define what 'done' looks like for each handoff and transfer decision authority with the task, not just the task itself.",
-  'Team Capacity':
-    "A hiring or rebalancing conversation — the team can't absorb more ownership at its current load.",
-  'Authority Framework':
-    'Documented guardrails and escalation thresholds, so the team knows exactly what they can decide without approval.',
-  'Transfer Readiness':
-    "Package the handoff — document responsibilities, authority, and the standard for 'done well' before anyone is hired into it.",
-  'Hiring Readiness':
-    "A concrete first-hire plan: what they'd own from day one, and the volume target that triggers the hire.",
-  'Systems Mindset':
-    "Build processes that stay solved — turn recurring in-the-moment fixes into documented systems that don't depend on the owner.",
+// team and solo profile categories. `move` is the one-line read; `steps` are
+// the concrete actions to give the client, in order.
+const READINESS_LEVERS: Record<string, { move: string; steps: string[] }> = {
+  'Willingness': {
+    move: 'Control coaching — practice releasing outcomes, not just tasks, and keeping delegated work delegated.',
+    steps: [
+      'Pick one low-risk task and hand it off this week — with the outcome, not the method, as the standard.',
+      "Leader commits to a 30-day no-touch rule: no checking, no redoing, no 'quick fixes.'",
+      "Debrief weekly: separate 'it felt uncomfortable' from 'it actually went wrong.' Only the second gets acted on.",
+      'Repeat with a bigger task each month — willingness is built on evidence, not persuasion.',
+    ],
+  },
+  'Delegation Quality': {
+    move: "Formalize handoffs — define 'done,' transfer decision authority with the task, no verbal delegation.",
+    steps: [
+      "For the next handoff, write one page: the task, what 'done well' looks like, and the decisions the owner can make without asking.",
+      'Hand it off in a sit-down, not in passing — walk the page together and confirm the standard.',
+      'Set a check-in cadence up front (start weekly) instead of ad-hoc check-ups.',
+      'After 30 days, cut the check-ins in half if the standard is being met.',
+    ],
+  },
+  'Team Capacity': {
+    move: "Rebalance or hire — the team can't absorb more ownership at its current load.",
+    steps: [
+      'This week, list what each support person owns and roughly how many hours it takes.',
+      'Identify what can be dropped, templated, or moved before adding any new ownership.',
+      "If the load is still full, scope the next hire: role, what they'd own from day one, and the revenue/volume trigger.",
+      'Only transfer new ownership into cleared capacity — never on top of an overload.',
+    ],
+  },
+  'Authority Framework': {
+    move: 'Written guardrails and escalation thresholds, so the team knows what they can decide without approval.',
+    steps: [
+      'List the 5 most frequent decisions that currently wait on the leader.',
+      'For each, write the guardrail: what staff decide alone, what escalates, and the exact threshold (dollar amount, deadline risk, client type).',
+      'Share the one-pager with the team and apply it for 30 days without exceptions.',
+      'Track every escalation for a month — anything escalated that was within the guardrails gets coached back down.',
+    ],
+  },
+  'Transfer Readiness': {
+    move: "Package one workflow as if you were hiring tomorrow — responsibilities, authority, and the standard for 'done well.'",
+    steps: [
+      'Pick the workflow you most want off your plate and write down every step the next 2–3 times you run it.',
+      'Turn the notes into a checklist SOP with the templates you actually use.',
+      "Add a half-page role definition: what the future owner decides alone and what 'done well' means.",
+      'Result: a handoff packet — ready the day you hire or assign someone.',
+    ],
+  },
+  'Hiring Readiness': {
+    move: "A concrete first-hire plan: what they'd own from day one, and the trigger that starts the search.",
+    steps: [
+      'Draft the first-hire role: the 2–3 workflows they own from day one, with the authority that goes with each.',
+      'Set the trigger in numbers: the transaction volume or weekly admin-hours count that starts the search.',
+      'Price it: what the role costs vs. the leader-hours it buys back.',
+      'Document the highest-volume workflow now so onboarding takes days, not months.',
+    ],
+  },
+  'Systems Mindset': {
+    move: "Build processes that stay solved — recurring fixes become written systems that don't depend on the owner.",
+    steps: [
+      'Next time a problem repeats, solve it — then spend 30 minutes writing the fix as a process before moving on.',
+      'Keep one running list of "things only I know" and document one item per week.',
+      "Run the vacation test monthly: if you were unreachable for a week, what breaks first? Document that next.",
+      'Store everything in one place the future hire will inherit.',
+    ],
+  },
 };
 
-// Per-dimension plays for Mode B first moves.
-const OQI_DIMENSION_PLAYS: Record<string, string> = {
-  DO: 'transfer real decision authority — take the leader out of the approval loop',
-  IE: 'require recommendations instead of questions, and let the named owner take first action',
-  SC: 'run an SOP-and-templates sprint so execution stops depending on memory',
-  EC: 'define escalation thresholds and train a backup',
-  OA: 'set measurable outcome standards and review them on a cadence',
-  CT: 'build a 90-day independent track record with defined wins',
+// Per-dimension concrete steps for Mode B first moves.
+const OQI_DIMENSION_STEPS: Record<string, string> = {
+  DO: 'List every decision in this workflow that currently waits on the leader; move each one below an agreed risk line to the named owner, in writing.',
+  IE: "Institute 'bring a recommendation, not a question': for 30 days the owner proposes and the leader only approves or adjusts — then the approvals stop.",
+  SC: 'Run a two-week SOP sprint: document the workflow as a checklist and template every routine communication in it.',
+  EC: 'Write the escalation thresholds on one page — exactly what the owner handles alone and what comes up — and name a trained backup.',
+  OA: "Define 2–3 measurable outcomes for the workflow (not task completion — results) and review them in a weekly 15-minute check-in.",
+  CT: 'Set a 90-day independent run with defined milestones, and mark each one hit — confidence gets built on evidence.',
 };
 
 export interface StartHereWorkflowInput {
@@ -308,9 +358,11 @@ export interface StartHereInput {
 export interface StartHereInsight {
   quadrant: QuadrantCopy;
   // Only set for build_readiness: the weakest DRS category and its lever.
-  readinessLever: { category: string; score: number; move: string } | null;
+  readinessLever: { category: string; score: number; move: string; steps: string[] } | null;
   firstWorkflow: { key: WorkflowKey; name: string; odsScore: number; whyStuck: string[] } | null;
-  firstMove: { headline: string; detail: string } | null;
+  // headline = the play; detail = why this play; steps = the concrete
+  // client-facing actions, in order.
+  firstMove: { headline: string; detail: string; steps: string[] } | null;
 }
 
 export function buildStartHere(input: StartHereInput): StartHereInsight | null {
@@ -333,10 +385,12 @@ export function buildStartHere(input: StartHereInput): StartHereInsight | null {
   let readinessLever: StartHereInsight['readinessLever'] = null;
   if (key === 'build_readiness' && input.drsCategoryBreakdown.length > 0) {
     const weakest = [...input.drsCategoryBreakdown].sort((a, b) => a.normalizedScore - b.normalizedScore)[0];
+    const lever = READINESS_LEVERS[weakest.category];
     readinessLever = {
       category: weakest.category,
       score: weakest.normalizedScore,
-      move: READINESS_LEVERS[weakest.category] ?? 'Coach the weakest readiness category first.',
+      move: lever?.move ?? 'Coach the weakest readiness category first.',
+      steps: lever?.steps ?? [],
     };
   }
 
@@ -404,38 +458,59 @@ function deriveFirstMove(wf: StartHereWorkflowInput): StartHereInsight['firstMov
     if (p === null || r === null) {
       return {
         headline: 'Map the workflow with the leader',
-        detail: `The transfer-barrier answers for ${wf.name} are incomplete — start by walking the workflow with the leader to find the documentation and people gaps.`,
+        detail: `The transfer-barrier answers for ${wf.name} are incomplete — find the documentation and people gaps first.`,
+        steps: [
+          `Walk ${wf.name} end-to-end with the leader and list every step, template, and decision point.`,
+          'Score the two gaps together: is there a real SOP, and is there a person who could own it?',
+          'The weaker of the two becomes the first project — documentation sprint or capacity plan.',
+        ],
       };
     }
     if (r <= 1) {
       return {
         headline: 'Capacity first',
-        detail:
-          `No one on the team is close to ready to own ${wf.name}. Start with a capacity conversation — ` +
-          'hire or develop — and document the workflow in parallel so the handoff is ready when the person is.',
+        detail: `No one on the team is close to ready to own ${wf.name} — a transfer has nowhere to land yet.`,
+        steps: [
+          'Decide build vs. buy this week: name the closest internal candidate, or scope a TC/coordinator hire (role, cost, volume trigger).',
+          `While that runs, the leader documents ${wf.name} as they work it — every step into a checklist SOP over the next 2–3 cycles.`,
+          "Write the ownership half-page: the tasks, the decisions the future owner makes alone, and what 'done well' means.",
+          "Set the transfer date now — within 30 days of the candidate or hire's start — so the handoff packet has a deadline.",
+        ],
       };
     }
     if (p <= 1) {
       return {
         headline: 'SOP sprint, then transfer',
-        detail:
-          `The person is ready (or close), but the process lives in the leader's head. Run a documentation ` +
-          `sprint on ${wf.name} to produce a real SOP, then transfer it with a short shadow period.`,
+        detail: `The person is ready (or close) — the only thing blocking ${wf.name} is that the process lives in the leader's head.`,
+        steps: [
+          `Weeks 1–2: the leader documents ${wf.name} while running it — every step, template, and decision point into one checklist SOP.`,
+          'Week 3: the ready person runs the workflow from the SOP with the leader shadowing; fix every gap the SOP misses.',
+          'Week 4: transfer ownership — they run it solo, with the decisions they own written down, not implied.',
+          'Check in daily for the first week, then weekly. Log anything that bounces back to the leader and why.',
+        ],
       };
     }
     if (r === 2) {
       return {
         headline: 'Train against the SOP, transfer in stages',
-        detail:
-          `A workable process exists for ${wf.name}, but the likely owner needs significant training. ` +
-          'Develop them against the SOP and transfer the workflow in stages as they demonstrate each piece.',
+        detail: `A workable process exists for ${wf.name}; the likely owner needs structured training before full ownership.`,
+        steps: [
+          'Walk the candidate through the SOP end-to-end, then have them run one full cycle with the leader watching.',
+          'Split the workflow into 3–4 segments and hand off one at a time — each segment transfers when they run it clean.',
+          'Keep a sign-off checklist: once a segment is signed off, it never comes back to the leader.',
+          'Target full ownership in 60–90 days, with the authority for each segment transferred in writing as they earn it.',
+        ],
       };
     }
     return {
       headline: 'Schedule the handoff now',
-      detail:
-        `Both the process and the person are close to ready — ${wf.name} is stuck by habit, not by a gap. ` +
-        'Put a transfer date on the calendar: a 30-day handoff with a shadow period, and coach the leader on not taking it back.',
+      detail: `Both the process and the person are ready — ${wf.name} is stuck by habit, not by a gap.`,
+      steps: [
+        'Put the transfer date on the calendar this week — no more than 30 days out.',
+        'Announce the new owner to the team (and any clients or vendors the workflow touches) so requests stop routing to the leader.',
+        'Write the escalation line: the 2–3 situations that still come to the leader; everything else belongs to the owner.',
+        "Coach the leader on not taking it back: for 60 days, log every time the work bounces back and what triggered it — that's the coaching material.",
+      ],
     };
   }
 
@@ -449,15 +524,24 @@ function deriveFirstMove(wf: StartHereWorkflowInput): StartHereInsight['firstMov
       return {
         headline: 'Name a single owner',
         detail:
-          `The capability exists (“${d.capacity!.label}”) — the gap is assignment. Name one owner for ${wf.name}, ` +
-          `document their authority, and announce the change to the team.${fallthroughNote}`,
+          `The capability exists (“${d.capacity!.label}”) — the gap is assignment, not talent.${fallthroughNote}`,
+        steps: [
+          `Choose the owner of ${wf.name} this week — one name, not a committee.`,
+          "Write a one-page ownership doc: the tasks, the decisions they make alone, and when to escalate.",
+          "Announce it to the whole team so 'whoever has time' stops being the default.",
+          'Review at 30 days: anything that fell through or bounced back gets a named fix in the doc.',
+        ],
       };
     }
     return {
       headline: 'Build capacity, add a stop-gap',
-      detail:
-        `No one can own ${wf.name} yet. Open the training or hiring conversation, and in the meantime put a ` +
-        `simple checklist and a single point of accountability in place so nothing is ownerless.${fallthroughNote}`,
+      detail: `No one can own ${wf.name} yet — but it can stop being ownerless today.${fallthroughNote}`,
+      steps: [
+        `Assign a temporary single point of accountability for ${wf.name} today — even if they can't do it all, they track it all.`,
+        'Build a shared checklist for the workflow so nothing depends on memory while ownership is unsettled.',
+        'Start the capability conversation: pick the nearest candidate to train, or scope the hire (role, cost, trigger).',
+        'Reassess in 30 days — the workflow gets a permanent owner the moment one exists.',
+      ],
     };
   }
 
@@ -465,11 +549,13 @@ function deriveFirstMove(wf: StartHereWorkflowInput): StartHereInsight['firstMov
   const lowest = [...wf.oqiBreakdown].sort((a, b) => a.normalizedScore - b.normalizedScore).slice(0, 2);
   if (lowest.length === 0) return null;
   const names = lowest.map((x) => OQI_DIMENSION_NAMES[x.label] ?? x.label);
-  const plays = lowest.map((x) => OQI_DIMENSION_PLAYS[x.label]).filter(Boolean);
+  const steps = lowest.map((x) => OQI_DIMENSION_STEPS[x.label]).filter((s): s is string => Boolean(s));
   return {
     headline: `Strengthen ${names.join(' and ')}`,
-    detail:
-      `${wf.name} has a named owner — the debt comes from how the workflow runs, not who runs it. ` +
-      `First moves: ${plays.join('; ')}.`,
+    detail: `${wf.name} has a named owner — the debt comes from how the workflow runs, not who runs it.`,
+    steps: [
+      ...steps,
+      'Review outcomes weekly for the first month; the next assessment retake should show this workflow’s score move.',
+    ],
   };
 }

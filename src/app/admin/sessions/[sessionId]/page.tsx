@@ -261,6 +261,16 @@ export default async function SessionDetailPage({
                   Weakest readiness category — {startHere.readinessLever.category} ({startHere.readinessLever.score.toFixed(0)})
                 </p>
                 <p className="text-sm text-gray-800">{startHere.readinessLever.move}</p>
+                {startHere.readinessLever.steps.length > 0 && (
+                  <ol className="mt-2 space-y-1.5">
+                    {startHere.readinessLever.steps.map((step, i) => (
+                      <li key={i} className="text-xs text-gray-700 flex gap-2">
+                        <span className="shrink-0 w-4 h-4 rounded-full bg-indigo-100 text-indigo-600 text-[10px] font-bold flex items-center justify-center mt-px">{i + 1}</span>
+                        {step}
+                      </li>
+                    ))}
+                  </ol>
+                )}
               </div>
             )}
 
@@ -289,6 +299,16 @@ export default async function SessionDetailPage({
                 <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 mb-1">First move</p>
                 <p className="text-sm font-semibold text-gray-900">{startHere.firstMove.headline}</p>
                 <p className="text-xs text-gray-600 mt-1">{startHere.firstMove.detail}</p>
+                {startHere.firstMove.steps.length > 0 && (
+                  <ol className="mt-2 space-y-1.5">
+                    {startHere.firstMove.steps.map((step, i) => (
+                      <li key={i} className="text-xs text-gray-700 flex gap-2">
+                        <span className="shrink-0 w-4 h-4 rounded-full bg-indigo-50 text-indigo-600 text-[10px] font-bold flex items-center justify-center mt-px">{i + 1}</span>
+                        {step}
+                      </li>
+                    ))}
+                  </ol>
+                )}
               </div>
             )}
 
@@ -482,7 +502,7 @@ export default async function SessionDetailPage({
                     <p className="text-sm text-gray-600 mb-1.5">{detail.ods.bandDescription}</p>
                   )}
                   {detail.recommendations.ods.map((body, i) => (
-                    <p key={i} className="text-sm text-gray-800">{body}</p>
+                    <p key={i} className="text-sm text-gray-800 whitespace-pre-line">{body}</p>
                   ))}
                 </div>
               )}
@@ -495,7 +515,7 @@ export default async function SessionDetailPage({
                     <p className="text-sm text-gray-600 mb-1.5">{detail.drs.bandDescription}</p>
                   )}
                   {detail.recommendations.drs.map((body, i) => (
-                    <p key={i} className="text-sm text-gray-800">{body}</p>
+                    <p key={i} className="text-sm text-gray-800 whitespace-pre-line">{body}</p>
                   ))}
                 </div>
               )}

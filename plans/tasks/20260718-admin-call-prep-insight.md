@@ -78,6 +78,13 @@ A panel at the top of the session page that answers Bri's exact question:
    else build capacity + stop-gap (fallthrough ≥ 3 adds urgency note).
    Mode B: plays for the two weakest OQI dimensions.
 
+   *Revised 2026-07-19 per Bri: "needs pretty clear steps to give the
+   client — still seems vague."* Every first move and readiness lever now
+   carries a **numbered 3–4 step action plan** (concrete artifacts and
+   timeframes: one-page ownership doc, 30-day no-touch rule, week-by-week
+   SOP sprint, sign-off checklist, etc.), rendered as a numbered list in
+   the panel.
+
 All thresholds/copy live in one module (`src/lib/insight.ts`) so wording can
 iterate without touching scoring.
 
@@ -86,7 +93,9 @@ iterate without touching scoring.
 - Quadrant playbook: **in code** (`src/lib/insight.ts`), per decision below.
 - Per-band copy: `supabase/migrations/007_seed_band_guidance.sql` fills
   `score_bands.description` (all 12 bands) and seeds
-  `recommendation_templates` (8 rows: 4 ODS + 4 DRS coach-facing bodies).
+  `recommendation_templates` (8 rows: 4 ODS + 4 DRS). Per Bri's 2026-07-19
+  feedback the bodies are **numbered step plans** (newline-separated;
+  rendered with `whitespace-pre-line`), not narrative paragraphs.
   Mirrored in `schema.sql`. **Not applied** — Bri approves copy, then runs it
   in Supabase Dashboard → SQL Editor (verify queries at the bottom of the
   file). Until then the admin "How We Can Help" section hides itself.
