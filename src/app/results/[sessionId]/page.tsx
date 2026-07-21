@@ -1,4 +1,5 @@
 import { getSupabaseServer } from '@/lib/supabase-server';
+import { buildRespondentSynthesis } from '@/lib/insight';
 import { EmailGate, FullResults } from './EmailGate';
 
 interface ScoreRow {
@@ -9,6 +10,13 @@ interface ScoreRow {
   score_bands: { label: string; color_hex: string; description: string | null } | null;
 }
 
+interface BreakdownRow {
+  breakdown_type: string;
+  label: string;
+  weight: number;
+  normalized_score: number;
+}
+
 export default async function ResultsPage({
   params,
 }: {
@@ -17,7 +25,7 @@ export default async function ResultsPage({
   const { sessionId } = await params;
   const supabase = getSupabaseServer();
 
-  const [{ data: scores, error }, { data: session }] = await Promise.all([
+  const [{ data: scores, error }, { data: session }, { data: breakdowns }] = await Promise.all([
     supabase
       .from('dimension_scores')
       .select(`
@@ -34,6 +42,11 @@ export default async function ResultsPage({
       .select('respondent_email')
       .eq('id', sessionId)
       .single(),
+    supabase
+      .from('score_breakdowns')
+      .select('breakdown_type, label, weight, normalized_score')
+      .eq('session_id', sessionId)
+      .returns<BreakdownRow[]>(),
   ]);
 
   if (error || !scores || scores.length === 0) {
@@ -54,6 +67,19 @@ export default async function ResultsPage({
     bandLabel: drsRow?.score_bands?.label ?? null,
     bandColor: drsRow?.score_bands?.color_hex,
   };
+
+  // DRS category sub-breakdown (post-gate only), heaviest-weighted first so the
+  // list reads Willingness → Delegation Quality → Team Capacity → Authority Framework.
+  const drsBreakdown = (breakdowns ?? [])
+    .filter((r) => r.breakdown_type === 'drs')
+    .map((r) => ({ category: r.label, score: r.normalized_score, weight: r.weight }))
+    .sort((a, b) => b.weight - a.weight);
+
+  const synthesis = buildRespondentSynthesis({
+    odsScore: odsRow?.normalized_score ?? null,
+    drsScore: drsRow?.normalized_score ?? null,
+    drsCategoryBreakdown: drsBreakdown.map((d) => ({ category: d.category, normalizedScore: d.score })),
+  });
 
   const alreadyHasEmail = !!session?.respondent_email;
 
@@ -76,9 +102,15 @@ export default async function ResultsPage({
         </div>
 
         {alreadyHasEmail ? (
-          <FullResults ods={ods} drs={drs} />
+          <FullResults ods={ods} drs={drs} synthesis={synthesis} drsBreakdown={drsBreakdown} />
         ) : (
-          <EmailGate sessionId={sessionId} ods={ods} drs={drs} />
+          <EmailGate
+            sessionId={sessionId}
+            ods={ods}
+            drs={drs}
+            synthesis={synthesis}
+            drsBreakdown={drsBreakdown}
+          />
         )}
 
       </div>

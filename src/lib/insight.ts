@@ -260,6 +260,90 @@ const QUADRANTS: Record<QuadrantKey, Omit<QuadrantCopy, 'key'>> = {
   },
 };
 
+// ─── Respondent-facing synthesis ────────────────────────────────────────────────
+// Same quadrant classification as the coach playbook above, but phrased for the
+// person who took the assessment (VAI voice, no em-dashes). This backs the "what
+// do the two scores mean together" block on the results page. It diagnoses the
+// situation and names the single weakest readiness category; the step-by-step
+// plan stays reserved for the consultant call (READINESS_LEVERS, coach-only).
+
+const RESPONDENT_QUADRANTS: Record<QuadrantKey, { headline: string; body: string }> = {
+  transfer_now: {
+    headline: "You're ready to start handing work off",
+    body:
+      'A lot of your business still runs through you, but you have the readiness to change ' +
+      'that. This is a systems problem, not a willingness one. With documented processes and ' +
+      'named owners, you can start transferring real ownership now.',
+  },
+  build_readiness: {
+    headline: 'Build readiness before you hand off',
+    body:
+      'A lot of your business still depends on you, and right now your team is not fully set ' +
+      'up to take it on. Work handed off today would likely bounce back to you. The fastest ' +
+      'path is to close the one readiness gap below first, then start transferring.',
+  },
+  optimize_scale: {
+    headline: 'Solid foundation, ready to scale',
+    body:
+      'You have kept your business from leaning too heavily on you, and your team is ready ' +
+      'for more. The opportunity now is scale: deepen your systems and raise the bar before ' +
+      'growth tests what works today.',
+  },
+  protect: {
+    headline: 'Stable today, worth protecting',
+    body:
+      'Your business does not lean too heavily on you right now, but that stability depends ' +
+      'on things staying exactly as they are. Before growth or a team change forces the issue, ' +
+      'lock in what works and build your team readiness.',
+  },
+};
+
+// Plain, respondent-facing one-liner for each DRS category (team + solo). Used to
+// explain the weakest lever by name without giving away the coaching steps.
+const RESPONDENT_CATEGORY_DESC: Record<string, string> = {
+  'Willingness': 'how ready you feel to let go of outcomes, not just tasks',
+  'Delegation Quality': 'how clearly work gets handed off, with a real definition of done',
+  'Team Capacity': 'whether your team has room to take on more ownership',
+  'Authority Framework': 'written guardrails so your team knows what they can decide without you',
+  'Transfer Readiness': 'how ready one workflow is to hand to a new owner',
+  'Hiring Readiness': 'how clear your plan is for your first or next hire',
+  'Systems Mindset': 'whether recurring problems become written systems instead of living in your head',
+};
+
+export interface RespondentSynthesis {
+  quadrant: QuadrantKey;
+  headline: string;
+  body: string;
+  // The single lowest DRS category, named for the respondent. null only when no
+  // category breakdown was persisted for the session.
+  weakestCategory: { category: string; score: number; descriptor: string } | null;
+}
+
+export function buildRespondentSynthesis(input: {
+  odsScore: number | null;
+  drsScore: number | null;
+  drsCategoryBreakdown: { category: string; normalizedScore: number }[];
+}): RespondentSynthesis | null {
+  if (input.odsScore === null || input.drsScore === null) return null;
+
+  const quadrant = classifyQuadrant(input.odsScore, input.drsScore);
+  const copy = RESPONDENT_QUADRANTS[quadrant];
+
+  let weakestCategory: RespondentSynthesis['weakestCategory'] = null;
+  if (input.drsCategoryBreakdown.length > 0) {
+    const weakest = [...input.drsCategoryBreakdown].sort(
+      (a, b) => a.normalizedScore - b.normalizedScore,
+    )[0];
+    weakestCategory = {
+      category: weakest.category,
+      score: weakest.normalizedScore,
+      descriptor: RESPONDENT_CATEGORY_DESC[weakest.category] ?? 'the lowest-scoring readiness category',
+    };
+  }
+
+  return { quadrant, headline: copy.headline, body: copy.body, weakestCategory };
+}
+
 // Weakest-DRS-category levers, for the build_readiness quadrant. Covers both
 // team and solo profile categories. `move` is the one-line read; `steps` are
 // the concrete actions to give the client, in order.
@@ -365,19 +449,24 @@ export interface StartHereInsight {
   firstMove: { headline: string; detail: string; steps: string[] } | null;
 }
 
-export function buildStartHere(input: StartHereInput): StartHereInsight | null {
-  if (input.odsScore === null || input.drsScore === null) return null;
-
-  const highOds = input.odsScore >= HIGH_SCORE_CUTOFF;
-  const highDrs = input.drsScore >= HIGH_SCORE_CUTOFF;
-
-  const key: QuadrantKey = highOds
+// Overall ODS band × DRS band → quadrant. Shared by the coach playbook
+// (buildStartHere) and the respondent synthesis so the two never drift.
+export function classifyQuadrant(odsScore: number, drsScore: number): QuadrantKey {
+  const highOds = odsScore >= HIGH_SCORE_CUTOFF;
+  const highDrs = drsScore >= HIGH_SCORE_CUTOFF;
+  return highOds
     ? highDrs
       ? 'transfer_now'
       : 'build_readiness'
     : highDrs
       ? 'optimize_scale'
       : 'protect';
+}
+
+export function buildStartHere(input: StartHereInput): StartHereInsight | null {
+  if (input.odsScore === null || input.drsScore === null) return null;
+
+  const key = classifyQuadrant(input.odsScore, input.drsScore);
 
   const quadrant: QuadrantCopy = { key, ...QUADRANTS[key] };
 
