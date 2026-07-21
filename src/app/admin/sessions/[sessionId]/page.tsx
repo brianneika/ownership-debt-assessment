@@ -3,7 +3,12 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { fetchSessionDetail, fetchSessionName, type WorkflowDetail } from '@/lib/admin';
-import { buildStartHere, OQI_DIMENSION_NAMES, RED_FLAG_THRESHOLD } from '@/lib/insight';
+import { buildStartHere, buildRespondentSynthesis, OQI_DIMENSION_NAMES, RED_FLAG_THRESHOLD } from '@/lib/insight';
+import {
+  ScoreSpectrumCards,
+  SynthesisBlock,
+  DrsReadinessBreakdown,
+} from '@/components/results-visuals';
 import PrintControls from './PrintControls';
 
 export const dynamic = 'force-dynamic';
@@ -206,6 +211,23 @@ export default async function SessionDetailPage({
     })),
   });
 
+  // Client-voice synthesis + client-safe readiness breakdown — rendered only in
+  // the client PDF (see .print-client-only sections below), so the printed
+  // client report mirrors what the respondent sees on /results.
+  const synthesis = buildRespondentSynthesis({
+    odsScore: detail.ods?.score ?? null,
+    drsScore: detail.drs?.score ?? null,
+    drsCategoryBreakdown: detail.drsCategoryBreakdown.map((c) => ({
+      category: c.category,
+      normalizedScore: c.normalizedScore,
+    })),
+  });
+
+  // Heaviest-weighted first, matching the /results reading order.
+  const clientDrsRows = [...detail.drsCategoryBreakdown]
+    .sort((a, b) => b.weight - a.weight)
+    .map((c) => ({ category: c.category, score: c.normalizedScore, weight: c.weight }));
+
   const hasRecommendations =
     detail.recommendations.ods.length > 0 ||
     detail.recommendations.drs.length > 0 ||
@@ -335,28 +357,56 @@ export default async function SessionDetailPage({
           </div>
         )}
 
-        {/* Overall scores */}
-        <div className="report-section grid sm:grid-cols-2 gap-4">
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-            <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2 flex items-center gap-1.5">
-              Ownership Debt Score
-              <InfoTooltip text={ODS_TOOLTIP} />
-            </p>
-            {detail.ods ? (
-              <ScorePill score={detail.ods.score} bandLabel={detail.ods.bandLabel} bandColor={detail.ods.bandColor} />
-            ) : (
-              <span className="text-gray-300 text-sm">Not scored</span>
-            )}
+        {/* Overall scores — compact pills on the working screen; the spectrum
+            cards from /results replace them in the PDF (both modes), so the
+            printed report speaks the same visual language as the live results. */}
+        <div className="report-section">
+          {/* Screen-only: the dense pills the consultant reads during the call. */}
+          <div className="print-hidden grid sm:grid-cols-2 gap-4">
+            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+              <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2 flex items-center gap-1.5">
+                Ownership Debt Score
+                <InfoTooltip text={ODS_TOOLTIP} />
+              </p>
+              {detail.ods ? (
+                <ScorePill score={detail.ods.score} bandLabel={detail.ods.bandLabel} bandColor={detail.ods.bandColor} />
+              ) : (
+                <span className="text-gray-300 text-sm">Not scored</span>
+              )}
+            </div>
+            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+              <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2">Delegation Readiness Score</p>
+              {detail.drs ? (
+                <ScorePill score={detail.drs.score} bandLabel={detail.drs.bandLabel} bandColor={detail.drs.bandColor} />
+              ) : (
+                <span className="text-gray-300 text-sm">Not scored</span>
+              )}
+            </div>
           </div>
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-            <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2">Delegation Readiness Score</p>
-            {detail.drs ? (
-              <ScorePill score={detail.drs.score} bandLabel={detail.drs.bandLabel} bandColor={detail.drs.bandColor} />
-            ) : (
-              <span className="text-gray-300 text-sm">Not scored</span>
-            )}
-          </div>
+
+          {/* Print-only (internal + client): the labeled-spectrum cards. */}
+          {detail.ods && detail.drs && (
+            <div className="print-only">
+              <ScoreSpectrumCards
+                ods={{ score: detail.ods.score, bandLabel: detail.ods.bandLabel, bandColor: detail.ods.bandColor ?? undefined }}
+                drs={{ score: detail.drs.score, bandLabel: detail.drs.bandLabel, bandColor: detail.drs.bandColor ?? undefined }}
+              />
+            </div>
+          )}
         </div>
+
+        {/* Client PDF only: the two-score synthesis + client-safe readiness
+            breakdown, mirroring /results. Sits after the score cards and before
+            the "what your scores mean" band descriptions below. */}
+        {synthesis && (
+          <div className="print-client-only report-section-flow">
+            <SynthesisBlock synthesis={synthesis} />
+            <DrsReadinessBreakdown
+              rows={clientDrsRows}
+              weakestCategory={synthesis.weakestCategory?.category ?? null}
+            />
+          </div>
+        )}
 
         {/* Score legend — client PDF only, so the scores never read as bare
             numbers without framing. Static copy, always renders in client mode. */}

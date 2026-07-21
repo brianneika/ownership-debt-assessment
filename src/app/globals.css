@@ -36,10 +36,28 @@ body {
   display: none;
 }
 
+/* Print-only bits (the spectrum score cards) are hidden on screen and revealed
+   in BOTH PDF modes — internal and client. On screen the compact pills show
+   instead (see .print-hidden below). */
+.print-only {
+  display: none;
+}
+
 @media print {
   /* Drop app chrome (sticky header, print toolbar) from the output. */
   .no-print {
     display: none !important;
+  }
+
+  /* Screen-only bits (the compact overall-score pills) drop out of the PDF, so
+     the spectrum cards are the only overall-score visual in print. */
+  .print-hidden {
+    display: none !important;
+  }
+
+  /* …and the spectrum cards, hidden on screen, come in for both PDF modes. */
+  .print-only {
+    display: block;
   }
 
   /* White page, full width — no gray app background or max-width gutter. */
