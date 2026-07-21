@@ -1,6 +1,6 @@
 # Admin PDF: same score-card treatment + client-voice synthesis as the results page
 
-**Status:** In progress <!-- Not started | In progress | Blocked | Done -->
+**Status:** Done (2026-07-20) <!-- Not started | In progress | Blocked | Done -->
 
 ## Objective
 
@@ -151,6 +151,7 @@ Running log — check things off and note decisions as you go.
       inherit the existing `main { print-color-adjust: exact }`.
 - [x] `next build` + eslint clean (TypeScript passes; results route smoke-tested
       at runtime, HTTP 200, no module errors).
-- [ ] Verify both PDF modes in the browser print dialog against a real session
-      (needs Bri / a live admin session — Tina `14288689-...`).
-- [ ] Commit + push to main; deploy via `vercel --prod` (with Bri's OK).
+- [x] Verify both PDF modes in the browser print dialog against a real session —
+      Bri confirmed both PDFs look right (2026-07-20).
+- [x] Commit + push to main (2ec1ca9); deployed via `vercel --prod` to
+      assessment.vainexus.com (2026-07-20).
