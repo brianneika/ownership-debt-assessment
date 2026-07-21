@@ -1,6 +1,6 @@
 # Respondent results: interpret the two scores, and stop them reading as contradictory
 
-**Status:** In progress <!-- Not started | In progress | Blocked | Done -->
+**Status:** Done (2026-07-20) <!-- Not started | In progress | Blocked | Done -->
 
 ## Objective
 
@@ -126,4 +126,7 @@ Running log — check things off and note decisions as you go.
       build_readiness quadrant, weakest Authority Framework 8). Synthesis, weakest-
       category callout, DRS sub-breakdown, direction chips, and labeled spectrum all
       render; zero em-dashes; typecheck + eslint clean.
-- [ ] Commit + push to main; deploy via `vercel --prod` (with Bri's OK).
+- [x] Commit + push to main (4a68378) and deploy to prod via `vercel --prod`
+      (2026-07-20, with Bri's OK). Smoke-checked live on assessment.vainexus.com:
+      synthesis, weakest-category callout, DRS breakdown, direction chips render;
+      zero em-dashes; HTTP 200.
