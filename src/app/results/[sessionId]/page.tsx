@@ -1,5 +1,6 @@
 import { getSupabaseServer } from '@/lib/supabase-server';
 import { buildRespondentSynthesis } from '@/lib/insight';
+import { calculateScores } from '@/lib/scoring';
 import { EmailGate, FullResults } from './EmailGate';
 
 interface ScoreRow {
@@ -17,14 +18,9 @@ interface BreakdownRow {
   normalized_score: number;
 }
 
-export default async function ResultsPage({
-  params,
-}: {
-  params: Promise<{ sessionId: string }>;
-}) {
-  const { sessionId } = await params;
-  const supabase = getSupabaseServer();
+type SupabaseServer = ReturnType<typeof getSupabaseServer>;
 
+async function loadResults(supabase: SupabaseServer, sessionId: string) {
   const [{ data: scores, error }, { data: session }, { data: breakdowns }] = await Promise.all([
     supabase
       .from('dimension_scores')
@@ -39,7 +35,7 @@ export default async function ResultsPage({
       .returns<ScoreRow[]>(),
     supabase
       .from('assessment_sessions')
-      .select('respondent_email')
+      .select('respondent_email, completed_at')
       .eq('id', sessionId)
       .single(),
     supabase
@@ -49,7 +45,37 @@ export default async function ResultsPage({
       .returns<BreakdownRow[]>(),
   ]);
 
+  return { scores, error, session, breakdowns };
+}
+
+export default async function ResultsPage({
+  params,
+}: {
+  params: Promise<{ sessionId: string }>;
+}) {
+  const { sessionId } = await params;
+  const supabase = getSupabaseServer();
+
+  let { scores, error, session, breakdowns } = await loadResults(supabase, sessionId);
+
+  // Self-heal: the assessment was submitted (completed_at is set) but no scores
+  // exist. That means the synchronous scoring at submit time threw and was
+  // swallowed — leaving the user staring at a dead spinner that no refresh could
+  // fix. Recompute now. calculateScores is idempotent (delete + insert), so a
+  // refresh recovers the respondent instead of spinning forever.
+  if ((error || !scores || scores.length === 0) && session?.completed_at) {
+    try {
+      await calculateScores(sessionId);
+      ({ scores, error, session, breakdowns } = await loadResults(supabase, sessionId));
+    } catch (err) {
+      console.error(`[ResultsPage] self-heal calculateScores failed for ${sessionId}:`, err);
+      return <ScoringErrorPage sessionId={sessionId} />;
+    }
+  }
+
   if (error || !scores || scores.length === 0) {
+    // Not completed yet (or still no scores after a heal attempt) — show the
+    // gentle "calculating" state rather than an error.
     return <CalculatingPage sessionId={sessionId} />;
   }
 
@@ -113,6 +139,32 @@ export default async function ResultsPage({
           />
         )}
 
+      </div>
+    </div>
+  );
+}
+
+function ScoringErrorPage({ sessionId }: { sessionId: string }) {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50 flex items-center justify-center px-4">
+      <div className="w-full max-w-md text-center">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-amber-500 mb-6">
+          <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round"
+              d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+          </svg>
+        </div>
+        <h1 className="text-2xl font-bold text-gray-900 mb-3">We hit a snag scoring your results</h1>
+        <p className="text-gray-500 mb-6">
+          Your answers are saved. Tap Try again, or your consultant can pull your
+          scores directly. Nothing was lost.
+        </p>
+        <a
+          href={`/results/${sessionId}`}
+          className="inline-block bg-indigo-600 text-white text-sm font-semibold px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors"
+        >
+          Try again
+        </a>
       </div>
     </div>
   );
