@@ -45,9 +45,9 @@ Wired into both `WorkflowSection` and `SectionForm` so every section is covered.
 
 - [x] Diagnose: fire-and-forget save raced by navigation drops the last answer.
 - [x] Confirm on Tammie's real data (TBx5 missing in C/D/E, TBF4/5 missing).
-- [ ] Add `usePendingAnswerSaves` hook.
-- [ ] Wire into WorkflowSection + SectionForm; Next awaits pending saves.
-- [ ] Build + manual verification; deploy to prod.
+- [x] Add `usePendingAnswerSaves` hook.
+- [x] Wire into WorkflowSection + SectionForm; Next awaits pending saves.
+- [x] Build + render smoke test; deployed to prod 2026-07-22 (dpl i1xos7taa).
 - [ ] Rescore Tammie once her 5 missing answers are collected (separate step).
 
 ## Follow-ups
