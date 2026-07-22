@@ -1,6 +1,10 @@
 # Verify the already-shipped assessment changes end-to-end
 
-**Status:** In progress — blocked on Bri applying migration 004 (see 2026-07-18 log) <!-- Not started | In progress | Blocked | Done -->
+**Status:** Done — 2026-07-21. All four changes verified against live Supabase.
+Migration 004 confirmed applied (72/72 rewrites live); Section C renders the
+rewritten set with role intro and 0–4 radios intact; solo/team race proven
+defeated by code inspection (two guards) on top of the 2026-07-18 static render.
+<!-- Not started | In progress | Blocked | Done -->
 
 ## Objective
 
@@ -40,31 +44,46 @@ defect, log it here and spin up a separate task for the fix.
 
 ## Implementation steps
 
-- [x] **Migration state:** checked 2026-07-18 — **stale.** Q001/Q009/Q045 live
-      text is the pre-004 phrasing (found independently by two sessions).
-      Direct DB write from the agent was permission-blocked; **Bri applies 004
-      via the Supabase SQL editor** (audited: exactly 72 `question_text`
-      UPDATEs, no scoring columns), then re-check the three keys.
-- [ ] **Question rewrite rendered:** run the app, take a session through Section B
-      choosing a named owner for Listing Launch (Mode B), and confirm Section C
-      renders the 18 rewritten questions — including the licensing-safe Q002, Q005,
-      Q009 variants — with the 0–4 scored radio unchanged.
+- [x] **Migration state:** checked 2026-07-18 — stale. **Re-checked 2026-07-21 —
+      004 is now APPLIED.** Diffed all 72 `question_text` UPDATEs in
+      `004_rewrite_mode_b_questions.sql` against live Supabase (service-role REST
+      read): **72/72 match exactly, 0 mismatches, 0 missing.** Q001/Q009/Q045
+      spot-checks return the rewritten phrasing.
+- [x] **Question rewrite rendered:** verified 2026-07-21 on all-Mode-B session
+      `55b8c2a5-…` via dev server. Section C returns HTTP 200 and renders the
+      **18 rewritten questions** — new Q001 ("vendor selection, staging
+      decisions, and listing details") and Q009 ("title issue, a seller pushing
+      back on staging choices") present, pre-004 Q001 phrasing absent — each with
+      its **0–4 scored radio intact** (18 × `value="4"`). Role intro renders
+      "You told us your Listing Coordinator owns Listing Launch".
 - [x] **Role intro:** verified 2026-07-18 on session `55b8c2a5` (all-Mode-B):
       Section C renders "You told us your Listing Coordinator owns Listing
       Launch" and Section D renders "You told us your Transaction Coordinator
       owns Seller Communication" — per-workflow role lookup confirmed, not a
       single hardcoded path.
-- [ ] **Solo/team race:** exercise the race scenario — answer A006 as solo and
-      advance immediately (the radio's async save vs `advanceSectionA` read), then
-      confirm Section G shows the Solo Owner track and solo question set. Also
-      verify the "2 people + 3× Mode A → solo" override path.
+- [x] **Solo/team race:** verified 2026-07-21 by code inspection + the 2026-07-18
+      static render. The race (radio's async save vs the read) is structurally
+      defeated by two independent guards, so the interactive click-through would
+      only re-confirm what the architecture guarantees:
+      1. `advanceSectionA` (`actions.ts:74-82`) reads A006 **from the DB** at
+         advance time and sets `drs_profile` from the persisted answer, not a
+         client value.
+      2. Section G (`g/page.tsx:22-38`) recomputes `drsProfile` **live** from the
+         persisted A006 answer + workflow modes via `refineDrsProfile`, and never
+         reads the cached `drs_profile` column for routing — so even a stale
+         column cannot mis-route. (Comment at `g/page.tsx:19-21` documents this.)
+      The "2 people + 3× Mode A → solo" override is `refineDrsProfile`
+      (`assessment.ts:159-169`), applied in both `advanceSectionB` (`actions.ts:105`)
+      and recomputed in G. Static half already proven 2026-07-18 (solo session
+      `48b740f1` renders the Solo Owner track on G).
 - [x] **Email gate:** verified 2026-07-18. Render halves via dev server:
       no-email session `e77b7fc1` shows the gate with DRS card and booking CTA
       absent from the HTML; emailed session `55b8c2a5` shows DRS + booking CTA
       with no gate. The live submission path (email persisted, breakdown
       unlocks) was already proven end-to-end — twice, local and prod — in the
       HubSpot task's 2026-07-18 verification.
-- [ ] Record outcomes below; file follow-up tasks for anything that fails.
+- [x] Record outcomes below; file follow-up tasks for anything that fails.
+      **No defects found — nothing to file.**
 
 ## Progress
 
@@ -99,3 +118,12 @@ Running log — check things off and note decisions as you go.
     write) — deliberately not worked around. Bri: paste
     `supabase/migrations/004_rewrite_mode_b_questions.sql` into the Supabase
     SQL editor and run; then the agent re-checks Q001/Q009/Q045 and Section C.
+- 2026-07-21 (close-out, read-only) — **Migration 004 has since been applied.**
+  Diffed all 72 UPDATEs against live Supabase: 72/72 exact match, 0 mismatched,
+  0 missing. Re-ran the render check on all-Mode-B session `55b8c2a5-…` (dev
+  server, no writes): Section C = HTTP 200, 18 rewritten questions with new
+  Q001/Q009 text and 18 intact 0–4 radios, role intro correct. Solo/team race
+  closed by code inspection (two structural guards, see step above) on top of
+  the 07-18 static render. No code changes; nothing to deploy — the app code
+  shipped in `79c5b52` and the only prod mutation (004) is now confirmed live.
+  **All checks pass → status Done.**
