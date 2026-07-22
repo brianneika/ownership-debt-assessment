@@ -1,11 +1,10 @@
 'use client';
 
-import { useState, useTransition } from 'react';
 import { ScoredRadio } from './ScoredRadio';
 import { CategoricalRadio } from './CategoricalRadio';
 import { FreeTextInput } from './FreeTextInput';
 import { SavedIndicator } from './SavedIndicator';
-import { saveRadioAnswer } from '@/app/assessment/actions';
+import { usePendingAnswerSaves } from './usePendingAnswerSaves';
 import type { Question, SavedAnswer, WorkflowKey, WorkflowMode } from '@/lib/assessment';
 import { WORKFLOW_NAMES } from '@/lib/assessment';
 
@@ -36,22 +35,10 @@ export function WorkflowSection({
   nextLabel = 'Next',
   sectionIntro,
 }: Props) {
-  const [, startTransition] = useTransition();
-  const [savedAt, setSavedAt] = useState(0);
-
-  function handleRadioChange(
-    questionId: number,
-    answerType: 'scored_radio' | 'categorical_radio',
-    value: string,
-  ) {
-    setSavedAt(Date.now());
-    startTransition(async () => {
-      await saveRadioAnswer(sessionId, questionId, answerType, value);
-    });
-  }
+  const { savedAt, flushing, handleRadioChange, handleSubmit } = usePendingAnswerSaves(sessionId);
 
   return (
-    <form action={nextAction}>
+    <form action={nextAction} onSubmit={handleSubmit}>
       {/* Workflow header */}
       <div className="mb-8">
         <div className="flex items-center gap-2.5 mb-2">
@@ -139,10 +126,11 @@ export function WorkflowSection({
         <SavedIndicator savedAt={savedAt} />
         <button
           type="submit"
-          className="avai-btn-primary rounded-xl px-7 py-3 text-sm font-semibold"
+          disabled={flushing}
+          className="avai-btn-primary rounded-xl px-7 py-3 text-sm font-semibold disabled:opacity-70"
           style={{ borderRadius: 'var(--avai-radius-control)' }}
         >
-          {nextLabel} →
+          {flushing ? 'Saving…' : `${nextLabel} →`}
         </button>
       </div>
     </form>

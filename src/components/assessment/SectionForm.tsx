@@ -1,11 +1,10 @@
 'use client';
 
-import { useState, useTransition } from 'react';
 import { ScoredRadio } from './ScoredRadio';
 import { CategoricalRadio } from './CategoricalRadio';
 import { FreeTextInput } from './FreeTextInput';
 import { SavedIndicator } from './SavedIndicator';
-import { saveRadioAnswer } from '@/app/assessment/actions';
+import { usePendingAnswerSaves } from './usePendingAnswerSaves';
 import type { Question, SavedAnswer } from '@/lib/assessment';
 
 interface Props {
@@ -25,24 +24,12 @@ export function SectionForm({
   submitLabel = 'Next',
   sectionIntro,
 }: Props) {
-  const [, startTransition] = useTransition();
-  // Bumped to Date.now() after each save — remounts SavedIndicator to replay animation.
-  // Optimistic: fires immediately on selection (Supabase autosave is fast in practice).
-  const [savedAt, setSavedAt] = useState(0);
-
-  function handleRadioChange(
-    questionId: number,
-    answerType: 'scored_radio' | 'categorical_radio',
-    value: string,
-  ) {
-    setSavedAt(Date.now()); // optimistic saved indicator
-    startTransition(async () => {
-      await saveRadioAnswer(sessionId, questionId, answerType, value);
-    });
-  }
+  // Radios autosave on selection; handleSubmit holds "Next" until any in-flight
+  // save lands so the last answer in the section is never lost to navigation.
+  const { savedAt, flushing, handleRadioChange, handleSubmit } = usePendingAnswerSaves(sessionId);
 
   return (
-    <form action={nextAction}>
+    <form action={nextAction} onSubmit={handleSubmit}>
       {/* One-line section context message */}
       {sectionIntro && (
         <p
@@ -100,10 +87,11 @@ export function SectionForm({
         <SavedIndicator savedAt={savedAt} />
         <button
           type="submit"
-          className="avai-btn-primary rounded-xl px-7 py-3 text-sm font-semibold"
+          disabled={flushing}
+          className="avai-btn-primary rounded-xl px-7 py-3 text-sm font-semibold disabled:opacity-70"
           style={{ borderRadius: 'var(--avai-radius-control)' }}
         >
-          {submitLabel} →
+          {flushing ? 'Saving…' : `${submitLabel} →`}
         </button>
       </div>
     </form>
