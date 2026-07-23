@@ -1,6 +1,6 @@
 # Fix: last answer is lost when "Next" is clicked before its save lands
 
-**Status:** In progress <!-- Not started | In progress | Blocked | Done -->
+**Status:** Done (2026-07-22) <!-- Not started | In progress | Blocked | Done -->
 
 ## Objective
 
@@ -48,7 +48,9 @@ Wired into both `WorkflowSection` and `SectionForm` so every section is covered.
 - [x] Add `usePendingAnswerSaves` hook.
 - [x] Wire into WorkflowSection + SectionForm; Next awaits pending saves.
 - [x] Build + render smoke test; deployed to prod 2026-07-22 (dpl i1xos7taa).
-- [ ] Rescore Tammie once her 5 missing answers are collected (separate step).
+- [x] Rescored Tammie: consultant-entered TBC5/TBD5/TBE5/TBF4/TBF5 = 3 (Bri's
+      call, since she runs these through Claude/Manus — not captured from the
+      respondent), self-heal recomputed 6 score rows. ODS ≈ 15.6.
 
 ## Follow-ups
 

@@ -1,6 +1,6 @@
 # Results page: self-heal when scoring fails at submit
 
-**Status:** In progress <!-- Not started | In progress | Blocked | Done -->
+**Status:** Done (2026-07-22) <!-- Not started | In progress | Blocked | Done -->
 
 ## Objective
 
@@ -49,9 +49,10 @@ assessment.vainexus.com aliases to it.
 - [x] Add self-heal recompute on the results page.
 - [x] Add `ScoringErrorPage` so genuine failures are visible, not a spinner.
 - [x] `next build` green; deploy to prod; verify prod alias.
-- [ ] Confirm Tammie's results now render (have her refresh her results link).
-- [ ] If her recompute still throws, capture the logged error and fix root cause
-      (likely a workflow-mode / missing-answer edge case in `calculateScores`).
+- [x] Confirmed the failure cause via logs: `calculateScores` threw "No workflow
+      ODS values could be computed" because her Mode-A TBx5 answers were missing.
+      Root cause fixed separately in [20260722-answer-save-race-on-next.md](20260722-answer-save-race-on-next.md);
+      Tammie recovered by writing the 5 missing answers, self-heal then computed her scores.
 
 ## Follow-ups (out of scope for the hotfix)
 
