@@ -158,13 +158,105 @@ P.S. There's no pitch inside the assessment. You answer the questions, you get y
 
 ---
 
-## Dormant-segment variant (past clients)
+## Warm / past-client version — welcome-back A/B (560 contacts, list 9253)
 
-If this test goes to the **dormant-reactivation** segment, the segment splits into
-cold subscribers and past clients (see
-[plans/tasks/20260720-dormant-reactivation-segment.md](../plans/tasks/20260720-dormant-reactivation-segment.md)).
-Variants A and B above are written for **cold / never-bought** contacts and need no
-change. **Past clients** should get a "welcome back" opener that acknowledges the
-prior WSS relationship before landing into the same two-score payoff. Draft that
-opener separately and tag its links `utm_content=reactivation-pastclient` (vs.
-`-cold`) so completion rates stay visible per sub-segment.
+The dormant-reactivation segment splits into **cold subscribers** (~192) and **warm
+past clients** (~560, list 9253) — see
+[plans/tasks/20260720-dormant-reactivation-segment.md](../plans/tasks/20260720-dormant-reactivation-segment.md).
+
+- **Cold (~192):** send **Variants A and B above** unchanged. This is a small list,
+  so treat its A/B result as **directional only** — 96/variant is too few to call a
+  real winner.
+- **Warm past clients (~560):** send the **welcome-back A/B below** — the same
+  scar-vs-cost angles, but each opens by acknowledging the prior WSS coaching
+  relationship before landing on the identical two-score payoff. This is the larger
+  list (280/variant), so it's the better-powered read on the scar-vs-cost question.
+  Let it be the tiebreaker if the cold and warm reads disagree.
+
+Links are tagged `utm_content=reactivation-pastclient-scar` vs.
+`reactivation-pastclient-cost` so warm completion stays visible separately from the
+cold `email1-scar` / `email1-cost` sends.
+
+**This is its own HubSpot A/B email** (separate from the cold Email 1 above), sent to
+the frozen static past-client list. Same settings table as above (full-content A/B,
+50/50, winner by click-through, from `Verl Workman`, first-name token default
+`there`).
+
+> **v2 — shortened for batch 2 (2026-07-21).** Batch 1 (warm cost, single send to
+> 92) delivered well (97.78%) and opened well (~30% bot-cleaned, 26 openers) but got
+> **0 clicks** — the failure was entirely open→click, with the button buried ~9 blocks
+> down a ~280-word body. Both warm variants below are rewritten to **~150 words,
+> emotion first, button in the upper half.** Two build settings that go with this:
+> **(1) From-name = `Verl Workman`** (batch 1 sent from Brianne but signed Verl — a
+> recognition/trust gap; the bodies sign Verl, so match the sender). **(2) CTA label
+> standardized to "Get my two scores →" in both variants**, so the A/B tests only the
+> emotional angle (scar vs cost), not the button copy. Subjects/preview/5am send left
+> unchanged — opens were healthy, so don't touch what's working.
+
+### Warm Variant A — The handoff that came back (welcome-back)
+
+| Field | Value |
+| --- | --- |
+| **Subject** | `Since we worked together: is it still all landing on you?` |
+| **Preview text** | `A free 15-minute diagnostic shows you why the work keeps coming back to you, and what has to change for the next handoff to actually stick.` |
+| **Button URL & Plain link** | `https://assessment.vainexus.com?utm_source=wss&utm_medium=email&utm_campaign=ownership-assessment-launch&utm_content=reactivation-pastclient-scar` |
+
+**Body:**
+
+{{ contact.firstname }},
+
+It's been a while since we worked together at Workman Success, so let me ask you the honest version.
+
+Since then, did the work ever actually leave your plate? Or did it come back? You hired the admin, the assistant, the coordinator, and somehow six months later you were doing most of it yourself again.
+
+And you landed right back in the place you've been circling for years: *I guess it has to be me.*
+
+Here's what I want you to know: that wasn't a hiring failure. You can't hand off what only lives in your head. It comes down to two things you can actually measure.
+
+We built a free assessment that shows you both. About 15 minutes, two numbers:
+
+- **Ownership Debt:** how much of the business still depends on you
+- **Delegation Readiness:** how ready your team is to carry it
+
+**[Button: Get my two scores →]**
+
+Plain link: `https://assessment.vainexus.com?utm_source=wss&utm_medium=email&utm_campaign=ownership-assessment-launch&utm_content=reactivation-pastclient-scar`
+
+No pitch inside. You answer, you get your scores.
+
+*Verl Workman*
+Workman Success Systems
+
+### Warm Variant B — What it's costing you (welcome-back)
+
+| Field | Value |
+| --- | --- |
+| **Subject** | `It's been a while. Here's what running it all yourself still costs.` |
+| **Preview text** | `A free 15-minute diagnostic that gives you two numbers: how much your business still runs through you, and how ready it is to change that.` |
+| **Button URL & Plain link** | `https://assessment.vainexus.com?utm_source=wss&utm_medium=email&utm_campaign=ownership-assessment-launch&utm_content=reactivation-pastclient-cost` |
+
+**Body:**
+
+{{ contact.firstname }},
+
+It's been a while since we worked together at Workman Success, so let me be straight with you.
+
+You built this business to give you freedom. Lately it feels like it owns you instead.
+
+You're the one answering escalations from the pool on the vacation you swore you'd unplug on. The one still up at 9pm because you're the only one who can unstick the thing. And underneath it, the quiet worry that it'll always be this way, because it only holds together when *you* hold it together.
+
+It doesn't have to stay that way. The reason it all runs through you isn't effort, and it isn't talent. It's two things you can actually measure.
+
+We built a free assessment that shows you both. About 15 minutes, two numbers:
+
+- **Ownership Debt:** how much of the business still depends on you
+- **Delegation Readiness:** how ready your team is to carry it
+
+**[Button: Get my two scores →]**
+
+Plain link: `https://assessment.vainexus.com?utm_source=wss&utm_medium=email&utm_campaign=ownership-assessment-launch&utm_content=reactivation-pastclient-cost`
+
+No pitch inside. You answer, you get your scores.
+
+*Verl Workman*
+Workman Success Systems

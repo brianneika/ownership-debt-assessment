@@ -118,6 +118,15 @@ Running log — check things off and note decisions as you go.
   token (default `there`), inlined `utm_content=email1` URL, full body. Notes the
   WSS→WSS consent picture (cleaner than 2–3) and the past-client "welcome back"
   variant for the dormant segment.
+- 2026-07-20 — **Warm past-client "welcome back" email added as its own full-content
+  A/B** (Bri's call). Goes to the ~560 past clients (list 9253); mirrors the cold
+  Email 1 scar-vs-cost angles but each variant opens by acknowledging the prior WSS
+  coaching relationship before the identical two-score payoff. Tagged
+  `utm_content=reactivation-pastclient-scar` / `-cost`. Rationale: 560 (280/variant)
+  is the better-powered read on scar-vs-cost than the ~192 cold list (96/variant,
+  directional only) — warm is the tiebreaker. Copy added to the Email 1 build sheet
+  ([docs/hubspot-email-1-paste-ready.md](../../docs/hubspot-email-1-paste-ready.md))
+  as a separate HubSpot A/B email. Cold Email 1 A/B left as-is.
 - 2026-07-20 — **Email 1 reworked into a full-content A/B test** (Bri's call). Retired
   the old single-body "the mirror" open (and its subject A/B). New test is two
   distinct emotional angles: **Variant A "The handoff that came back"** (you hired
@@ -128,3 +137,29 @@ Running log — check things off and note decisions as you go.
   downstream completion is visible per angle. Copy is em-dash-free per Bri. Email 1
   sheet rewritten to match; this supersedes the "mirror" copy in
   [docs/wss-launch-email-campaign.md](../../docs/wss-launch-email-campaign.md).
+- 2026-07-20 — **First real send SCHEDULED: warm test to 100.** Built and scheduled a
+  **single regular email** (not the A/B) in WSS's HubSpot portal (6225387), time-zone
+  send at **5:00am recipient-local, 2026-07-21**. Uses the **Warm Variant B / cost
+  angle** copy: subject "It's been a while. Here's what running it all yourself still
+  costs.", preview "A free 15-minute diagnostic that gives you two numbers…", button
+  "See what it's costing you →", `utm_content=reactivation-pastclient-cost`.
+  - **Internal name:** VAI — Warm Welcome-Back — Cost angle — Test 100.
+  - **From:** Brianne Ika / brianne@workmansuccess.com (reply-to confirmed monitored).
+  - **List:** static "VAI Ownership Assessment — Warm Test 100 — 2026-07-20" (100
+    contacts) — built from source list **9253 "VAI — Send — Warm (Past Private
+    Client)"** (~560), page size 100, sorted by Create Date ascending, first 100
+    selected. No other lists. Subscription type Communication and Content.
+  - **Actually sending to 92 of 100** — 8 excluded by the "don't send to unengaged"
+    suppression (left ON, Bri's call). Turn that toggle off to reach the full 100 on a
+    future send.
+  - Body: first-name token default `there`, both bold score labels, real Button module,
+    full UTM URL, CAN-SPAM footer + unsubscribe on. Preview verified desktop + mobile,
+    button render, and `there` fallback. Test email skipped (per Bri). Bot filtering ON
+    (default) so open/click metrics are bot-cleaned.
+  - Email: https://app.hubspot.com/email/6225387/details/217591955970/performance
+  - **Note:** source list 9253's real name ("… Past Private Client") differs from the
+    "warm past clients" label in the brief but matches its description.
+  - **Still worth a look:** from-name is Brianne but the Variant-B body is signed
+    "Verl Workman / Workman Success Systems". Preview was verified for layout but the
+    record doesn't note the signature being reconciled — confirm from-name and sign-off
+    match before 5am (either sign as Brianne, or set from-name to Verl).
