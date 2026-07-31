@@ -170,16 +170,35 @@ export function refineDrsProfile(
 
 // ─── DB helpers (server-side only) ───────────────────────────────────────────
 
-export async function createSession(): Promise<string> {
+export async function createSession(entry: 'full' | 'teaser' = 'full'): Promise<string> {
   const supabase = getSupabaseServer();
+  // Keep the full-flow insert byte-identical to the pre-teaser version so it can
+  // never break if the app deploys ahead of migration 008 — the `entry` column
+  // only gets written on the teaser path (which isn't reachable until 008 lands).
+  const insert: Record<string, string> = { status: 'in_progress' };
+  if (entry === 'teaser') insert.entry = 'teaser';
+
   const { data, error } = await supabase
     .from('assessment_sessions')
-    .insert({ status: 'in_progress' })
+    .insert(insert)
     .select('id')
     .single();
 
   if (error || !data) throw new Error(`Failed to create session: ${error?.message}`);
   return data.id;
+}
+
+// Stamp the moment the visitor finished the 5 teaser questions and saw their
+// preview number. Teaser-origin sessions only; full completion still uses
+// completeSession (status='completed' + completed_at).
+export async function setTeaserCompleted(sessionId: string): Promise<void> {
+  const supabase = getSupabaseServer();
+  const { error } = await supabase
+    .from('assessment_sessions')
+    .update({ teaser_completed_at: new Date().toISOString(), last_active_at: new Date().toISOString() })
+    .eq('id', sessionId);
+
+  if (error) throw new Error(`Failed to set teaser_completed_at: ${error.message}`);
 }
 
 export async function fetchSession(sessionId: string): Promise<AssessmentSession | null> {

@@ -33,8 +33,18 @@ export interface SessionListItem {
   name: string;
   businessName: string;
   completedAt: string | null;
+  entry: 'full' | 'teaser'; // how the session began (origin marker, migration 008)
   ods: ScoreSummary | null;
   drs: ScoreSummary | null;
+}
+
+// Top-of-funnel counts for the 5-question teaser. Teaser-only visitors are
+// anonymous (no email until they unlock), so they surface as counts, never as
+// named rows.
+export interface TeaserFunnel {
+  previews: number;        // saw their preview number (finished the 5 questions)
+  unlocked: number;        // gave email at the unlock gate
+  fullCompletions: number; // went on to finish the full assessment
 }
 
 export interface OqiDimensionScore {
@@ -123,7 +133,7 @@ export async function fetchCompletedSessions(): Promise<SessionListItem[]> {
 
   const { data: sessions, error: sessionsErr } = await supabase
     .from('assessment_sessions')
-    .select('id, completed_at')
+    .select('id, completed_at, entry')
     .eq('status', 'completed')
     .order('completed_at', { ascending: false });
 
@@ -174,10 +184,35 @@ export async function fetchCompletedSessions(): Promise<SessionListItem[]> {
       name: names.name || '(unnamed)',
       businessName: names.businessName || '(no business name)',
       completedAt: s.completed_at,
+      entry: (s as { entry?: string }).entry === 'teaser' ? 'teaser' : 'full',
       ods: toScoreSummary(sc.ods),
       drs: toScoreSummary(sc.drs),
     };
   });
+}
+
+// ─── Teaser funnel ──────────────────────────────────────────────────────────────
+
+export async function fetchTeaserFunnel(): Promise<TeaserFunnel> {
+  const supabase = getSupabaseServer();
+  const { data, error } = await supabase
+    .from('assessment_sessions')
+    .select('respondent_email, status, teaser_completed_at')
+    .eq('entry', 'teaser');
+
+  if (error) throw new Error(`Failed to fetch teaser funnel: ${error.message}`);
+
+  const rows = (data ?? []) as {
+    respondent_email: string | null;
+    status: string | null;
+    teaser_completed_at: string | null;
+  }[];
+
+  return {
+    previews: rows.filter((r) => r.teaser_completed_at).length,
+    unlocked: rows.filter((r) => r.respondent_email).length,
+    fullCompletions: rows.filter((r) => r.status === 'completed').length,
+  };
 }
 
 // ─── Respondent name (lightweight — for the PDF document title) ─────────────────

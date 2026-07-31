@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { fetchCompletedSessions } from '@/lib/admin';
+import { fetchCompletedSessions, fetchTeaserFunnel } from '@/lib/admin';
 
 // Always fetch live data — never statically prerender
 export const dynamic = 'force-dynamic';
@@ -20,8 +20,32 @@ function formatDate(iso: string | null) {
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
+function VersionBadge({ entry }: { entry: 'full' | 'teaser' }) {
+  const isTeaser = entry === 'teaser';
+  return (
+    <span
+      className={`px-2 py-0.5 rounded-full text-xs font-medium border ${
+        isTeaser
+          ? 'bg-violet-50 text-violet-700 border-violet-200'
+          : 'bg-slate-50 text-slate-600 border-slate-200'
+      }`}
+    >
+      {isTeaser ? 'Teaser' : 'Full'}
+    </span>
+  );
+}
+
 export default async function AdminDashboard() {
-  const sessions = await fetchCompletedSessions();
+  const [sessions, funnel] = await Promise.all([
+    fetchCompletedSessions(),
+    fetchTeaserFunnel(),
+  ]);
+
+  const FUNNEL_STEPS = [
+    { label: 'Teaser previews', value: funnel.previews, hint: 'Saw their number' },
+    { label: 'Unlocked', value: funnel.unlocked, hint: 'Gave email' },
+    { label: 'Full completions', value: funnel.fullCompletions, hint: 'Finished the assessment' },
+  ];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -44,6 +68,23 @@ export default async function AdminDashboard() {
       </header>
 
       <main className="max-w-6xl mx-auto px-6 py-8">
+        {/* Teaser funnel — anonymous top-of-funnel counts (no PII until unlock) */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Teaser funnel</h2>
+            <span className="text-xs text-gray-400">Teaser-only visitors stay anonymous until they unlock</span>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            {FUNNEL_STEPS.map((step) => (
+              <div key={step.label} className="bg-white rounded-xl border border-gray-100 shadow-sm px-5 py-4">
+                <div className="text-2xl font-bold text-gray-900 tabular-nums">{step.value}</div>
+                <div className="text-sm font-medium text-gray-700 mt-0.5">{step.label}</div>
+                <div className="text-xs text-gray-400 mt-0.5">{step.hint}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {sessions.length === 0 ? (
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-12 text-center">
             <p className="text-gray-400 text-sm">No completed assessments yet.</p>
@@ -55,6 +96,7 @@ export default async function AdminDashboard() {
                 <tr className="border-b border-gray-100 bg-gray-50/50">
                   <th className="text-left font-semibold text-gray-500 px-5 py-3 text-xs uppercase tracking-wider">Respondent</th>
                   <th className="text-left font-semibold text-gray-500 px-5 py-3 text-xs uppercase tracking-wider">Business</th>
+                  <th className="text-left font-semibold text-gray-500 px-5 py-3 text-xs uppercase tracking-wider">Version</th>
                   <th className="text-left font-semibold text-gray-500 px-5 py-3 text-xs uppercase tracking-wider">Completed</th>
                   <th className="text-left font-semibold text-gray-500 px-5 py-3 text-xs uppercase tracking-wider">ODS</th>
                   <th className="text-left font-semibold text-gray-500 px-5 py-3 text-xs uppercase tracking-wider">DRS</th>
@@ -71,6 +113,11 @@ export default async function AdminDashboard() {
                     <td className="px-5 py-4">
                       <Link href={`/admin/sessions/${s.sessionId}`} className="block text-gray-600">
                         {s.businessName}
+                      </Link>
+                    </td>
+                    <td className="px-5 py-4">
+                      <Link href={`/admin/sessions/${s.sessionId}`} className="block">
+                        <VersionBadge entry={s.entry} />
                       </Link>
                     </td>
                     <td className="px-5 py-4">

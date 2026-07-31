@@ -185,6 +185,14 @@ create table assessment_sessions (
   -- When the respondent granted VAI email consent by submitting the gate
   -- (migration 006). Null = gated pre-consent-capture: off-limits for marketing.
   consented_at   timestamptz,
+  -- How the session began (migration 008): 'full' = the 15-min flow from
+  -- /assessment; 'teaser' = the 5-question /teaser hook. Origin marker — never
+  -- flips, even after a teaser session finishes the full assessment.
+  entry          text not null default 'full'
+                   check (entry in ('full','teaser')),
+  -- When the visitor finished the 5 teaser questions and saw their preview
+  -- number (migration 008). Null for full-origin and dropped-early teaser sessions.
+  teaser_completed_at timestamptz,
   started_at     timestamptz not null default now(),
   completed_at   timestamptz,
   last_active_at timestamptz not null default now(),
