@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { fetchCompletedSessions, fetchTeaserFunnel } from '@/lib/admin';
+import { deleteAdminUser } from './actions';
+import { fetchCompletedSessions, fetchTeaserFunnel, fetchAdminUsers } from '@/lib/admin';
 
 // Always fetch live data — never statically prerender
 export const dynamic = 'force-dynamic';
@@ -36,9 +37,10 @@ function VersionBadge({ entry }: { entry: 'full' | 'teaser' }) {
 }
 
 export default async function AdminDashboard() {
-  const [sessions, funnel] = await Promise.all([
+  const [sessions, funnel, adminUsers] = await Promise.all([
     fetchCompletedSessions(),
     fetchTeaserFunnel(),
+    fetchAdminUsers(),
   ]);
 
   const FUNNEL_STEPS = [
@@ -68,6 +70,36 @@ export default async function AdminDashboard() {
       </header>
 
       <main className="max-w-6xl mx-auto px-6 py-8">
+        <div className="mb-8 bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Admin users</h2>
+            <span className="text-xs text-gray-400">Remove access for anyone who should no longer be able to sign in</span>
+          </div>
+          {adminUsers.length === 0 ? (
+            <p className="text-sm text-gray-500">No additional admin users yet.</p>
+          ) : (
+            <div className="space-y-2">
+              {adminUsers.map((user) => (
+                <div key={user.id} className="flex items-center justify-between rounded-lg border border-gray-100 px-3 py-2">
+                  <div>
+                    <div className="font-medium text-gray-900">{user.displayName || user.email}</div>
+                    <div className="text-sm text-gray-500">{user.email}</div>
+                  </div>
+                  <form action={deleteAdminUser}>
+                    <input type="hidden" name="userId" value={user.id} />
+                    <button
+                      type="submit"
+                      className="rounded-md border border-red-200 px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-50"
+                    >
+                      Delete
+                    </button>
+                  </form>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* Teaser funnel — anonymous top-of-funnel counts (no PII until unlock) */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-3">

@@ -47,6 +47,12 @@ export interface TeaserFunnel {
   fullCompletions: number; // went on to finish the full assessment
 }
 
+export interface AdminUserSummary {
+  id: number;
+  email: string;
+  displayName: string | null;
+}
+
 export interface OqiDimensionScore {
   label: string; // 'DO' | 'IE' | 'SC' | 'EC' | 'OA' | 'CT' (pre-005 rows were relabeled by the migration)
   weight: number;
@@ -213,6 +219,22 @@ export async function fetchTeaserFunnel(): Promise<TeaserFunnel> {
     unlocked: rows.filter((r) => r.respondent_email).length,
     fullCompletions: rows.filter((r) => r.status === 'completed').length,
   };
+}
+
+export async function fetchAdminUsers(): Promise<AdminUserSummary[]> {
+  const supabase = getSupabaseServer();
+  const { data, error } = await supabase
+    .from('admin_users')
+    .select('id, email, display_name')
+    .order('created_at', { ascending: false });
+
+  if (error) throw new Error(`Failed to fetch admin users: ${error.message}`);
+
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    email: row.email,
+    displayName: row.display_name,
+  }));
 }
 
 // ─── Respondent name (lightweight — for the PDF document title) ─────────────────
