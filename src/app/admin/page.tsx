@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { deleteAdminUser } from './actions';
+import { deleteAdminUser, deleteAssessmentSession } from './actions';
 import { fetchCompletedSessions, fetchTeaserFunnel, fetchAdminUsers } from '@/lib/admin';
 
 // Always fetch live data — never statically prerender
@@ -132,6 +132,7 @@ export default async function AdminDashboard() {
                   <th className="text-left font-semibold text-gray-500 px-5 py-3 text-xs uppercase tracking-wider">Completed</th>
                   <th className="text-left font-semibold text-gray-500 px-5 py-3 text-xs uppercase tracking-wider">ODS</th>
                   <th className="text-left font-semibold text-gray-500 px-5 py-3 text-xs uppercase tracking-wider">DRS</th>
+                  <th className="text-left font-semibold text-gray-500 px-5 py-3 text-xs uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -188,6 +189,17 @@ export default async function AdminDashboard() {
                           <span className="text-gray-300">—</span>
                         )}
                       </Link>
+                    </td>
+                    <td className="px-5 py-4">
+                      <form action={deleteAssessmentSession}>
+                        <input type="hidden" name="sessionId" value={s.sessionId} />
+                        <button
+                          type="submit"
+                          className="rounded-md border border-red-200 px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-50"
+                        >
+                          Delete
+                        </button>
+                      </form>
                     </td>
                   </tr>
                 ))}
