@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { deleteAdminUser, deleteAssessmentSession } from './actions';
+import { deleteAdminUser } from './actions';
 import { fetchCompletedSessions, fetchTeaserFunnel, fetchAdminUsers } from '@/lib/admin';
 
 // Always fetch live data — never statically prerender
@@ -191,7 +191,7 @@ export default async function AdminDashboard() {
                       </Link>
                     </td>
                     <td className="px-5 py-4">
-                      <form action={deleteAssessmentSession}>
+                      <form method="POST" action="/api/admin/delete-session">
                         <input type="hidden" name="sessionId" value={s.sessionId} />
                         <button
                           type="submit"
