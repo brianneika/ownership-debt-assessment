@@ -1,5 +1,13 @@
 # WSS Launch Email Campaign — Ownership Assessment
 
+> **RETIRED (2026-08-13). Do not run this campaign as written.** It sells the
+> Done-With-You coaching cohort, an offer removed on 2026-08-04 (VAI sells the
+> VA placement / managed-AI-workforce program only), and it routes through WSS
+> in ways the current posture forbids (nothing may imply WSS endorses or is
+> behind VAI). Kept as history and as reusable mechanics for a possible future
+> assessment-only campaign. See
+> [the retirement task](../plans/tasks/20260813-retire-coaching-from-assessment-repo.md).
+
 _Deliverable for Workman Success Systems' marketing team. Sent from WSS's email
 platform to WSS's list. Goal: drive real estate team leaders to take the free
 Ownership Assessment; the done-with-you cohort is pitched on the resulting

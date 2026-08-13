@@ -1,5 +1,14 @@
 # Dormant-list reactivation — the ask to WSS
 
+> **RETIRED (2026-08-13). Do not make this ask as written.** The offer it
+> monetizes (the founding Done-With-You coaching cohort at $997/mo) was removed
+> on 2026-08-04, so the 60/40 split and the revenue math no longer describe
+> anything VAI sells. The current WSS posture is also narrower: warm personal
+> outreach by Brianne as VAI's founder, the ask is always the assessment, and
+> nothing may imply WSS endorses or is behind VAI. Kept as history; the
+> bounded-test mechanics may inform a future assessment-only proposal. See
+> [the retirement task](../plans/tasks/20260813-retire-coaching-from-assessment-repo.md).
+
 _A proposal Brianne (VAI) takes to Verl Workman (CEO, Workman Success Systems):
 run the existing Ownership Assessment launch sequence against the **dormant,
 non-buying** slice of the WSS database as a **bounded 1-week test**, split the
