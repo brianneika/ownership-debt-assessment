@@ -15,20 +15,20 @@ export function BrandWave() {
     >
       <style>{`
         @keyframes vai-wave-sway-a {
-          from { transform: translateX(-30px); }
-          to   { transform: translateX(30px); }
+          from { transform: translateX(-60px); }
+          to   { transform: translateX(60px); }
         }
         @keyframes vai-wave-sway-b {
-          from { transform: translateX(38px); }
-          to   { transform: translateX(-38px); }
+          from { transform: translateX(75px); }
+          to   { transform: translateX(-75px); }
         }
         @keyframes vai-wave-sway-c {
-          from { transform: translateX(-22px); }
-          to   { transform: translateX(22px); }
+          from { transform: translateX(-45px); }
+          to   { transform: translateX(45px); }
         }
-        .vai-wave-a { animation: vai-wave-sway-a 13s ease-in-out infinite alternate; }
-        .vai-wave-b { animation: vai-wave-sway-b 17s ease-in-out infinite alternate; }
-        .vai-wave-c { animation: vai-wave-sway-c 21s ease-in-out infinite alternate; }
+        .vai-wave-a { animation: vai-wave-sway-a 7s ease-in-out infinite alternate; }
+        .vai-wave-b { animation: vai-wave-sway-b 9s ease-in-out infinite alternate; }
+        .vai-wave-c { animation: vai-wave-sway-c 11s ease-in-out infinite alternate; }
         @media (prefers-reduced-motion: reduce) {
           .vai-wave-a, .vai-wave-b, .vai-wave-c { animation: none; }
         }
