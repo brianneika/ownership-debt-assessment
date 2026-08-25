@@ -14,21 +14,20 @@ export function BrandWave() {
         preserveAspectRatio="none"
         className="block w-full h-[90px] sm:h-[140px]"
       >
-        {/* Back swell — teal tint */}
+        {/* Back swell — Teal 500, the lighter water behind */}
         <path
           d="M0,70 C240,20 480,120 720,80 C960,40 1200,110 1440,60 L1440,140 L0,140 Z"
-          fill="#D7EDED"
+          fill="#37C1C3"
         />
-        {/* Mid swell — navy tint */}
+        {/* Mid swell — VAI Teal core */}
         <path
           d="M0,100 C280,60 560,130 840,95 C1080,65 1280,120 1440,90 L1440,140 L0,140 Z"
-          fill="#D8DDEC"
+          fill="#209B9D"
         />
-        {/* Front crest — brand teal, kept light so it stays a whisper */}
+        {/* Front crest — VAI Navy */}
         <path
           d="M0,120 C320,90 640,140 960,115 C1180,98 1330,130 1440,112 L1440,140 L0,140 Z"
-          fill="#209B9D"
-          fillOpacity="0.35"
+          fill="#244397"
         />
       </svg>
     </div>
