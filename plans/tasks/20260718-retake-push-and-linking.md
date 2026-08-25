@@ -1,12 +1,28 @@
 # Retake push & respondent linking
 
-**Status:** Not started
+**Status:** Not started (revalidated 2026-08-25; next up when Bri picks a build slot)
 
 ## Objective
 
-Link assessment sessions to a person and let a coach push a retake to a client
-via an emailed tokenized link — the structural core of the coaching-tool vision
-(roadmap theme 2).
+Link assessment sessions to a person and let VAI push a retake to a client via
+an emailed tokenized link — the structural core of the retakes-and-progress
+vision (roadmap theme 2, the day-90 proof event in the placement playbook).
+
+> **Language note (2026-08-25):** this doc predates the coaching retirement
+> (2026-08-04). "Coach" below means the VAI admin (Bri) working the placement
+> engagement; the mechanics are unchanged and the reframed master plan already
+> describes them in placement terms.
+
+> **Revalidation (2026-08-25):** Bri asked whether the website flow needs an
+> up-front company-info page with backend linking, or standalone sessions she
+> groups by hand later ("assessment 001 + 501 labeled day 1 / day 30"). Answer,
+> consistent with the 2026-07-18 decisions: neither. The public flow stays
+> anonymous and friction-free; identity is captured once at the results email
+> gate (`respondent_email`); linking happens on VAI's side by activating the
+> dormant `respondents` table, and every pushed retake opens a session
+> pre-linked to the same respondent, so day-1 vs day-30 grouping is automatic,
+> never manual. Manual session-ID grouping stays out: it's error-prone and the
+> schema already has the right shape.
 
 ## Methods / background
 
@@ -25,7 +41,11 @@ via an emailed tokenized link — the structural core of the coaching-tool visio
     rows in `dimension_scores` make the delta attributable). No client
     dashboard yet.
 - Landing zones: dormant `respondents` table (link sessions by captured email);
-  coach-side "send retake" button lives on the admin client/session page.
+  the "send retake" button lives on the admin client/session page. Confirmed
+  2026-08-25: the app never writes `client_id`/`respondent_id` today — sessions
+  are created bare in `createSession()` (`src/lib/assessment.ts`) and the only
+  identity captured is `respondent_email` at the results gate, so respondent
+  linking starts by backfilling from that column.
 - **Flag:** the app currently sends no email at all — this task needs an email
   provider decision (also unblocks results emails and the 30-day nurture).
 - Likely splits into sub-tasks when picked up: (1) respondent linking,
