@@ -1,6 +1,6 @@
 # Brand alignment: make the assessment look and feel like the landing page
 
-**Status:** Not started
+**Status:** Done (2026-08-25)
 **Created:** 2026-08-25
 
 ## Objective
@@ -116,8 +116,11 @@ that file, plus JSON design tokens. Logos: `vai-branding/logo/VAI_LOGO_clr.svg`
       `vai-` utilities in globals.css); zero prospect-facing indigo remains.
 - [x] Boilerplate SVGs + default favicon deleted.
 - [x] Preview deploy builds clean (ownership-assessment-citv8fbdp-vai4).
-- [ ] Visual click-through — blocked for the AI, needs Bri (see deviations).
-- [ ] Production deploy: `vercel deploy --prod` after Bri's eyeball.
+- [x] Visual click-through: Bri reviewed the preview; two iterations on the
+      wave (true brand colors instead of tints, then faster/wider motion).
+- [x] Production deploy: shipped on Bri's "ship it"; assessment.vainexus.com
+      serves the rebrand (logo, brand hexes, animated wave, VAI title
+      verified in the live HTML).
 
 ## Decisions & deviations
 
