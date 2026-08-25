@@ -3,36 +3,47 @@
    Scoped to /assessment/* only — imported by [sessionId]/layout.tsx
    and the landing page. Do not import from results/admin/auth.
 
-   All brand-specific values live in :root below. To rebrand later
-   (e.g. swap indigo for the final brand color, or re-skin the
-   progress connector as a river), edit ONLY this file.
+   All brand-specific values live in :root below — rebrand by editing
+   ONLY this file. Branded to VAI 2026-08-25 (navy primary, teal accent,
+   Poppins/Inter) per vai-va-training/vai-branding/palette.md v2.0.
    ============================================================ */
 
 :root {
-  /* ── Brand accent — placeholder indigo, swap here only ──────── */
-  --avai-accent-50:  #eef2ff;
-  --avai-accent-100: #e0e7ff;
-  --avai-accent-200: #c7d2fe;
-  --avai-accent-300: #a5b4fc;
-  --avai-accent-400: #818cf8;
-  --avai-accent-500: #6366f1;
-  --avai-accent-600: #4f46e5;
-  --avai-accent-700: #4338ca;
-  --avai-accent-800: #3730a3;
-  --avai-accent-900: #312e81;
+  /* ── Brand accent — VAI Navy, from vai-branding/palette.md v2.0.
+     50/100/300/500 match the palette's rated navy scale; the steps the
+     palette doesn't define (200/400/700/800/900) are interpolated on the
+     same hue. 600 is the brand core #244397 (9.03:1 AAA on white). ──── */
+  --avai-accent-50:  #f0f2f8;
+  --avai-accent-100: #d8ddec;
+  --avai-accent-200: #bac5e0;
+  --avai-accent-300: #9caad0;
+  --avai-accent-400: #7389c7;
+  --avai-accent-500: #4a69be;
+  --avai-accent-600: #244397;
+  --avai-accent-700: #1f3a82;
+  --avai-accent-800: #1a316e;
+  --avai-accent-900: #14265a;
+
+  /* ── VAI Teal — sparing accent: progress, saves, small highlights.
+     Core #209B9D fails as text on white; use --avai-teal-deep for text. ─ */
+  --avai-teal:       #209b9d;
+  --avai-teal-deep:  #135c5d;
+  --avai-teal-mid:   #37c1c3;
+  --avai-teal-tint:  #d7eded;
+  --avai-teal-wash:  #eff8f8;
 
   /* ── Neutrals ─────────────────────────────────────────────── */
-  --avai-ink:        #0f1115;   /* primary text */
+  --avai-ink:        #000000;   /* primary text — brand black */
   --avai-ink-muted:  #5b616e;   /* secondary text */
   --avai-ink-faint:  #9aa1ad;   /* tertiary / placeholder text */
   --avai-surface:    #ffffff;   /* card background */
-  --avai-canvas:     #f7f8fa;   /* page background */
+  --avai-canvas:     #f3f5f7;   /* page background — brand Light Gray */
   --avai-border:     #e7e9ee;   /* hairline borders */
   --avai-border-strong: #d7dae1;
 
-  /* ── Semantic ─────────────────────────────────────────────── */
-  --avai-success: #16a34a;
-  --avai-success-bg: #f0fdf4;
+  /* ── Semantic — success rides the brand teal ──────────────── */
+  --avai-success: #135c5d;
+  --avai-success-bg: #eff8f8;
 
   /* ── Radii ────────────────────────────────────────────────── */
   --avai-radius-card: 1rem;      /* 16px */
@@ -47,11 +58,11 @@
     0 4px 12px rgba(15, 17, 21, 0.06),
     0 2px 4px rgba(15, 17, 21, 0.04);
   --avai-shadow-button:
-    0 1px 2px rgba(79, 70, 229, 0.15),
-    0 2px 8px rgba(79, 70, 229, 0.18);
+    0 1px 2px rgba(36, 67, 151, 0.15),
+    0 2px 8px rgba(36, 67, 151, 0.18);
   --avai-shadow-button-hover:
-    0 2px 4px rgba(79, 70, 229, 0.2),
-    0 4px 16px rgba(79, 70, 229, 0.25);
+    0 2px 4px rgba(36, 67, 151, 0.2),
+    0 4px 16px rgba(36, 67, 151, 0.25);
 
   /* ── Motion ───────────────────────────────────────────────── */
   --avai-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -89,6 +100,12 @@
   --color-avai-success:    var(--avai-success);
   --color-avai-success-bg: var(--avai-success-bg);
 
+  --color-avai-teal:       var(--avai-teal);
+  --color-avai-teal-deep:  var(--avai-teal-deep);
+  --color-avai-teal-mid:   var(--avai-teal-mid);
+  --color-avai-teal-tint:  var(--avai-teal-tint);
+  --color-avai-teal-wash:  var(--avai-teal-wash);
+
   --radius-avai-card:    var(--avai-radius-card);
   --radius-avai-control: var(--avai-radius-control);
   --radius-avai-pill:    var(--avai-radius-pill);
@@ -101,11 +118,13 @@
 .avai-scope {
   color: var(--avai-ink);
   background: var(--avai-canvas);
+  font-family: var(--font-inter), "Inter", system-ui, sans-serif;
 }
 
 .avai-scope h1,
 .avai-scope h2,
 .avai-scope h3 {
+  font-family: var(--font-poppins), "Poppins", system-ui, sans-serif;
   font-weight: 700;
   line-height: var(--avai-leading-heading);
   letter-spacing: var(--avai-tracking-heading);
@@ -206,7 +225,8 @@
   border-radius: var(--avai-radius-pill);
 }
 .avai-progress-fill {
-  background: linear-gradient(90deg, var(--avai-accent-500), var(--avai-accent-600));
+  /* The river runs teal — brand accent reserved for progress. */
+  background: linear-gradient(90deg, var(--avai-teal-mid), var(--avai-teal));
   border-radius: var(--avai-radius-pill);
   transition: width var(--avai-duration-slow) var(--avai-ease);
 }

@@ -95,34 +95,50 @@ that file, plus JSON design tokens. Logos: `vai-branding/logo/VAI_LOGO_clr.svg`
 - Recolored AI/EPS vector masters for print (known issue in palette.md, not an
   app concern).
 
-## Open decisions (need Bri)
+## Open decisions (resolved 2026-08-25)
 
-1. **Primary CTA color:** recommendation is navy buttons with teal reserved for
-   progress and small accents (matches the guide's share guidance). If the
-   landing page's CTAs are teal and Bri wants buttons to match them exactly,
-   the mapping flips for buttons only; contrast still passes since white on
-   `#209B9D` is used as large-text/fill per the combo table.
-2. **Wave asset source:** export the actual wave from Wix or Canva (pixel-true
-   to the landing page), or recreate it as a clean SVG in brand colors
-   (lighter, crisper, but an approximation). Recreate is the recommendation
-   unless the exact shape matters to Bri.
+1. **Primary CTA color:** navy buttons, teal reserved for progress and small
+   accents ("perfect" per Bri).
+2. **Wave asset source:** recreate as a clean SVG in brand colors (Bri's call).
 
 ## Steps
 
-- [ ] Bri confirms the two open decisions.
-- [ ] Read `node_modules/next/dist/docs/` font-loading guide (repo rule).
-- [ ] Fonts swapped in `layout.tsx`; heading/body variables wired.
-- [ ] `assessment-theme.css` token swap per mapping.
-- [ ] Logo + icon into `public/`; wordmark placed; favicon + metadata.
-- [ ] Wave divider component built and placed.
-- [ ] Results + EmailGate moved onto theme tokens and re-skinned.
-- [ ] Boilerplate SVGs deleted.
-- [ ] Preview deploy; full click-through; contrast spot-check; mobile check.
-- [ ] Commit, push, production deploy.
+- [x] Bri confirms the two open decisions.
+- [x] Read `node_modules/next/dist/docs/` font-loading guide (repo rule).
+- [x] Fonts swapped in `layout.tsx`; heading/body variables wired.
+- [x] `assessment-theme.css` token swap per mapping.
+- [x] Logo + icon into `public/` and `src/app/icon.svg`; wordmark placed on
+      assessment landing, teaser, results; metadata title "Ownership Debt
+      Assessment | VAI".
+- [x] Wave component (`src/components/BrandWave.tsx`) built and placed on
+      assessment landing, teaser, results.
+- [x] Results + EmailGate + results-visuals moved onto brand tokens (via
+      `vai-` utilities in globals.css); zero prospect-facing indigo remains.
+- [x] Boilerplate SVGs + default favicon deleted.
+- [x] Preview deploy builds clean (ownership-assessment-citv8fbdp-vai4).
+- [ ] Visual click-through — blocked for the AI, needs Bri (see deviations).
+- [ ] Production deploy: `vercel deploy --prod` after Bri's eyeball.
 
 ## Decisions & deviations
 
 - 2026-08-25: task drafted from a code audit; no code touched yet.
+- 2026-08-25: brand tokens exposed two ways deliberately: the assessment flow
+  keeps its `--avai-*` system (single-file rebrand preserved), while
+  `globals.css` gains app-wide `vai-*` Tailwind utilities for surfaces outside
+  the flow (results, email gate). Same hex values in both.
+- 2026-08-25: dark-mode background flip removed from globals.css; the brand
+  is light-only and the flip was create-next-app residue.
+- 2026-08-25: success/checkmark color moved from stock green to brand teal
+  (`#135C5D` on `#EFF8F8`), keeping teal "sparing and meaningful."
+- 2026-08-25: local `next build` hangs on this machine (same slow-IO issue
+  the productivity-gap session hit), so compile verification came from the
+  Vercel preview build, which succeeded. Visual verification is stuck: the
+  preview URL sits behind Vercel SSO the AI can't pass, copying Supabase envs
+  from .env.local to the Preview environment was blocked by the permission
+  classifier, and browser navigation was blocked mid-attempt. Bri verifies in
+  her own browser instead. Note: teaser and results pages will error on ANY
+  preview deploy until Supabase envs exist in the Preview environment
+  (they're Production-only today); `/assessment` renders without them.
 
 ## Follow-ups
 

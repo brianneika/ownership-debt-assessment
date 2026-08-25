@@ -1,28 +1,61 @@
 @import "tailwindcss";
 
+/* ─── VAI brand (vai-va-training/vai-branding/palette.md v2.0) ──────────────
+   Navy is primary, teal is a sparing accent, light gray is the neutral
+   background. Teal core #209B9D fails contrast as text on white — use
+   vai-teal-deep (#135C5D) for teal-colored text on light backgrounds.
+   Light-only by brand decision: the create-next-app dark-mode flip is gone. */
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #000000;
+
+  --vai-navy: #244397; /* Navy 900 core — AAA on white */
+  --vai-navy-deep: #1f3a82; /* hover/pressed */
+  --vai-navy-mid: #4a69be; /* Navy 500 — AA on white */
+  --vai-navy-soft: #9caad0; /* Navy 300 — pair with black text */
+  --vai-navy-tint: #d8ddec; /* Navy 100 */
+  --vai-navy-wash: #f0f2f8; /* Navy 50 */
+  --vai-teal: #209b9d; /* Teal core — fills only, not text on white */
+  --vai-teal-deep: #135c5d; /* Teal 900 — accessible teal text */
+  --vai-teal-mid: #37c1c3; /* Teal 500 — data viz, waves */
+  --vai-teal-soft: #9bd2d3; /* Teal 300 */
+  --vai-teal-tint: #d7eded; /* Teal 100 */
+  --vai-teal-wash: #eff8f8; /* Teal 50 */
+  --vai-gray: #f3f5f7; /* Light Gray backgrounds */
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --font-sans: var(--font-inter);
+  --font-heading: var(--font-poppins);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* bg-vai-navy, text-vai-teal-deep, border-vai-navy-tint, … */
+  --color-vai-navy: var(--vai-navy);
+  --color-vai-navy-deep: var(--vai-navy-deep);
+  --color-vai-navy-mid: var(--vai-navy-mid);
+  --color-vai-navy-soft: var(--vai-navy-soft);
+  --color-vai-navy-tint: var(--vai-navy-tint);
+  --color-vai-navy-wash: var(--vai-navy-wash);
+  --color-vai-teal: var(--vai-teal);
+  --color-vai-teal-deep: var(--vai-teal-deep);
+  --color-vai-teal-mid: var(--vai-teal-mid);
+  --color-vai-teal-soft: var(--vai-teal-soft);
+  --color-vai-teal-tint: var(--vai-teal-tint);
+  --color-vai-teal-wash: var(--vai-teal-wash);
+  --color-vai-gray: var(--vai-gray);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-inter), "Inter", system-ui, sans-serif;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-poppins), "Poppins", system-ui, sans-serif;
 }
 
 /* ─── Report PDF / print styles ──────────────────────────────────────────────

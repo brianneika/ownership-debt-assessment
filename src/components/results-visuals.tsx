@@ -136,15 +136,15 @@ export function ScoreSpectrumCards({ ods, drs }: { ods: ScoreData; drs: ScoreDat
 // the consultant call's job.
 export function SynthesisBlock({ synthesis }: { synthesis: Synthesis }) {
   return (
-    <div className="bg-white rounded-2xl border border-indigo-200 shadow-sm p-7 mb-6">
-      <p className="text-xs font-semibold uppercase tracking-widest text-indigo-500 mb-1.5">
+    <div className="bg-white rounded-2xl border border-vai-navy-tint shadow-sm p-7 mb-6">
+      <p className="text-xs font-semibold uppercase tracking-widest text-vai-navy mb-1.5">
         What your scores mean together
       </p>
       <h2 className="text-lg font-bold text-gray-900">{synthesis.headline}</h2>
       <p className="text-sm text-gray-600 mt-2 leading-relaxed">{synthesis.body}</p>
 
       {synthesis.weakestCategory && (
-        <div className="mt-4 bg-indigo-50 border border-indigo-100 rounded-lg p-4">
+        <div className="mt-4 bg-vai-navy-wash border border-vai-navy-tint rounded-lg p-4">
           <p className="text-sm text-gray-800 leading-relaxed">
             The biggest thing holding your readiness back is{' '}
             <span className="font-semibold">{synthesis.weakestCategory.category}</span>{' '}
@@ -183,7 +183,7 @@ export function DrsReadinessBreakdown({
                 <span className={`text-sm ${isWeakest ? 'font-semibold text-gray-900' : 'text-gray-700'}`}>
                   {cat.category}
                   {isWeakest && (
-                    <span className="ml-2 text-[10px] font-semibold uppercase tracking-wide text-indigo-500">
+                    <span className="ml-2 text-[10px] font-semibold uppercase tracking-wide text-vai-teal-deep">
                       driving your score down
                     </span>
                   )}
@@ -194,7 +194,7 @@ export function DrsReadinessBreakdown({
               </div>
               <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
                 <div
-                  className={`h-full rounded-full ${isWeakest ? 'bg-indigo-500' : 'bg-indigo-300'}`}
+                  className={`h-full rounded-full ${isWeakest ? 'bg-vai-teal' : 'bg-vai-teal-soft'}`}
                   style={{ width: `${Math.min(Math.max(cat.score, 0), 100)}%` }}
                 />
               </div>

@@ -1,6 +1,7 @@
 import '../assessment/assessment-theme.css';
 import { fetchQuestions } from '@/lib/assessment';
 import { TeaserForm } from './TeaserForm';
+import { BrandWave } from '@/components/BrandWave';
 import type { Question } from '@/lib/assessment';
 
 export const dynamic = 'force-dynamic';
@@ -32,21 +33,16 @@ export default async function TeaserLandingPage() {
         background: 'linear-gradient(145deg, var(--avai-canvas) 0%, var(--avai-accent-50) 100%)',
       }}
     >
-      <div className="w-full max-w-lg">
+      <BrandWave />
+      <div className="w-full max-w-lg relative z-10">
         {/* Header */}
         <div className="text-center mb-8">
-          <div
-            className="inline-flex items-center justify-center w-12 h-12 mb-6"
-            style={{
-              background: 'linear-gradient(180deg, var(--avai-accent-500), var(--avai-accent-700))',
-              borderRadius: 'var(--avai-radius-control)',
-              boxShadow: 'var(--avai-shadow-button)',
-            }}
-          >
-            <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/vai-logo.svg"
+            alt="VAI"
+            className="inline-block h-12 w-auto mb-6"
+          />
 
           <h1
             className="text-[2rem] font-bold mb-3"
