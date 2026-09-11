@@ -77,7 +77,7 @@ reads 75%, Heavily owner-run. Before: 0%, Ready.
 - [x] 2026-09-11 Code written: grid form, scored questions, new proxy, copy updates.
 - [x] 2026-09-11 `tsc` and `next build` green (constants un-exported from the server-action file)
 - [x] 2026-09-11 Phone-width render checked locally (grid, two scored questions, reveal button); committed and pushed to main
-- [ ] `vercel --prod` deploy (Bri or agent with CLI access)
+- [x] 2026-09-11 `vercel --prod` deployed (ownership-assessment-eoz7ema7v-vai4, Ready); live /teaser serves "Three quick questions", HTTP 200
 - [ ] Bri click-through on the live `/teaser`: grid, two questions, number, unlock,
       Section B shows the four roles, Section G shows Q074/Q079 pre-filled, admin
       badge Teaser
