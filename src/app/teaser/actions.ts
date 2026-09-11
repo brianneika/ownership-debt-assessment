@@ -7,7 +7,6 @@ import {
   setDrsProfile,
   setWorkflowModes,
   setTeaserCompleted,
-  refineDrsProfile,
   answerToMode,
   B_QUESTION_TO_WORKFLOW,
   type WorkflowKey,
@@ -15,56 +14,83 @@ import {
 import { getSupabaseServer } from '@/lib/supabase-server';
 import { upsertHubspotContact } from '@/lib/hubspot';
 
-// The 5 teaser questions, in display order.
-const TEASER_KEYS = ['A006', 'B001', 'B002', 'B003', 'B004'] as const;
+// Teaser v2 (plans/tasks/20260911-teaser-named-owner-grid.md):
+//   grid rows  B001 to B004  -> 'yes' | 'no'   (stored as named_owner | team_leader)
+//   authority  Q079          -> '0'..'4'       (stored as score_value, same as Section G)
+//   take back  Q074          -> '0'..'4'       (stored as score_value, same as Section G)
+const TEASER_GRID_KEYS = ['B001', 'B002', 'B003', 'B004'] as const;
+const TEASER_AUTHORITY_KEY = 'Q079';
+const TEASER_TAKE_BACK_KEY = 'Q074';
+
+// Grid "Yes" is stored as this value on B001 to B004. answerToMode maps it to
+// Mode B; the full flow's section intros fall back to "your team member" because
+// it matches no role option, and Section B lets the leader pick the actual role.
+const NAMED_OWNER_VALUE = 'named_owner';
+
+function parseScore(raw: string): number | null {
+  if (!/^[0-4]$/.test(raw)) return null;
+  return Number(raw);
+}
 
 // ─── Start the teaser ─────────────────────────────────────────────────────────
-// Reads the 5 answers, creates a teaser-origin session, saves them, and pre-routes
-// the full assessment (drs_profile + workflow modes) exactly as Sections A/B would,
-// so the eventual handoff opens pre-filled and pre-branched. Redirects to the
-// preview.
+// Reads the grid plus the two leader answers, creates a teaser-origin session,
+// saves everything in the shapes the full flow already uses, pre-routes the four
+// workflows, and redirects to the preview.
 export async function startTeaser(formData: FormData) {
-  const values: Record<string, string> = {};
-  for (const key of TEASER_KEYS) {
+  const grid: Record<string, string> = {};
+  for (const key of TEASER_GRID_KEYS) {
     const v = ((formData.get(key) as string) ?? '').trim();
-    if (!v) return; // all 5 required; the client guards this too
-    values[key] = v;
+    if (v !== 'yes' && v !== 'no') return; // all rows required; the client guards this too
+    grid[key] = v === 'yes' ? NAMED_OWNER_VALUE : 'team_leader';
   }
+  const authority = parseScore(((formData.get(TEASER_AUTHORITY_KEY) as string) ?? '').trim());
+  const takeBack = parseScore(((formData.get(TEASER_TAKE_BACK_KEY) as string) ?? '').trim());
+  if (authority === null || takeBack === null) return;
 
   const sessionId = await createSession('teaser');
   const supabase = getSupabaseServer();
 
+  const keys = [...TEASER_GRID_KEYS, TEASER_AUTHORITY_KEY, TEASER_TAKE_BACK_KEY];
   const { data: questions } = await supabase
     .from('questions')
     .select('id, question_key')
-    .in('question_key', [...TEASER_KEYS]);
+    .in('question_key', keys);
   const qId = Object.fromEntries((questions ?? []).map((q) => [q.question_key, q.id]));
 
-  await Promise.all(
-    TEASER_KEYS.map((key) =>
+  await Promise.all([
+    ...TEASER_GRID_KEYS.map((key) =>
       qId[key]
         ? saveAnswer(sessionId, qId[key], {
             answer_type: 'categorical_radio',
-            text_value: values[key],
+            text_value: grid[key],
           })
         : Promise.resolve(),
     ),
-  );
+    qId[TEASER_AUTHORITY_KEY]
+      ? saveAnswer(sessionId, qId[TEASER_AUTHORITY_KEY], {
+          answer_type: 'scored_radio',
+          score_value: authority,
+        })
+      : Promise.resolve(),
+    qId[TEASER_TAKE_BACK_KEY]
+      ? saveAnswer(sessionId, qId[TEASER_TAKE_BACK_KEY], {
+          answer_type: 'scored_radio',
+          score_value: takeBack,
+        })
+      : Promise.resolve(),
+  ]);
 
-  // Pre-route: set workflow modes + drs_profile now (same logic as advanceSectionB).
+  // Pre-route: set workflow modes now (same logic as advanceSectionB).
   const modes: Partial<Record<WorkflowKey, 'A' | 'B' | 'C'>> = {};
   for (const [bKey, wfKey] of Object.entries(B_QUESTION_TO_WORKFLOW)) {
-    modes[wfKey as WorkflowKey] = answerToMode(values[bKey]);
+    modes[wfKey as WorkflowKey] = answerToMode(grid[bKey]);
   }
   await setWorkflowModes(sessionId, modes);
 
-  const profile = refineDrsProfile(values['A006'], {
-    C: modes.C ?? null,
-    D: modes.D ?? null,
-    E: modes.E ?? null,
-    F: modes.F ?? null,
-  });
-  await setDrsProfile(sessionId, profile);
+  // The teaser no longer asks team size. Four "No" rows read as a solo operator
+  // for now; Section A (A006) and Section B refine this on unlock.
+  const allOwnerRun = Object.values(modes).every((m) => m === 'A');
+  await setDrsProfile(sessionId, allOwnerRun ? 'solo' : 'team');
 
   await setTeaserCompleted(sessionId);
 
@@ -74,8 +100,8 @@ export async function startTeaser(formData: FormData) {
 // ─── Unlock → full assessment ─────────────────────────────────────────────────
 // The real conversion point. Captures name + business + email (+ consent by
 // submission), saves A001/A002 so the full flow, admin, and HubSpot have identity,
-// syncs the lead, then hands off into the full assessment with Sections A/B already
-// answered on the board.
+// syncs the lead, then hands off into the full assessment with the four workflows
+// already routed and Q074/Q079 already on the board.
 export async function unlockFullAssessment(sessionId: string, formData: FormData) {
   const name = ((formData.get('name') as string) ?? '').trim();
   const businessName = ((formData.get('business_name') as string) ?? '').trim();
@@ -86,7 +112,7 @@ export async function unlockFullAssessment(sessionId: string, formData: FormData
   const supabase = getSupabaseServer();
   const consentedAt = new Date().toISOString();
 
-  // Save A001 (name) + A002 (business name) — the identity the full flow normally
+  // Save A001 (name) + A002 (business name), the identity the full flow normally
   // collects on its landing page, which the teaser visitor skipped.
   const { data: questions } = await supabase
     .from('questions')
@@ -103,7 +129,7 @@ export async function unlockFullAssessment(sessionId: string, formData: FormData
       : Promise.resolve(),
   ]);
 
-  // Email + consent — same by-submission mechanism as the results gate (migration 006).
+  // Email + consent, same by-submission mechanism as the results gate (migration 006).
   const { error } = await supabase
     .from('assessment_sessions')
     .update({ respondent_email: email, consented_at: consentedAt })
@@ -117,7 +143,7 @@ export async function unlockFullAssessment(sessionId: string, formData: FormData
       .eq('id', sessionId);
   }
 
-  // Sync the lead to HubSpot — side channel, never blocks the handoff.
+  // Sync the lead to HubSpot, side channel, never blocks the handoff.
   try {
     await Promise.race([
       upsertHubspotContact(sessionId, email, name, businessName, consentedAt),

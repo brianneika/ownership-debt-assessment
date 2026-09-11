@@ -311,7 +311,10 @@ export async function fetchSessionDetail(sessionId: string): Promise<SessionDeta
     const rawValue = a.answer_type === 'scored_radio' ? a.score_value : a.text_value;
     if (rawValue === null || rawValue === undefined) return null;
     const match = options.find((o) => String(o.value) === String(rawValue));
-    return match?.label ?? String(rawValue);
+    if (match) return match.label;
+    // Teaser grid "Yes" is stored on B001 to B004 without a role.
+    if (rawValue === 'named_owner') return 'Named owner (role not given)';
+    return String(rawValue);
   }
 
   function textFor(questionKey: string): string | null {

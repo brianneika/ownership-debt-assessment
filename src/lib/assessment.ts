@@ -133,6 +133,7 @@ export function answerToMode(answerValue: string): WorkflowMode {
     case 'tc':
     case 'listing_coordinator':
     case 'operations_manager':
+    case 'named_owner': // teaser grid "Yes": a named owner exists, role not yet known
       return 'B';
     case 'shared':
     default:

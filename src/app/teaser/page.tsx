@@ -1,30 +1,42 @@
 import '../assessment/assessment-theme.css';
-import { fetchQuestions } from '@/lib/assessment';
-import { TeaserForm } from './TeaserForm';
+import { notFound } from 'next/navigation';
+import { fetchQuestions, WORKFLOW_NAMES, B_QUESTION_TO_WORKFLOW } from '@/lib/assessment';
+import { TeaserForm, type GridRow } from './TeaserForm';
 import { BrandWave } from '@/components/BrandWave';
-import type { Question } from '@/lib/assessment';
 
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'How much still runs through you? — 2-minute check',
   description:
-    'Answer 5 quick questions and see how much of your core business still runs through you. Free preview, no email required.',
+    'Three quick questions and you see how much of your core business still runs through you. Free preview, no email required.',
+};
+
+// Short scope line for each grid row, keyed by workflow.
+const WORKFLOW_DETAIL: Record<string, string> = {
+  C: 'Signed listing agreement to live on MLS',
+  D: 'Weekly updates, feedback, price review prep',
+  E: 'Executed contract to critical date calendar',
+  F: 'Appraisal, underwriting, clear to close, closing',
 };
 
 export default async function TeaserLandingPage() {
-  const [aQuestions, bQuestions] = await Promise.all([
-    fetchQuestions('A'),
+  const [bQuestions, gQuestions] = await Promise.all([
     fetchQuestions('B'),
+    fetchQuestions('G'),
   ]);
 
-  const a006 = aQuestions.find((q) => q.question_key === 'A006');
-  const bTeaser = bQuestions.filter((q) =>
-    ['B001', 'B002', 'B003', 'B004'].includes(q.question_key),
-  );
+  const gridRows: GridRow[] = (['B001', 'B002', 'B003', 'B004'] as const)
+    .filter((key) => bQuestions.some((q) => q.question_key === key))
+    .map((key) => {
+      const wf = B_QUESTION_TO_WORKFLOW[key];
+      return { questionKey: key, name: WORKFLOW_NAMES[wf], detail: WORKFLOW_DETAIL[wf] };
+    });
 
-  // A006 first, then B001–B004 (already in question_order).
-  const questions: Question[] = [a006, ...bTeaser].filter(Boolean) as Question[];
+  const authority = gQuestions.find((q) => q.question_key === 'Q079');
+  const takeBack = gQuestions.find((q) => q.question_key === 'Q074');
+
+  if (gridRows.length !== 4 || !authority || !takeBack) notFound();
 
   return (
     <div
@@ -58,12 +70,12 @@ export default async function TeaserLandingPage() {
             className="text-[15px] max-w-sm mx-auto"
             style={{ color: 'var(--avai-ink-muted)', lineHeight: 'var(--avai-leading-body)' }}
           >
-            Five quick questions about your core workflows. You will see a preview of how
+            Three quick questions about your core workflows. You will see a preview of how
             owner-dependent your business is right now. No email needed to see your number.
           </p>
         </div>
 
-        <TeaserForm questions={questions} />
+        <TeaserForm gridRows={gridRows} authority={authority} takeBack={takeBack} />
 
         <p className="text-xs text-center mt-5" style={{ color: 'var(--avai-ink-faint)' }}>
           This is a preliminary read. The full assessment sharpens both of your scores.

@@ -74,7 +74,7 @@ export function TeaserResult({
         </div>
 
         <p className="text-xs mt-5" style={{ color: 'var(--avai-ink-faint)' }}>
-          Estimated from your 5 answers. The full assessment sharpens this into your real
+          Estimated from your answers. The full assessment sharpens this into your real
           Ownership Debt Score.
         </p>
       </div>
@@ -110,7 +110,7 @@ export function TeaserResult({
           Get your full assessment
         </p>
         <p className="text-sm mb-5" style={{ color: 'var(--avai-ink-muted)', lineHeight: 'var(--avai-leading-body)' }}>
-          Your 5 answers are already saved. Unlock the full assessment to turn this
+          Your answers are already saved. Unlock the full assessment to turn this
           estimate into your real Ownership Debt and Delegation Readiness scores, plus your
           single highest-leverage next move. You will pick up right where you left off.
         </p>

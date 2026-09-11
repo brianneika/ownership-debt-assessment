@@ -19,19 +19,20 @@ export default async function TeaserResultPage({
 
   const answers = await fetchSessionAnswers(sessionId);
 
-  // No teaser answers on this session → send them to take it.
+  // No teaser answers on this session: send them to take it.
   if (!answers.get('B001') && !answers.get('B002') && !answers.get('B003') && !answers.get('B004')) {
     redirect('/teaser');
   }
 
   const teaserAnswers: TeaserAnswers = {
-    a006: answers.get('A006')?.text_value ?? null,
     b: {
       C: answers.get('B001')?.text_value ?? null,
       D: answers.get('B002')?.text_value ?? null,
       E: answers.get('B003')?.text_value ?? null,
       F: answers.get('B004')?.text_value ?? null,
     },
+    authority: answers.get('Q079')?.score_value ?? null,
+    takeBack: answers.get('Q074')?.score_value ?? null,
   };
 
   const estimate = computeTeaserEstimate(teaserAnswers);
