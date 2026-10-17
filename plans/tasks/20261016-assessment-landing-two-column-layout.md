@@ -37,3 +37,5 @@ Rebuild the `/assessment` landing page layout from Bri's mockup so it scans fast
 - Code written but uncommitted: `src/app/assessment/page.tsx`, `src/components/BrandWave.tsx`.
 - Not yet viewed: `next dev` takes many minutes to start because the Desktop syncs to iCloud (164k cloud-only files, about 0.7 s per cold read). Bri is copying both code folders to `~/Code Folder` and `~/Code Folder 2.0` (rsync, skipping node_modules/.next) overnight.
 - Next session: confirm the copy finished, `npm install` in the new ownership-assessment folder, run dev there, screenshot 1,280 × 720 and mobile, then commit, push, deploy.
+
+- 2026-10-17: Bri removed "Your progress saves as you go." from the start card.

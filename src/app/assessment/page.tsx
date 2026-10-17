@@ -108,9 +108,6 @@ export default function AssessmentLandingPage() {
               <p className="mt-1.5 text-[15px] font-medium" style={{ color: 'var(--avai-ink-muted)' }}>
                 15–20 minutes · Free
               </p>
-              <p className="mt-1 text-sm" style={{ color: 'var(--avai-ink-muted)' }}>
-                Your progress saves as you go.
-              </p>
 
               <div className="mt-6" style={{ display: 'flex', flexDirection: 'column', gap: '1.125rem' }}>
                 <div>
