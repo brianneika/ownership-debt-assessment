@@ -4,8 +4,8 @@ import { BrandWave } from '@/components/BrandWave';
 
 const EXPECT_ITEMS = [
   {
-    title: '~15 minutes',
-    desc: "Eight sections that adapt to how your business runs — the more you've delegated, the deeper it goes. Set aside 15 minutes to do it in one sitting.",
+    title: '15 to 20 minutes to look at how your business runs.',
+    desc: 'Answer eight short sections about the work you handle and what you’ve handed off. We ask more about the responsibilities you’ve already delegated, so the length varies.',
     icon: (
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
         <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -13,8 +13,8 @@ const EXPECT_ITEMS = [
     ),
   },
   {
-    title: 'Built for real estate teams',
-    desc: 'Walks through how your listings launch, your transactions close, and your people escalate.',
+    title: 'Built around real estate work you know.',
+    desc: 'For solo agents and team leaders. You’ll look at four familiar workflows: listing launch, seller communication, file opening, and lender tracking.',
     icon: (
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
         <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h4v-6h4v6h4a1 1 0 001-1V10" />
@@ -22,8 +22,8 @@ const EXPECT_ITEMS = [
     ),
   },
   {
-    title: 'Two scores you keep',
-    desc: 'Your Ownership Debt Score (how much the business still depends on you) and your Delegation Readiness Score (how ready your team is to carry it) — plus your single highest-leverage next move.',
+    title: 'Two scores and a clearer place to focus.',
+    desc: 'Your Ownership Debt Score shows how much still depends on you. Your Delegation Readiness Score shows how prepared your business is to keep work moving after you hand it off. Your results highlight the gap to address first.',
     icon: (
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
         <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -50,6 +50,12 @@ export default function AssessmentLandingPage() {
             className="inline-block h-12 w-auto mb-6"
           />
 
+          <p
+            className="text-[11px] font-bold uppercase tracking-widest mb-2"
+            style={{ color: 'var(--avai-accent-600)' }}
+          >
+            The Ownership Debt Assessment
+          </p>
           <h1
             className="text-[2rem] font-bold mb-3"
             style={{
@@ -58,14 +64,16 @@ export default function AssessmentLandingPage() {
               lineHeight: 'var(--avai-leading-heading)',
             }}
           >
-            Ownership Assessment
+            How much of your business still depends on you?
           </h1>
           <p
             className="text-[15px] max-w-sm mx-auto"
             style={{ color: 'var(--avai-ink-muted)', lineHeight: 'var(--avai-leading-body)' }}
           >
-            A structured diagnostic that reveals exactly where ownership debt lives
-            in your business — and what to do about it.
+            You can hand off the work and still be the person everyone needs to keep it
+            moving. The decisions, follow-ups, and know-how that stay with you are ownership
+            debt. Find out where your business still relies on you and what could keep your
+            next handoff from sticking.
           </p>
         </div>
 
@@ -91,15 +99,15 @@ export default function AssessmentLandingPage() {
                   {icon}
                 </span>
                 <div>
-                  <span
+                  <p
                     className="text-sm font-semibold"
                     style={{ color: 'var(--avai-ink)' }}
                   >
                     {title}
-                  </span>
-                  <span className="text-sm" style={{ color: 'var(--avai-ink-muted)' }}>
-                    {' '}— {desc}
-                  </span>
+                  </p>
+                  <p className="text-sm mt-0.5" style={{ color: 'var(--avai-ink-muted)' }}>
+                    {desc}
+                  </p>
                 </div>
               </li>
             ))}
@@ -158,7 +166,7 @@ export default function AssessmentLandingPage() {
               className="avai-btn-primary w-full py-3.5 text-sm font-semibold mt-1"
               style={{ borderRadius: 'var(--avai-radius-control)' }}
             >
-              Start Assessment →
+              Start my assessment →
             </button>
           </div>
 
@@ -166,7 +174,8 @@ export default function AssessmentLandingPage() {
             className="text-xs text-center mt-4"
             style={{ color: 'var(--avai-ink-faint)' }}
           >
-            Your answers are private — we use them to build your personalized report.
+            Free. Your answers save as you go. At the end, enter your email to view your
+            full results on screen.
           </p>
         </form>
 

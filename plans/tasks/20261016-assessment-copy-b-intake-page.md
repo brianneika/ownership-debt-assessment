@@ -1,6 +1,6 @@
 # Assessment copy B: rewrite the intake page with APPLE
 
-**Status:** Not started <!-- Not started | In progress | Blocked | Done -->
+**Status:** In progress (2026-10-16): draft ready for Bri <!-- Not started | In progress | Blocked | Done -->
 
 ## Objective
 
@@ -33,7 +33,8 @@ Rewrite the `/assessment` intake page (cold visitors) and the teaser's unlock bo
 
 ## Progress
 
-- [ ] Draft per the brief, with a facts-to-confirm note
-- [ ] Bri approves copy
-- [ ] Update `page.tsx`, check on phone width and localhost
+- [x] Draft per the brief, with a facts-to-confirm note (`vai-va-training/output/20261016-assessment-copy-b-intake-draft.md`)
+- [x] Bri approves copy (2026-10-16, her own edit of the draft; final wording is what's in the code)
+- [x] Update `page.tsx` and the teaser unlock box (2026-10-16)
+- [ ] Check on phone width and localhost (blocked 2026-10-16: `next dev` and `tsc` hung with no output from this session; Bri to run locally)
 - [ ] Deploy, verify live, set Done

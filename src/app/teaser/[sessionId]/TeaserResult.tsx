@@ -19,7 +19,7 @@ function UnlockButton() {
       className="avai-btn-primary w-full py-3.5 text-sm font-semibold disabled:opacity-60"
       style={{ borderRadius: 'var(--avai-radius-control)' }}
     >
-      {pending ? 'Building your full assessment…' : 'Unlock my full assessment →'}
+      {pending ? 'Building your full assessment…' : 'Continue my assessment →'}
     </button>
   );
 }
@@ -107,12 +107,16 @@ export function TeaserResult({
           className="text-[11px] font-bold uppercase tracking-widest mb-2"
           style={{ color: 'var(--avai-ink-faint)' }}
         >
-          Get your full assessment
+          Go beyond your estimate
+        </p>
+        <p className="text-sm mb-3" style={{ color: 'var(--avai-ink-muted)', lineHeight: 'var(--avai-leading-body)' }}>
+          Three questions give you a starting point. The full assessment looks more closely at
+          how your business runs to calculate your Ownership Debt Score and Delegation Readiness
+          Score and highlight the gap to address first.
         </p>
         <p className="text-sm mb-5" style={{ color: 'var(--avai-ink-muted)', lineHeight: 'var(--avai-leading-body)' }}>
-          Your answers are already saved. Unlock the full assessment to turn this
-          estimate into your real Ownership Debt and Delegation Readiness scores, plus your
-          single highest-leverage next move. You will pick up right where you left off.
+          Allow 15 to 20 minutes for the full assessment. Your earlier answers are saved, so you
+          can pick up where you left off.
         </p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.125rem' }}>
@@ -141,8 +145,8 @@ export function TeaserResult({
         </div>
 
         <p className="text-xs text-center mt-4" style={{ color: 'var(--avai-ink-faint)' }}>
-          By continuing, you agree that VAILeverage may email you your results and occasional
-          delegation insights. Unsubscribe anytime.
+          By continuing, you agree that Vai Holdings, LLC (VAI) may email you about your
+          assessment results and occasional delegation insights. You can unsubscribe anytime.
         </p>
       </form>
     </div>
