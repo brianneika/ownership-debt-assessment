@@ -1,0 +1,246 @@
+# Assessment v2: honest answers, healthy ownership, and section copy
+
+**Status:** Not started (2026-10-17): plan agreed, all open questions decided; Phase 1 waits on Bri's approval of the section draft <!-- Not started | In progress | Blocked | Done -->
+
+## Objective
+
+Revise the Ownership Debt Assessment so every respondent can answer honestly, so "ownership" is measured precisely (routine work handled with the right decisions escalated, not the leader never involved), so its length is a deliberate decision, and so the results repay the effort of finishing; keep the section copy (task C) in step, and ship it as a new, labeled version of the instrument.
+
+## Why
+
+A full test walk on 2026-10-17 (every team-owned workflow, an owner-run branch, a shared branch, both readiness tracks and the completion screen, using a session labeled "Assessment review TEST" with synthetic answers) found problems deeper than readability:
+
+- Some answer choices force an inaccurate answer.
+- Some questions imply that good delegation means the leader is never involved.
+- Some scales mix two measurements, or overlap at the edges.
+- The readiness section reads like a character test in places.
+- The solo track asks people with no staff about their staff.
+
+The experience should leave someone thinking "That helped me see my business clearly." Today it risks "I can see which answer you want." If the assessment misunderstands their business in the first few screens, they have less reason to trust its conclusion.
+
+Ladders up to the master plan: job 2 (qualification reads as fit) and job 4 (the day-90 retake proves the delta). A retake is only proof if the instrument measures the right thing and old and new scores are never silently compared across versions.
+
+**This reverses one decision.** Task A's approved brief (2026-10-16) put question wording and answer options out of scope because changing them changes what scores mean. This task brings them in scope on purpose, and handles the "changes what scores mean" problem with versioning (part 7 below). With only a couple of real respondents so far, now is the cheapest time to do it.
+
+## How this combines with task C (section intros)
+
+Bri asked for one plan covering both. The section intros are already drafted and close to approval (`vai-va-training/output/20261017-assessment-copy-c-section-draft.md`), so they ship first, on today's questions, as **Phase 1**. The draft computes question counts from each page's question list, so the counts stay true when v2 changes them. Phase 6 then revises only the intro lines that v2 changes (owner tags, the "shared" intro, the solo track, Part 1). Task C's file points here and stays as the record of the approved copy.
+
+## Priority order
+
+1. Fix answer fit and scales.
+2. Correct the definition of healthy ownership, and keep the reason for a gap separate from its consequence.
+3. Decide the length on purpose: remove questions that don't change a recommendation, and sharpen wording.
+4. Results that explain the finding, show what it's based on, name a practical priority and say what's missing.
+
+Kept from the first draft of this plan, unchanged: the answer-fit fixes, the neutral wording and the versioning.
+
+---
+
+## What changes
+
+### 1. Places where an honest answer doesn't fit (must fix)
+
+| Where | Problem today | Change |
+|---|---|---|
+| About you: support team size | Choices are "Just me", "2 people", then larger groups. Someone with one assistant has no answer. | Say "Not including you" and offer None, 1, 2, 3 to 4, 5 to 7, 8 or more. |
+| About you: business model | "Team lead with support staff" and "Team lead with buyer/listing agents" overlap; many clients have both. | Separate business structure (solo agent, team lead, brokerage owner, other) from staffing (support people, and agents producing under you) as their own questions. |
+| Who owns what: owner choices | Roles leave out assistants, VAs, other agents and outside coordinators. | Add "Another person or provider" with a short role field (for example "outsourced TC", "VA"). |
+| Who owns what: shared | "Shared / No clear owner" treats two different things as one. Work can be shared while accountability is clear. | Ask who is accountable for keeping the whole workflow moving, even when several people contribute. "No one is accountable" becomes its own answer. |
+| Owner-run workflow: why you still do it | Reasons leave out "I don't have support", budget, and a deliberate business decision. | Add those three. Don't force everyone into a skills, documentation or control problem. |
+| Questions that depend on an event happening | "Never" on a hard seller conversation could mean none happened. | Add "This didn't come up" wherever the question depends on an event. Score it as not applicable, never as a low score. |
+| Workflow relevance | Buyer-focused or cash-heavy businesses still get graded on seller and lender work. | Give each workflow a "We don't do this work" route in Who owns what. That workflow is skipped and left out of the overall score. |
+
+### 2. Measure ownership precisely, not total independence
+
+The most consequential change. Today the strongest answers include "Full authority within the workflow", "They own the resolution fully", "Without your involvement" and "They run it better than I would". Those measure different things. Someone can fully own a workflow and still correctly bring specific decisions to the leader; the escalation questions already recognize that, and the strongest-answer wording works against it.
+
+**"Within agreed boundaries" is not enough on its own.** Many respondents won't have agreed boundaries yet, and that is something the assessment should find, not assume. Swapping "without your involvement" for "within agreed boundaries" would hide the difference between three situations that need different fixes:
+
+| What's happening | What it means | What it points to |
+|---|---|---|
+| They handle the routine work and bring you the decisions that should come to you. | Healthy ownership. Your involvement is by design. | Strongest answer. Protect it. |
+| They wait for your approval because no one has said what they can decide. | Authority is unclear. The person may be capable; the boundaries don't exist yet. | Define decision rights. Not a people problem. |
+| You routinely check, correct or rescue the work. | The work hasn't really transferred. | Capability, process or trust gap, found by the questions that follow. |
+
+The ownership questions (and the readiness questions on decision boundaries) ask which of these is true, in the respondent's own terms, before asking how well it works. Answer lists use these three situations, not a single "how independent" scale.
+
+| Today | Direction |
+|---|---|
+| "How confident are you ... without you checking in?" | "How confident are you that they can keep listing launches moving, bringing you only the decisions that need you?" Paired with a question on whether those decisions have been spelled out. |
+| Top confidence answer: "They run it better than I would." | "Fully confident." Being better than the leader is a separate claim. |
+| "Who's accountable ... if a seller relationship sours?" | "Who takes responsibility for following through when a seller communication issue needs fixing?" |
+| Lender: "Did the file actually close on time?" | Ask about tracking milestones, spotting delays and coordinating next steps. Closing on time also depends on other parties. |
+
+Apply the same test to every top answer in the team-owned workflows: the best answer must describe routine ownership with the right escalation, never the leader being absent. The leader should not have to give up appropriate oversight to earn a better score.
+
+### 2a. Keep the reason separate from the consequence (scoring safeguard)
+
+- **No support is a staffing condition, not poor leadership readiness.** Someone with no team can't score low on readiness for not having one. Staffing is recorded as context; readiness questions for them are framed as future scenarios (part 5) and scored on those.
+- **Keeping a workflow on purpose is not a failure to delegate.** A leader who runs listing launches by choice gets that recorded as a choice.
+- **Measure the operational consequence on its own:** hours it takes, what slips, what waits on the leader. The debt score reflects the consequence. The reason (no support, budget, a deliberate choice, skills, documentation, trust) is reported alongside it as the "why", never added to the score as a penalty.
+- Results say this in words: "You run this yourself by choice. It takes about 4 to 8 hours a week" reads differently from "You haven't delegated this."
+
+### 3. One measurement per answer scale
+
+- "Do they send the weekly update straight to the seller, or does it come across your desk for review first?" answered with "Rarely / Sometimes / Usually" (usually which?). Becomes: "How often do they send routine seller updates without your review?", Never to Always.
+- "Once or twice / Sometimes / Often / Consistently" mixes counts with frequency. Two independent file openings could be every file that month.
+- "Several times a week / A few times a week / Once or twice a week" overlaps.
+- Owner-run hours overlap at 2 and 4. Becomes: Less than 1 hour, 1 to under 2, 2 to under 4, 4 to under 8, 8 or more.
+- "30 to 60 days / 60 to 90 days / 90+ days" overlaps at the edges and mixes duration with quality.
+
+Rule: one measurement per scale, no overlapping bands. Where how often something comes up varies, ask how often it happened *when it was needed*, not how many times.
+
+### 4. Remove wording that makes this feel like a character test (readiness)
+
+- Replace "How much of your reluctance to delegate is about the other person's readiness versus your own comfort with releasing control?" It assumes reluctance and forces two causes. New: "What most often keeps you involved in work you'd like someone else to own?" Choices: their capability, their capacity, unclear expectations, unclear decision boundaries, my own comfort letting go, nothing right now. This is a **diagnostic** question, not a low-to-high scale, so it is not scored that way (see open question 4).
+- "I celebrate it" as the top answer when someone succeeds differently: accepting a different approach is enough. Celebration measures personality.
+- "30 or more, they're overloaded" and "Fewer than 10, manageable load": file count alone doesn't show load. Ask about load directly, or ask files and other responsibilities together.
+- Drop "honestly", "actually", "real standard" and "under their watch" wherever they imply doubt or blame without adding precision.
+
+You can confront a leadership problem without wording questions as if you've already decided the leader is the problem.
+
+### 5. Solo track assumptions
+
+- The solo readiness track opens by asking about current team members, including work handed over in the last 90 days. Someone with no staff can't answer that.
+- "Solo agent" and "no support" are different. A solo producer can have an assistant or an outsourced TC.
+- Route on whether support exists (support team size above zero, including outside providers), not on business model. Where they have experience, ask about past behavior. Where they don't, ask clearly framed future scenarios ("If you brought on support for this...").
+- Today's rule that turns a two-person team into the solo track when the leader runs three or more workflows gets revisited with the new size choices.
+
+### 6. Repetition that has to earn its place
+
+The team-owned path is 98 questions, 72 of them across the four workflows. Don't cut by half on principle. Every repeated question must produce a distinct, useful finding. Start with:
+
+- Decision boundaries versus escalation thresholds in readiness: they ask nearly the same thing. Merge or sharpen until they differ.
+- The leader's confidence versus the leader's guess at the team member's self-confidence: the second asks the leader to read someone else's mind. Remove it.
+- Questions that bundle several things. The written-process scale mixes whether documentation exists, whether it's current and whether it's followed; complete documentation nobody uses has no honest answer. Split or rescale.
+
+Keep repetition that finds a real operational gap; remove repetition that only confirms the same impression.
+
+### 6a. Length is a decision, made after the audit
+
+Don't halve 98 questions on principle, and don't keep 98 just because each one is defensible on its own.
+
+- **The test for every question:** "What recommendation would change because of this answer?" If the answer is none, the question needs a stronger reason to stay (for example, it's needed to show the basis of a finding, or the retake depends on it), written down in the audit.
+- The audit ends with a **length decision** for Bri: questions per path before and after, which were cut and why, and the estimated time per path.
+- **Timed walkthroughs** of the revised assessment on the main paths (all team-owned, mostly owner-run, solo with no support). The walks don't drive cuts (Bri, 2026-10-17): if a path runs past the "15 to 20 minutes" the intake page promises, the promise changes to the real time.
+- The completion-time query from task A's brief gets run once v2 has real respondents, to check the timed walks against real behavior.
+
+### 6b. Results that repay the effort
+
+Fixing every question can still end in a discouraging or unconvincing conclusion. So the results page is an acceptance requirement for v2, not a band-label check. For every path, the results must:
+
+1. **Explain the finding** in plain words: what the two scores mean together for this business.
+2. **Show its basis:** which workflows and answers drove it, so the respondent can see why ("Lender tracking and file opening still wait on you").
+3. **Name a practical priority:** the one gap holding them back, stated as something they could act on, consistent with the brief (the plan itself is for the free call with Bri).
+4. **Acknowledge missing evidence:** workflows they don't do, questions marked "This didn't come up", or a solo respondent with no staff to judge yet. Say what the score does and doesn't cover instead of scoring around it silently.
+5. **Respect the reason:** a workflow kept by choice, or no support yet, is described as such (part 2a), not as a failure.
+6. **Read as fit, not judgment:** no result that would leave a respondent feeling they failed a test.
+
+Each Phase 5 test path is checked against this list, and Bri reads the results screen for at least the three main paths before ship.
+
+### 7. Versioning (so old and new scores never get mixed)
+
+- Today's instrument becomes **v1**; every existing session is labeled v1. The revised one is **v2**.
+- v1 questions stay in the database, marked inactive, so v1 answers and results still read correctly. v2 questions are new rows, not edits to v1 rows.
+- Scoring picks its rules by the session's version. v1 results never get rescored with v2 rules.
+- Admin shows the version on every session. Any before-and-after comparison (the day-90 retake) across versions is flagged as not directly comparable.
+- The teaser uses the support-team question and the four owner picks, so it moves to v2 at the same time, and its preview score is checked against the v2 rules.
+
+### 8. APPLE across the journey
+
+Not five framework beats inside every question. The right beat at each moment:
+
+| Moment | What the respondent needs | Change that delivers it |
+|---|---|---|
+| Beginning | "You understand how my business works." | Accurate business and staffing choices (part 1). |
+| Who owns what | "I know what you mean by ownership." | Define accountability separately from doing every task, in the section intro and the question. |
+| Workflow questions | "I can answer this without guessing." | Clear scales, relevant examples, "This didn't come up" (parts 1 and 3). |
+| Readiness | "I can admit a gap without being judged." | Neutral questions about behavior, resources and boundaries (part 4). |
+| Finish | "My effort leads somewhere useful." | Keep the 90-day success question; say how results lead into the free call with Bri. |
+| Results | "That helped me see my business clearly." | Finding, basis, a practical priority, and what's missing (part 6b). |
+
+Acknowledge comes from reflecting their situation accurately. Prepare and Let them know come from clear instructions and answer choices. Project is the link from each section to the results. Energize comes from manageable progress and a useful payoff, not motivational messages between questions.
+
+---
+
+## Phases
+
+### Phase 1: Ship the approved section intros on today's questions (was task C)
+- [ ] Bri approves the section draft (`vai-va-training/output/20261017-assessment-copy-c-section-draft.md`)
+- [ ] Implement: names instead of letters, computed question counts, one intro per section, fix the double arrows, "See my results"
+- [ ] Walk every branch on localhost, deploy, verify live
+
+### Phase 2: Full question audit (deliverable for Bri's approval)
+- [ ] Inventory every question and answer list on every path (about you, who owns what, all three workflow paths, both readiness tracks, final questions, teaser), from the live database, not the July export
+- [ ] For each one record: what finding it produces, **what recommendation would change because of the answer**, which problems above it has (fit, ownership definition, scale, character-test wording, solo assumption, repetition), the proposed v2 wording and answers, and the scoring effect
+- [ ] Ownership questions rewritten around the three situations in part 2 (routine with right escalation, unclear authority, leader checks or rescues)
+- [ ] Length decision: questions per path before and after, what was cut and why, estimated minutes per path
+- [ ] Deliverable: `vai-va-training/output/YYYYMMDD-assessment-v2-question-audit.md`, plain names for every question
+- [ ] Bri approves wording and the length decision
+
+### Phase 3: Scoring rules for v2
+- [ ] "This didn't come up": left out of the average; if too few answers remain in a dimension, the result says so instead of scoring it
+- [ ] "We don't do this work": workflow skipped, left out of the overall score, named on the results page
+- [ ] New owner choices mapped to paths ("Another person or provider", accountable-but-shared, no one accountable)
+- [ ] Diagnostic readiness question handled outside the scored scale; readiness weights rebalanced and written down
+- [ ] Solo routing rule rewritten around whether support exists
+- [ ] Safeguard (part 2a): no support and keeping a workflow by choice never lower a score by themselves; the score carries the operational consequence, the reason is reported beside it
+- [ ] Results design (part 6b): finding, basis, practical priority, missing evidence, reason respected; written as example results for the three main paths, alongside the four plain-language reads and band labels
+- [ ] Bri approves the rules and the example results
+
+### Phase 4: Build v2 with versioning
+- [ ] Migration: version on sessions (existing rows = v1), v2 question rows, v1 rows inactive
+- [ ] Scoring dispatches by version; v1 sessions score exactly as before (test against existing sessions)
+- [ ] Admin version label; retake comparisons across versions flagged
+- [ ] Teaser moved to v2 and its preview score checked
+
+### Phase 5: Test walk on localhost
+- [ ] Synthetic "Assessment review TEST" sessions for: all four workflows team-owned, owner-run, shared with an accountable person, no one accountable, a workflow they don't do, outside provider as owner, solo with no support, solo with an assistant, team readiness, completion screen
+- [ ] Each path: every question answerable honestly, counts in intros correct, scores computed
+- [ ] Each path's results pass the six checks in part 6b
+- [ ] Timed walkthroughs of the three main paths (all team-owned, mostly owner-run, solo with no support); if any runs past 20 minutes, update the time on the intake page (and anywhere else it's promised) to the real range
+- [ ] Delete the TEST sessions and their answers afterward
+
+### Phase 6: Section copy updated for v2
+- [ ] Owner tag and intro for the shared path (today's draft says "shared, with no one clear owner", which v2 separates)
+- [ ] Who owns what intro defines ownership as accountability within agreed boundaries
+- [ ] Solo track and About you intros match the new routing
+- [ ] Final section says how results lead into the call with Bri
+- [ ] Bri approves the changed lines
+
+### Phase 7: Ship
+- [ ] Bri reads the live results screen on the three main paths
+- [ ] Deploy, verify live on every path, set Done with the date
+- [ ] Once real v2 respondents exist, run the completion-time query and compare with the timed walks
+- [ ] Update `docs/question-bank-export.md` and `docs/reading-assessment-results.md` for v2
+
+## Open questions for Bri
+
+All decided by Bri, 2026-10-17.
+
+1. **One task or two?** **One.** Intros ship first as Phase 1, then get a small touch-up in Phase 6.
+2. **Shared work with one accountable person: which path?** **The full set of ownership questions about that person.** "No one is accountable" goes to the shorter role-clarity questions.
+3. **An outside provider as owner (outsourced TC, VA company)?** **Full team-owned questions,** with "they" wording that fits a person or a provider.
+4. **The new "what keeps you involved" question: score it?** **No.** Shown in admin and used on the call. Readiness weights get rebalanced in Phase 3 for Bri's approval.
+5. **Invite the two existing respondents to retake v2?** **No.** Their results stay as they are, labeled v1.
+6. **If a timed walk runs past 20 minutes, cut or change the promise?** **Decided (Bri, 2026-10-17): don't cut to hit the time.** Questions stay or go on the "what recommendation would change" test alone; if the timed walks run longer, the time promise on the intake page changes to match.
+7. **Where the respondent hasn't defined what their person can decide, should results say so directly?** **Decided (Bri, 2026-10-17): yes,** as the practical priority when it's the main gap ("Spell out what they can decide without you").
+
+## Build notes (for whoever implements)
+
+- Question data is in the database (`questions` table; `answers.question_id` references it with delete restricted, so v1 rows must stay). Seeds: `supabase/seed-questions.sql`, `supabase/seed-questions-v2.sql`; text rewrites in later migrations.
+- Routing: `src/lib/assessment.ts` (owner answer to path mapping, solo/team detection and refinement), `src/app/assessment/[sessionId]/{a..h}/page.tsx`.
+- Scoring: `src/lib/scoring.ts`. Results reads: `src/lib/insight.ts`.
+- Teaser: `src/lib/teaser.ts`, `src/app/teaser/` (uses the support-team question and the four owner picks).
+- Admin: `src/lib/admin.ts` (there is already a "Version" badge for teaser vs full origin; name the instrument version so the two don't get confused).
+- Migration 005 rule: any change to team-owned question text must re-check each question's dimension label.
+- No em dashes in any respondent-facing text.
+
+## Progress
+
+Running log: check things off and note decisions as you go.
+
+- [x] 2026-10-17: plan written from the test-walk review and task C's draft; task C points here
+- [x] 2026-10-17: second review folded in: results as an acceptance requirement (6b), length as a required decision with timed walks (6a), three-situation ownership definition (2), and the reason-versus-consequence scoring safeguard (2a)
+- [x] 2026-10-17: Bri decided Q6 (no cutting to hit the time; change the promise if needed) and Q7 (yes, name undefined decision rights as the priority). Q1 to Q5 decided the same day, all as recommended

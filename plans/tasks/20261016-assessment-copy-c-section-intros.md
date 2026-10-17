@@ -1,6 +1,8 @@
 # Assessment copy C: rewrite section intros and progress copy with APPLE
 
-**Status:** Not started <!-- Not started | In progress | Blocked | Done -->
+**Status:** In progress (2026-10-17): draft ready for Bri <!-- Not started | In progress | Blocked | Done -->
+
+> **2026-10-17:** combined into [the assessment v2 plan](20261017-assessment-v2-questions-and-section-copy.md). This draft ships as its Phase 1; track progress there.
 
 ## Objective
 
@@ -26,8 +28,8 @@ Rewrite the copy around the questions in Sections A to H (section titles, intros
 
 ## Progress
 
-- [ ] Inventory every string around the questions, per section
-- [ ] Draft per the brief
+- [x] Inventory every string around the questions, per section
+- [x] Draft per the brief (`vai-va-training/output/20261017-assessment-copy-c-section-draft.md`); question counts will be computed from each page's question list, not hardcoded
 - [ ] Bri approves
 - [ ] Implement, walk every branch on localhost
 - [ ] Deploy, verify live, set Done
