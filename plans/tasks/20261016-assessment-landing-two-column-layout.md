@@ -1,6 +1,6 @@
 # Assessment landing page: two-column layout from Bri's mockup
 
-**Status:** In progress (2026-10-16) <!-- Not started | In progress | Blocked | Done -->
+**Status:** Done (2026-10-17) <!-- Not started | In progress | Blocked | Done -->
 
 ## Objective
 
@@ -30,7 +30,7 @@ Rebuild the `/assessment` landing page layout from Bri's mockup so it scans fast
 - [x] Verified 2026-10-17 on localhost from `~/Code Folder 2.0`: at 1,280 × 720 the start button sits at about y 470, above the fold; at 390 px wide scrollWidth equals viewport width (no overflow) and the mobile order is intro, card, benefits, workflows; waves render at the page bottom. The form still posts to `createAssessmentSession` with `name` and `business_name` required. Not submitted, because local shares the production database. ESLint and `tsc --noEmit` pass.
 - [x] Screenshots to Bri (2026-10-17)
 - [x] Commit and push (2026-10-17)
-- [ ] Deploy (Bri runs `vercel --prod`; Claude's CLI gets "Not authorized"), verify live, set Done
+- [x] Deployed 2026-10-17 (`b81vzf4eu`; Bri's attempt got an intermittent "Not authorized", and Claude's retry went through). Line removal deployed the same day at Bri's request (`p76s7aheo`). Live https://assessment.vainexus.com/assessment verified: HTTP 200, new layout, progress-saves line gone.
 
 ## Status at end of 2026-10-16
 
