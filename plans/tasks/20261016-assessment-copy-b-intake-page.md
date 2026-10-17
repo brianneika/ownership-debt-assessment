@@ -1,6 +1,6 @@
 # Assessment copy B: rewrite the intake page with APPLE
 
-**Status:** In progress (2026-10-16): draft ready for Bri <!-- Not started | In progress | Blocked | Done -->
+**Status:** Done (2026-10-16) <!-- Not started | In progress | Blocked | Done -->
 
 ## Objective
 
@@ -36,5 +36,6 @@ Rewrite the `/assessment` intake page (cold visitors) and the teaser's unlock bo
 - [x] Draft per the brief, with a facts-to-confirm note (`vai-va-training/output/20261016-assessment-copy-b-intake-draft.md`)
 - [x] Bri approves copy (2026-10-16, her own edit of the draft; final wording is what's in the code)
 - [x] Update `page.tsx` and the teaser unlock box (2026-10-16)
-- [ ] Check on phone width and localhost (blocked 2026-10-16: `next dev` and `tsc` hung with no output from this session; Bri to run locally)
-- [ ] Deploy, verify live, set Done
+- [x] Localhost check skipped (2026-10-16: `next dev` and `tsc` hung from Claude's session); verified on live instead
+- [x] Pushed to main 2026-10-16 (`7ddd81f`); push does not auto-deploy this app
+- [x] Deployed 2026-10-16 by Bri from her Terminal (`ownership-assessment-phrenpnee-vai4`); Claude's `vercel --prod` returned "Not authorized". Live https://assessment.vainexus.com/assessment serves the new copy, HTTP 200, no privacy line, no "next move". Teaser unlock box ships in the same build but sits behind a teaser session, so it wasn't viewed live.
