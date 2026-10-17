@@ -39,3 +39,4 @@ Rewrite the `/assessment` intake page (cold visitors) and the teaser's unlock bo
 - [x] Localhost check skipped (2026-10-16: `next dev` and `tsc` hung from Claude's session); verified on live instead
 - [x] Pushed to main 2026-10-16 (`7ddd81f`); push does not auto-deploy this app
 - [x] Deployed 2026-10-16 by Bri from her Terminal (`ownership-assessment-phrenpnee-vai4`); Claude's `vercel --prod` returned "Not authorized". Live https://assessment.vainexus.com/assessment serves the new copy, HTTP 200, no privacy line, no "next move". Teaser unlock box ships in the same build but sits behind a teaser session, so it wasn't viewed live.
+- [x] 2026-10-17, Bri's edit: the first subhead line ("You’ve handed off the work. But are you still the person everyone needs to keep it moving?") became "Whether you’re doing it all yourself or still keeping everyone else moving, too much of the work comes back to you." It now speaks to solo owners as well as team leaders.

@@ -86,8 +86,8 @@ export default function AssessmentLandingPage() {
               style={{ color: 'var(--avai-ink-muted)', lineHeight: 'var(--avai-leading-body)' }}
             >
               <p>
-                You’ve handed off the work. But are you still the person everyone needs to keep
-                it moving?
+                Whether you’re doing it all yourself or still keeping everyone else moving, too
+                much of the work comes back to you.
               </p>
               <p>
                 Find out where your business depends on you, and what needs to change before
