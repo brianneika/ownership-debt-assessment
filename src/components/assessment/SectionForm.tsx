@@ -13,7 +13,6 @@ interface Props {
   savedAnswers: Record<string, SavedAnswer>;
   nextAction: (formData: FormData) => Promise<void>;
   submitLabel?: string;
-  sectionIntro?: string;
 }
 
 export function SectionForm({
@@ -22,7 +21,6 @@ export function SectionForm({
   savedAnswers,
   nextAction,
   submitLabel = 'Next',
-  sectionIntro,
 }: Props) {
   // Radios autosave on selection; handleSubmit holds "Next" until any in-flight
   // save lands so the last answer in the section is never lost to navigation.
@@ -30,16 +28,6 @@ export function SectionForm({
 
   return (
     <form action={nextAction} onSubmit={handleSubmit}>
-      {/* One-line section context message */}
-      {sectionIntro && (
-        <p
-          className="mb-7 text-sm font-medium"
-          style={{ color: 'var(--avai-ink-muted)' }}
-        >
-          {sectionIntro}
-        </p>
-      )}
-
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
         {questions.map((q) => {
           const saved = savedAnswers[q.question_key];

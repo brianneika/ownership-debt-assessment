@@ -6,13 +6,27 @@ import { FreeTextInput } from './FreeTextInput';
 import { SavedIndicator } from './SavedIndicator';
 import { usePendingAnswerSaves } from './usePendingAnswerSaves';
 import type { Question, SavedAnswer, WorkflowKey, WorkflowMode } from '@/lib/assessment';
-import { WORKFLOW_NAMES } from '@/lib/assessment';
+import { WORKFLOW_SECTION_NAMES } from '@/lib/assessment';
+import { SectionHeader } from './SectionHeader';
 
-const MODE_BADGES: Record<WorkflowMode, string> = {
-  A: 'Owner-Led',
-  B: 'Team-Led',
-  C: 'Shared / No Clear Owner',
+const MODE_TAGS: Record<WorkflowMode, string> = {
+  A: 'You run it',
+  B: 'Team-led',
+  C: 'Shared',
 };
+
+const WORKFLOW_PART: Record<WorkflowKey, number> = { C: 3, D: 4, E: 5, F: 6 };
+
+// One intro per owner path; reflects the respondent's own answer from "Who owns what".
+function workflowIntro(name: string, mode: WorkflowMode, ownerRole: string | undefined, isLast: boolean) {
+  const intro =
+    mode === 'A'
+      ? `You told us you run ${name}. These questions look at how much of your time and attention it takes.`
+      : mode === 'B'
+      ? `You told us your ${ownerRole ?? 'team member'} owns ${name}. These questions look at what they handle independently and where they need your involvement.`
+      : `You told us ${name} is shared, with no one clear owner. These questions look at how the work gets divided.`;
+  return isLast ? `Last workflow. ${intro}` : intro;
+}
 
 interface Props {
   sessionId: string;
@@ -22,7 +36,8 @@ interface Props {
   savedAnswers: Record<string, SavedAnswer>;
   nextAction: (formData: FormData) => Promise<void>;
   nextLabel?: string;
-  sectionIntro?: string;
+  /** Role picked in "Who owns what" (team-led workflows only), e.g. "Transaction Coordinator". */
+  ownerRole?: string;
 }
 
 export function WorkflowSection({
@@ -33,51 +48,21 @@ export function WorkflowSection({
   savedAnswers,
   nextAction,
   nextLabel = 'Next',
-  sectionIntro,
+  ownerRole,
 }: Props) {
+  const name = WORKFLOW_SECTION_NAMES[workflowKey];
+  const intro = workflowIntro(name, mode, ownerRole, workflowKey === 'F');
   const { savedAt, flushing, handleRadioChange, handleSubmit } = usePendingAnswerSaves(sessionId);
 
   return (
     <form action={nextAction} onSubmit={handleSubmit}>
-      {/* Workflow header */}
-      <div className="mb-8">
-        <div className="flex items-center gap-2.5 mb-2">
-          <span
-            className="text-[11px] font-bold uppercase tracking-widest"
-            style={{ color: 'var(--avai-accent-600)' }}
-          >
-            Workflow {workflowKey}
-          </span>
-          <span style={{ color: 'var(--avai-border-strong)' }}>·</span>
-          <span
-            className="inline-flex items-center px-2 py-0.5 text-[11px] font-semibold rounded-full border"
-            style={{
-              color: 'var(--avai-ink-muted)',
-              borderColor: 'var(--avai-border)',
-              background: 'var(--avai-canvas)',
-            }}
-          >
-            {MODE_BADGES[mode]}
-          </span>
-        </div>
-
-        <h2
-          className="text-2xl font-bold mb-1"
-          style={{
-            color: 'var(--avai-ink)',
-            letterSpacing: 'var(--avai-tracking-heading)',
-            lineHeight: 'var(--avai-leading-heading)',
-          }}
-        >
-          {WORKFLOW_NAMES[workflowKey]}
-        </h2>
-
-        {sectionIntro && (
-          <p className="text-sm mt-1" style={{ color: 'var(--avai-ink-muted)' }}>
-            {sectionIntro}
-          </p>
-        )}
-      </div>
+      <SectionHeader
+        part={WORKFLOW_PART[workflowKey]}
+        questionCount={questions.length}
+        heading={name}
+        tag={MODE_TAGS[mode]}
+        intro={intro}
+      />
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
         {questions.map((q) => {

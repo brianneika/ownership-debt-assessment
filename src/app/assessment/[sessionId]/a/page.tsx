@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { fetchQuestions, fetchSessionAnswers } from '@/lib/assessment';
 import { advanceSectionA } from '@/app/assessment/actions';
 import { SectionForm } from '@/components/assessment/SectionForm';
+import { SectionHeader } from '@/components/assessment/SectionHeader';
 import type { SavedAnswer } from '@/lib/assessment';
 
 export default async function SectionAPage({
@@ -28,20 +29,18 @@ export default async function SectionAPage({
 
   return (
     <div>
-      <div className="mb-8">
-        <p className="text-[11px] font-bold uppercase tracking-widest mb-2" style={{ color: "var(--avai-accent-600)" }}>Section A</p>
-        <h1 className="text-[1.75rem] font-bold" style={{ color: "var(--avai-ink)", letterSpacing: "var(--avai-tracking-heading)", lineHeight: "var(--avai-leading-heading)" }}>About You</h1>
-        <p className="text-sm mt-2" style={{ color: "var(--avai-ink-muted)", lineHeight: "var(--avai-leading-body)" }}>
-          Tell us a bit about your business so we can tailor your results.
-        </p>
-      </div>
+      <SectionHeader
+        part={1}
+        questionCount={pageQuestions.length}
+        heading="About you"
+        intro="A quick snapshot of your business, so your results fit how you actually work."
+      />
 
       <SectionForm
         sessionId={sessionId}
         questions={pageQuestions}
         savedAnswers={savedAnswers}
         nextAction={nextAction}
-        sectionIntro="Let's start with a quick snapshot of your business."
       />
     </div>
   );

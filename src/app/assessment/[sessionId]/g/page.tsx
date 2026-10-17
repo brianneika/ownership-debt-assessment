@@ -7,6 +7,7 @@ import {
 } from '@/lib/assessment';
 import { advanceWorkflow } from '@/app/assessment/actions';
 import { SectionForm } from '@/components/assessment/SectionForm';
+import { SectionHeader } from '@/components/assessment/SectionHeader';
 import type { SavedAnswer, WorkflowMode } from '@/lib/assessment';
 
 export default async function SectionGPage({
@@ -44,34 +45,24 @@ export default async function SectionGPage({
 
   const nextAction = advanceWorkflow.bind(null, sessionId, 'h');
 
-  const profileLabel = drsProfile === 'solo' ? 'Solo Owner' : 'Team Leader';
+  const profileLabel = drsProfile === 'solo' ? 'Solo owner track' : 'Team leader track';
 
   return (
     <div>
-      <div className="mb-8">
-        <p className="text-[11px] font-bold uppercase tracking-widest mb-2" style={{ color: "var(--avai-accent-600)" }}>Section G</p>
-        <h1 className="text-[1.75rem] font-bold" style={{ color: "var(--avai-ink)", letterSpacing: "var(--avai-tracking-heading)", lineHeight: "var(--avai-leading-heading)" }}>Delegation Readiness</h1>
-        <div className="flex items-center gap-2 mt-2">
-          <span
-            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold"
-            style={{
-              background: 'var(--avai-accent-50)',
-              color: 'var(--avai-accent-700)',
-              border: '1px solid var(--avai-accent-200)',
-            }}
-          >
-            {profileLabel} track
-          </span>
-        </div>
-      </div>
+      <SectionHeader
+        part={7}
+        questionCount={questions.length}
+        heading="Delegation readiness"
+        tag={profileLabel}
+        intro="Almost there. These questions measure how ready you and your business are to hand off work and have it stay handed off. They make up your Delegation Readiness Score."
+      />
 
       <SectionForm
         sessionId={sessionId}
         questions={questions}
         savedAnswers={savedAnswers}
         nextAction={nextAction}
-        sectionIntro="This section measures how ready you are to hand off ownership."
-        submitLabel="Next → Final Questions"
+        submitLabel="Next: Final questions"
       />
     </div>
   );

@@ -1,7 +1,8 @@
 import { notFound } from 'next/navigation';
-import { fetchQuestions, fetchSessionAnswers, WORKFLOW_NAMES } from '@/lib/assessment';
+import { fetchQuestions, fetchSessionAnswers, WORKFLOW_SECTION_NAMES } from '@/lib/assessment';
 import { advanceSectionB } from '@/app/assessment/actions';
 import { SectionForm } from '@/components/assessment/SectionForm';
+import { SectionHeader } from '@/components/assessment/SectionHeader';
 import type { SavedAnswer } from '@/lib/assessment';
 
 export default async function SectionBPage({
@@ -25,14 +26,12 @@ export default async function SectionBPage({
 
   return (
     <div>
-      <div className="mb-8">
-        <p className="text-[11px] font-bold uppercase tracking-widest mb-2" style={{ color: "var(--avai-accent-600)" }}>Section B</p>
-        <h1 className="text-[1.75rem] font-bold" style={{ color: "var(--avai-ink)", letterSpacing: "var(--avai-tracking-heading)", lineHeight: "var(--avai-leading-heading)" }}>Your Workflows</h1>
-        <p className="text-sm mt-2" style={{ color: "var(--avai-ink-muted)", lineHeight: "var(--avai-leading-body)" }}>
-          For each of the four core workflows in your business, tell us who currently owns it.
-          This determines how we assess each one.
-        </p>
-      </div>
+      <SectionHeader
+        part={2}
+        questionCount={questions.length}
+        heading="Who owns what"
+        intro="For each of the four workflows below, tell us who owns it today. Your answers shape the rest of the assessment: more questions where you've handed the work off, fewer where you run it yourself."
+      />
 
       {/* Workflow name reference */}
       <div className="mb-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -46,14 +45,8 @@ export default async function SectionBPage({
               borderRadius: 'var(--avai-radius-control)',
             }}
           >
-            <div
-              className="text-[10px] font-bold uppercase tracking-widest mb-0.5"
-              style={{ color: 'var(--avai-accent-600)' }}
-            >
-              {wf}
-            </div>
             <div className="text-xs font-semibold" style={{ color: 'var(--avai-ink)' }}>
-              {WORKFLOW_NAMES[wf]}
+              {WORKFLOW_SECTION_NAMES[wf]}
             </div>
           </div>
         ))}
@@ -64,7 +57,6 @@ export default async function SectionBPage({
         questions={questions}
         savedAnswers={savedAnswers}
         nextAction={nextAction}
-        sectionIntro="For each workflow, tell us who currently owns it — this determines how we assess each one."
       />
     </div>
   );

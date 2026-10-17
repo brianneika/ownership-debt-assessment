@@ -35,12 +35,7 @@ export default async function WorkflowFPage({
 
   const nextAction = advanceWorkflow.bind(null, sessionId, 'g');
 
-  let sectionIntro = 'Last workflow — how does Lender Tracking hold up on its own?';
-  if (mode === 'B') {
-    const roleSlug = answersMap.get('B004')?.text_value ?? '';
-    const role = ROLE_LABELS[roleSlug] ?? 'your team member';
-    sectionIntro = `You told us your ${role} owns Lender Tracking. The next 18 questions are about how that's actually going.`;
-  }
+  const ownerRole = ROLE_LABELS[answersMap.get('B004')?.text_value ?? ''];
 
   return (
     <WorkflowSection
@@ -50,8 +45,8 @@ export default async function WorkflowFPage({
       questions={questions}
       savedAnswers={savedAnswers}
       nextAction={nextAction}
-      sectionIntro={sectionIntro}
-      nextLabel="Next → Delegation Readiness"
+      ownerRole={ownerRole}
+      nextLabel="Next: Delegation readiness"
     />
   );
 }

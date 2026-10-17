@@ -3,14 +3,14 @@
 import { usePathname } from 'next/navigation';
 
 const STEPS = [
-  { slug: 'a', title: 'About You' },
-  { slug: 'b', title: 'Workflows' },
-  { slug: 'c', title: 'Listing Launch' },
-  { slug: 'd', title: 'Seller Communication' },
-  { slug: 'e', title: 'File Opening' },
-  { slug: 'f', title: 'Lender Tracking' },
-  { slug: 'g', title: 'Delegation' },
-  { slug: 'h', title: 'Final' },
+  { slug: 'a', title: 'About you' },
+  { slug: 'b', title: 'Who owns what' },
+  { slug: 'c', title: 'Listing launch' },
+  { slug: 'd', title: 'Seller communication' },
+  { slug: 'e', title: 'File opening' },
+  { slug: 'f', title: 'Lender tracking' },
+  { slug: 'g', title: 'Delegation readiness' },
+  { slug: 'h', title: 'Final questions' },
 ];
 
 export function ProgressBar() {

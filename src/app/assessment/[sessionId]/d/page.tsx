@@ -35,12 +35,7 @@ export default async function WorkflowDPage({
 
   const nextAction = advanceWorkflow.bind(null, sessionId, 'e');
 
-  let sectionIntro = 'How well does Seller Communication run when you\'re not in the room?';
-  if (mode === 'B') {
-    const roleSlug = answersMap.get('B002')?.text_value ?? '';
-    const role = ROLE_LABELS[roleSlug] ?? 'your team member';
-    sectionIntro = `You told us your ${role} owns Seller Communication. The next 18 questions are about how that's actually going.`;
-  }
+  const ownerRole = ROLE_LABELS[answersMap.get('B002')?.text_value ?? ''];
 
   return (
     <WorkflowSection
@@ -50,7 +45,7 @@ export default async function WorkflowDPage({
       questions={questions}
       savedAnswers={savedAnswers}
       nextAction={nextAction}
-      sectionIntro={sectionIntro}
+      ownerRole={ownerRole}
     />
   );
 }

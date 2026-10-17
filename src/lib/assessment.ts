@@ -77,6 +77,14 @@ export const WORKFLOW_NAMES: Record<WorkflowKey, string> = {
   F: 'Lender Tracking',
 };
 
+// Sentence-case names shown on the assessment's own screens and progress bar.
+export const WORKFLOW_SECTION_NAMES: Record<WorkflowKey, string> = {
+  C: 'Listing launch',
+  D: 'Seller communication',
+  E: 'File opening',
+  F: 'Lender tracking',
+};
+
 export const SECTION_LABELS: Record<string, string> = {
   A: 'About You',
   B: 'Your Workflows',

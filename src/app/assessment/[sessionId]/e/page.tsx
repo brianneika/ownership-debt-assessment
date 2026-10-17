@@ -35,12 +35,7 @@ export default async function WorkflowEPage({
 
   const nextAction = advanceWorkflow.bind(null, sessionId, 'f');
 
-  let sectionIntro = 'Let\'s see how File Opening performs when you step back.';
-  if (mode === 'B') {
-    const roleSlug = answersMap.get('B003')?.text_value ?? '';
-    const role = ROLE_LABELS[roleSlug] ?? 'your team member';
-    sectionIntro = `You told us your ${role} owns File Opening. The next 18 questions are about how that's actually going.`;
-  }
+  const ownerRole = ROLE_LABELS[answersMap.get('B003')?.text_value ?? ''];
 
   return (
     <WorkflowSection
@@ -50,7 +45,7 @@ export default async function WorkflowEPage({
       questions={questions}
       savedAnswers={savedAnswers}
       nextAction={nextAction}
-      sectionIntro={sectionIntro}
+      ownerRole={ownerRole}
     />
   );
 }
