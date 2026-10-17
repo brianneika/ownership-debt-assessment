@@ -7,11 +7,17 @@
    Paths are drawn wider than the viewBox so the sway never exposes an edge;
    the SVG clips the overdraw. Motion is disabled for reduced-motion users. */
 
-export function BrandWave() {
+// `fixed` (default) pins the wave behind scrolling content. `fixed={false}`
+// renders it in flow, so a page can place it at its own bottom edge.
+export function BrandWave({ fixed = true }: { fixed?: boolean }) {
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none fixed inset-x-0 bottom-0 z-0"
+      className={
+        fixed
+          ? 'pointer-events-none fixed inset-x-0 bottom-0 z-0'
+          : 'pointer-events-none w-full overflow-hidden'
+      }
     >
       <style>{`
         @keyframes vai-wave-sway-a {
