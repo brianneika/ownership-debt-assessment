@@ -170,8 +170,8 @@ Acknowledge comes from reflecting their situation accurately. Prepare and Let th
 - [x] Bri approves the section draft (`vai-va-training/output/20261017-assessment-copy-c-section-draft.md`), 2026-10-17, with two intro changes: owner-run reads "These questions look at how much of your time and attention it takes." (no assumption it should be handed off; "still" dropped there and in Part 2); team-owned reads "These questions look at what they handle independently and where they need your involvement."
 - [x] Implement: names instead of letters, computed question counts, one intro per section, fix the double arrows, "See my results" (shared `SectionHeader`; workflow intros live in `WorkflowSection`)
 - [x] Walk every branch on localhost, 2026-10-17: one "Assessment review TEST" session covered all eight parts, team-owned (18), owner-run (5), shared (3), "Last workflow." on Lender tracking, team and solo readiness tags, every button with one arrow. Typecheck clean; lint shows the same 7 pre-existing problems as before. One answer save hit a network "fetch failed" during fast clicking (save code untouched)
-- [ ] Delete the TEST session (`43d14d75-d65c-4e79-9df9-1600a0539992`) and its answers
-- [ ] Deploy (Bri, from her Terminal), verify live
+- [x] Delete the TEST session (`43d14d75-d65c-4e79-9df9-1600a0539992`) and its answers (Bri, Supabase SQL Editor, 2026-10-18; count check returns 0). The live database has four tables linked to sessions, all deleting with the session: answers, dimension_scores, reports, score_breakdowns. The repo's migrations only show answers
+- [x] Deploy (Bri, from her Terminal), 2026-10-18 19:50 MT from `~/Code Folder 2.0`, aliased to assessment.vainexus.com, site responds. In-session pages not clicked through live, to avoid creating another test session
 
 ### Phase 2: Full question audit (deliverable for Bri's approval)
 - [ ] Inventory every question and answer list on every path (about you, who owns what, all three workflow paths, both readiness tracks, final questions, teaser), from the live database, not the July export
