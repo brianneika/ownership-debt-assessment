@@ -1,6 +1,6 @@
 # Assessment v2: honest answers, healthy ownership, and section copy
 
-**Status:** Not started (2026-10-17): plan agreed, all open questions decided; Phase 1 waits on Bri's approval of the section draft <!-- Not started | In progress | Blocked | Done -->
+**Status:** In progress (2026-10-19): Phase 1 shipped 2026-10-18; Phase 2 audit written, waiting on Bri's approval <!-- Not started | In progress | Blocked | Done -->
 
 ## Objective
 
@@ -174,12 +174,12 @@ Acknowledge comes from reflecting their situation accurately. Prepare and Let th
 - [x] Deploy (Bri, from her Terminal), 2026-10-18 19:50 MT from `~/Code Folder 2.0`, aliased to assessment.vainexus.com, site responds. In-session pages not clicked through live, to avoid creating another test session
 
 ### Phase 2: Full question audit (deliverable for Bri's approval)
-- [ ] Inventory every question and answer list on every path (about you, who owns what, all three workflow paths, both readiness tracks, final questions, teaser), from the live database, not the July export
-- [ ] For each one record: what finding it produces, **what recommendation would change because of the answer**, which problems above it has (fit, ownership definition, scale, character-test wording, solo assumption, repetition), the proposed v2 wording and answers, and the scoring effect
-- [ ] Ownership questions rewritten around the three situations in part 2 (routine with right escalation, unclear authority, leader checks or rescues)
-- [ ] Length decision: questions per path before and after, what was cut and why, estimated minutes per path
-- [ ] Deliverable: `vai-va-training/output/YYYYMMDD-assessment-v2-question-audit.md`, plain names for every question
-- [ ] Bri approves wording and the length decision
+- [x] Inventory every question and answer list on every path (about you, who owns what, all three workflow paths, both readiness tracks, final questions, teaser), from the live database, not the July export. Read-only pull 2026-10-19: 142 active questions; teaser wording overrides read from `src/app/teaser/TeaserForm.tsx`
+- [x] For each one record: what finding it produces, **what recommendation would change because of the answer**, which problems above it has (fit, ownership definition, scale, character-test wording, solo assumption, repetition), the proposed v2 wording and answers, and the scoring effect
+- [x] Ownership questions rewritten around the three situations in part 2 (new "How it runs" question opens each team-owned workflow)
+- [x] Length decision: longest path 98 to 74 questions; table of five paths, cuts and estimated minutes in section 12 of the audit
+- [x] Deliverable: `vai-va-training/output/20261019-assessment-v2-question-audit.md` (in `~/Code Folder/vai-va-training`), plain names only; code map below for the build
+- [ ] Bri approves wording, the length decision and the eight decisions in section 13 of the audit
 
 ### Phase 3: Scoring rules for v2
 - [ ] "This didn't come up": left out of the average; if too few answers remain in a dimension, the result says so instead of scoring it
@@ -239,6 +239,21 @@ All decided by Bri, 2026-10-17.
 - Migration 005 rule: any change to team-owned question text must re-check each question's dimension label.
 - No em dashes in any respondent-facing text.
 
+### Audit code map (plain names in the 2026-10-19 audit → v1 keys)
+
+Workflow keys use C/D/E/F for Listing launch, Seller communication, File opening, Lender tracking; team-owned keys below are Listing launch (add 18 per workflow).
+
+- About you: Business model A003 · Transactions A004 · Primary side focus A005 (cut) · Support team size A006
+- Who owns what: B001 to B004
+- Team-owned (Q001 to Q018 for Listing launch): How it runs = new, replaces Q001 · Decision rights spelled out Q010 · Brings you the right decisions Q011 · Sends routine updates without review Q002 · Who follows through on fixes Q003 + Q013 · First response Q005 · Brings a plan Q006 · How often they move forward Q004 (cut) · Written process Q007 · Templates Q008 · Something to reference Q009 (cut) · Backup Q012 · How you know it went well Q014 + Q015 · Your confidence Q016 · How confident they seem Q017 (cut) · How long it's run this way Q018
+- Owner-run: Hours TBx1 · When you're tied up = new · Why you still run it TBx2 · Biggest obstacle TBx3 · Documented process TBx4 · Someone who could take it TBx5
+- No one accountable: Why no owner RCx1 · Could someone own it RCx2 · How often things fall through RCx3
+- Willingness: When handed-off work goes wrong Q073 · Moved something and kept it moved Q074 · Different approach, good outcome Q075 · What keeps you involved Q076 (unscored diagnostic)
+- Team track: How you hand work off Q077 · Define done Q078 · Decisions go with the work Q079 · Room to take on more Q080 · Active files Q081 (cut) · Support person tenure Q082 (cut) · How new people learn Q083 · What your team can decide Q084 + Q085 · Work waiting on approval Q086
+- No-support track: Speed to get a hire working SDQ3 · Know what you'd hand off SDQ1 (cut) · Same way each time SDQ2 (cut) · First hire would own SHR1 · Afford a hire SHR2 · Knowledge in your head SHR3 (cut) · Target for first hire SHR4 · Solve it once SSM1 · Unreachable for a week SSM2 · Now or later SSM3
+- Final: Urgency Q087 · Goal Q088 · Anything for Bri Q089 · Success in 90 days Q090
+- Found in the audit: the `questions.weight` column is not read by scoring (`OQI_WEIGHTS` and the DRS weight maps in `src/lib/scoring.ts` are the real weights). Don't rely on it for v2.
+
 ## Progress
 
 Running log: check things off and note decisions as you go.
@@ -246,3 +261,4 @@ Running log: check things off and note decisions as you go.
 - [x] 2026-10-17: plan written from the test-walk review and task C's draft; task C points here
 - [x] 2026-10-17: second review folded in: results as an acceptance requirement (6b), length as a required decision with timed walks (6a), three-situation ownership definition (2), and the reason-versus-consequence scoring safeguard (2a)
 - [x] 2026-10-17: Bri decided Q6 (no cutting to hit the time; change the promise if needed) and Q7 (yes, name undefined decision rights as the priority). Q1 to Q5 decided the same day, all as recommended
+- [x] 2026-10-19: Phase 2 audit written, waiting on Bri. Two scoring findings for Phase 3: owner-run debt score uses only process + ready person (the reason) and never hours (the consequence); shared debt score is half capability (a reason). Also: "their readiness vs my comfort" scores backwards today (blaming your own comfort earns top willingness)
