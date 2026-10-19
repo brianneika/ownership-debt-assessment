@@ -1,6 +1,6 @@
 # Assessment v2: honest answers, healthy ownership, and section copy
 
-**Status:** In progress (2026-10-19): Phase 1 shipped 2026-10-18; Phase 2 audit written, waiting on Bri's approval <!-- Not started | In progress | Blocked | Done -->
+**Status:** In progress (2026-10-19): Phase 1 shipped 2026-10-18; Phase 2 approved by Bri 2026-10-19; Phase 3 (scoring rules) is next <!-- Not started | In progress | Blocked | Done -->
 
 ## Objective
 
@@ -179,7 +179,7 @@ Acknowledge comes from reflecting their situation accurately. Prepare and Let th
 - [x] Ownership questions rewritten around the three situations in part 2 (new "How it runs" question opens each team-owned workflow)
 - [x] Length decision: longest path 98 to 74 questions; table of five paths, cuts and estimated minutes in section 12 of the audit
 - [x] Deliverable: `vai-va-training/output/20261019-assessment-v2-question-audit.md` (in `~/Code Folder/vai-va-training`), plain names only; code map below for the build
-- [ ] Bri approves wording, the length decision and the eight decisions in section 13 of the audit
+- [x] Bri approves wording, the length decision and the eight decisions in section 13 of the audit: all eight approved as recommended, 2026-10-19 (walked one at a time with before and after wording; log under Progress)
 
 ### Phase 3: Scoring rules for v2
 - [ ] "This didn't come up": left out of the average; if too few answers remain in a dimension, the result says so instead of scoring it
@@ -262,3 +262,4 @@ Running log: check things off and note decisions as you go.
 - [x] 2026-10-17: second review folded in: results as an acceptance requirement (6b), length as a required decision with timed walks (6a), three-situation ownership definition (2), and the reason-versus-consequence scoring safeguard (2a)
 - [x] 2026-10-17: Bri decided Q6 (no cutting to hit the time; change the promise if needed) and Q7 (yes, name undefined decision rights as the priority). Q1 to Q5 decided the same day, all as recommended
 - [x] 2026-10-19: Phase 2 audit written, waiting on Bri. Two scoring findings for Phase 3: owner-run debt score uses only process + ready person (the reason) and never hours (the consequence); shared debt score is half capability (a reason). Also: "their readiness vs my comfort" scores backwards today (blaming your own comfort earns top willingness)
+- [x] 2026-10-19: Bri approved all eight audit decisions, as recommended: (1) team-owned set 18 to 13; (2) owner-run set 5 to 6 with "When you're tied up" added and the obstacle box optional; (3) "Each agent handles their own" as an owner answer, team-owned questions with "your agents"; (4) cut primary side focus, no agent-count question; (5) readiness routing on support only, 2-person override dropped; (6) "your consultant" becomes "Bri" in the final optional question; (7) 74 questions as the longest-path ceiling, time promise unchanged until the Phase 5 timed walks; (8) owner-run and no-one-accountable debt scores built from the consequence (hours, tied-up, fall-through), process/person/capability reported as the "why"; exact math comes back to Bri in Phase 3. Audit section 13 marked approved
