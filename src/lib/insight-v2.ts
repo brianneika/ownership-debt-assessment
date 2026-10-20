@@ -272,6 +272,13 @@ function ownerVerb(o: V2Owner | null, singular: string, plural: string): string 
 export function basedOnLine(v: V2WorkflowView): string | null {
   if (v.mode === 'A') {
     if (!v.hours && !v.tiedUp) return v.keptOnPurpose ? `You run ${v.name} yourself by choice.` : `You run ${v.name} yourself.`;
+    if (!v.hours) {
+      // No hours answer: build the line from the tied-up answer alone.
+      const t = v.tiedUp!.rank;
+      const tied =
+        t === 0 ? "stops when you're away" : t === 1 ? "slips when you're tied up" : t === 2 ? "mostly keeps moving when you're tied up" : "keeps moving when you're away";
+      return v.keptOnPurpose ? `You run ${v.name} yourself by choice. It ${tied}.` : `${v.title} ${tied}.`;
+    }
     if (v.keptOnPurpose) return `You run ${v.name} yourself by choice. It takes${hoursAndTied(v)}.`;
     return `${v.title} takes${hoursAndTied(v)}.`;
   }
@@ -319,7 +326,7 @@ export function whereToStart(views: V2WorkflowView[], plan: V2Plan): string | nu
   const v = plan.firstWorkflow;
   if (!v) {
     if (views.some((x) => x.keptOnPurpose)) {
-      return "What leans on you most, you run by choice. On the call we'll look at taking the routine parts around it off your plate.";
+      return 'The workflow that leans on you most is one you run by choice. On the call, we can look at taking the routine parts around it off your plate.';
     }
     return null;
   }
@@ -339,9 +346,9 @@ export function whereToStart(views: V2WorkflowView[], plan: V2Plan): string | nu
       case 'sop_sprint':
         return `${v.title}. It isn't written down yet${(v.tiedUp?.rank ?? 9) <= 1 ? ", and it's the one slipping" : ''}. Once it's on paper, someone on your team has something to run.`;
       case 'train':
-        return `${v.title}. It's written down, and someone on your team could take it on with training.`;
+        return `${v.title}. Some of it is written down, and someone on your team could take it on with training.`;
       case 'schedule':
-        return `${v.title}. It's written down and someone on your team could take it now. What's left is setting a handoff date.`;
+        return `${v.title}. Some of it is written down, and someone on your team could take it now. What's left is setting a handoff date.`;
       default:
         return `${v.title}. ${leans}${stop}.`;
     }
@@ -361,11 +368,9 @@ export function doesntCover(
   opts: { noSupport: boolean; noDebtScore: boolean },
 ): string[] {
   const lines: string[] = [];
-  if (opts.noDebtScore) {
-    lines.push(
-      "You told us you don't do any of the four workflows we measure, so there's no Ownership Debt Score. Your readiness score still applies.",
-    );
-  } else {
+  // When every workflow is "We don't do this work", the score card and the read
+  // already say so; no third mention here.
+  if (!opts.noDebtScore) {
     const notDone = views.filter((v) => v.mode === 'N').map((v) => v.name);
     if (notDone.length === 1) lines.push(`You don't do ${notDone[0]}, so it isn't in your score.`);
     if (notDone.length > 1) lines.push(`You don't do ${joinList(notDone)}, so they aren't in your score.`);
@@ -416,7 +421,7 @@ export const V2_READS: Record<V2ReadKey, { headline: string; body: string }> = {
     body:
       'A lot of your business still runs through you, but you have the readiness to change that. ' +
       'This is a systems problem, not a willingness one. With written processes and clear owners, ' +
-      'you can start moving real ownership now.',
+      'you can start handing off ownership now.',
   },
   build_readiness: {
     headline: 'Build readiness before you hand off more',
@@ -446,7 +451,7 @@ export const V2_READS: Record<V2ReadKey, { headline: string; body: string }> = {
       'something to run.',
   },
   no_support_low: {
-    headline: 'Your workload is in good shape for now',
+    headline: "Your business isn't leaning hard on you right now",
     body:
       "Your workflows don't lean on you heavily right now, which is a good place to be on your own. " +
       "When you're ready to bring someone in, the readiness areas below show what to set up first.",

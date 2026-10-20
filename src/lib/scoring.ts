@@ -363,7 +363,7 @@ export function computeScoresV1(session: SessionRow, answers: AnswerRow[]): V1Co
 
   const validOds = WORKFLOWS.map((wf) => workflowOds[wf]).filter((v): v is number => v !== null);
   if (validOds.length === 0) {
-    throw new Error('No workflow ODS values could be computed — wf_*_mode fields may not be set on the session.');
+    throw new Error('No workflow ODS values could be computed. wf_*_mode fields may not be set on the session.');
   }
   const overallOds = avg(validOds);
 

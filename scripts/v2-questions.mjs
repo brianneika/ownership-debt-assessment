@@ -155,7 +155,7 @@ const TEAM = {
     C: 'How often do routine listing launch updates to the seller go out without your review?',
     D: 'How often does the weekly seller update go out without your review?',
     E: 'How often do the file details sent to title, escrow and the other agent go out without your review?',
-    F: 'How often do lender updates, like an appraisal result or a clear-to-close confirmation, go out without your review?',
+    F: 'How often do updates on lender milestones, like an appraisal result or a clear-to-close confirmation, go out to your client without your review?',
   },
   fixes: {
     C: 'like an MLS error or a missed deadline',

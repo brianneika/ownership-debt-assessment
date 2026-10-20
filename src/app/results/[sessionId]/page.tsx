@@ -147,7 +147,7 @@ export default async function ResultsPage({
           <img src="/vai-logo.svg" alt="VAI" className="inline-block h-11 w-auto mb-5" />
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Your Ownership Debt Results</h1>
           <p className="text-gray-500 text-sm">
-            Assessment complete · Your consultant will review these scores with you
+            Assessment complete · Bri will review these scores with you on your free call
           </p>
         </div>
 
@@ -181,7 +181,7 @@ function ScoringErrorPage({ sessionId }: { sessionId: string }) {
         </div>
         <h1 className="text-2xl font-bold text-gray-900 mb-3">We hit a snag scoring your results</h1>
         <p className="text-gray-500 mb-6">
-          Your answers are saved. Tap Try again, or your consultant can pull your
+          Your answers are saved. Tap Try again, or Bri can pull your
           scores directly. Nothing was lost.
         </p>
         <a

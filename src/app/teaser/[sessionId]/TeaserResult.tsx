@@ -46,6 +46,15 @@ export function TeaserResult({
           Preliminary read
         </p>
 
+        {estimate.notDone === 4 ? (
+          <p
+            className="text-[15px] font-semibold max-w-xs mx-auto"
+            style={{ color: 'var(--avai-ink)', lineHeight: 'var(--avai-leading-body)' }}
+          >
+            You told us you don&apos;t do any of the four workflows we measure. The full assessment looks at your readiness on its own.
+          </p>
+        ) : (
+        <>
         <div
           className="font-bold tabular-nums leading-none"
           style={{
@@ -62,6 +71,8 @@ export function TeaserResult({
         >
           of your core business still runs through you
         </p>
+        </>
+        )}
         {!!estimate.notDone && estimate.notDone < 4 && (
           <p className="text-xs mt-2" style={{ color: 'var(--avai-ink-faint)' }}>
             Based on the {4 - estimate.notDone === 1 ? 'one workflow' : `${['', '', 'two', 'three'][4 - estimate.notDone]} workflows`} you do.

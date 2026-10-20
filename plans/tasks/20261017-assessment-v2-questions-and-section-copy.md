@@ -271,6 +271,7 @@ Workflow keys use C/D/E/F for Listing launch, Seller communication, File opening
 
 Running log: check things off and note decisions as you go.
 
+- [x] 2026-10-19: Karen's review of PR 1 applied on the branch: call screen "Hours a week" line; "Some of it is written down" for partly written; owner-run line built from the tied-up answer when hours is missing; no third "we don't do any" mention when all four are not done; teaser shows a message instead of ~0% when all four rows are "We don't do this"; reads and descriptor rewording ("handing off ownership", "clear picture of what done well looks like", "isn't leaning hard on you", kept-by-choice line); "your consultant" replaced with Bri and "your free call" on the results page (button "Book your free call"); lender updates question reworded and 009 regenerated; em dashes removed from lines added in this PR and the client PDF legend. Verify script, typecheck and lint rerun: all checks pass, lint 15 (none new). Still going to Bri as decisions: backup time windows, "someone on your team", the teaser preview
 - [x] 2026-10-19: Phase 4 built on branch `assessment-v2-build` (PR open, not merged). Migration 009 written, not run. Verified: typecheck, build, lint (no new problems), the three worked examples, and v1 parity on all 15 completed sessions (read-only). No test sessions created; the localhost walk is Phase 5, after 009 runs
 
 - [x] 2026-10-17: plan written from the test-walk review and task C's draft; task C points here

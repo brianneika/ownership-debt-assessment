@@ -532,9 +532,9 @@ export default async function SessionDetailPage({
             numbers without framing. Static copy, always renders in client mode. */}
         <p className="print-client-only report-section text-xs text-gray-500">
           <span className="font-semibold text-gray-700">How to read these:</span>{' '}
-          Ownership Debt Score — lower is better (less of the business depends on you).
+          Ownership Debt Score: lower is better (less of the business depends on you).
           {' · '}
-          Delegation Readiness Score — higher is better (the team is more ready to take work on).
+          Delegation Readiness Score: higher is better (the team is more ready to take work on).
         </p>
 
         {/* Workflow breakdown */}
@@ -638,7 +638,7 @@ export default async function SessionDetailPage({
               text={
                 isV2
                   ? "The bottom two answers on five-answer questions and the bottom answer on shorter ones. Never not-applicable answers, unscored questions, or workflows kept on purpose. The call's talking-point list."
-                  : `Every scored answer at ${RED_FLAG_THRESHOLD} or below (after reverse-scoring) — the call's talking-point list.`
+                  : `Every scored answer at ${RED_FLAG_THRESHOLD} or below (after reverse-scoring): the call's talking-point list.`
               }
             />
           </div>

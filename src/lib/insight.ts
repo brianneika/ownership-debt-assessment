@@ -336,7 +336,7 @@ const RESPONDENT_QUADRANTS: Record<QuadrantKey, { headline: string; body: string
 // explain the weakest lever by name without giving away the coaching steps.
 const RESPONDENT_CATEGORY_DESC: Record<string, string> = {
   'Willingness': 'how ready you feel to let go of outcomes, not just tasks',
-  'Delegation Quality': 'how clearly work gets handed off, with a real definition of done',
+  'Delegation Quality': 'how clearly work gets handed off, with a clear picture of what done well looks like',
   'Team Capacity': 'whether your team has room to take on more ownership',
   'Authority Framework': 'written guardrails so your team knows what they can decide without you',
   'Transfer Readiness': 'how ready one workflow is to hand to a new owner',
@@ -836,7 +836,7 @@ function v2DiagnosticsBare(v: V2WorkflowView): WorkflowDiagnostics | null {
 function v2WhyStuck(v: V2WorkflowView): string[] {
   const lines: string[] = [];
   if (v.mode === 'A') {
-    if (v.hours) lines.push(`The leader spends ${v.hours.label.toLowerCase()} a week on it.`);
+    if (v.hours) lines.push(`Hours a week: ${v.hours.label}`);
     if (v.tiedUp) lines.push(`When they're tied up: ${v.tiedUp.label}`);
     if (v.why) lines.push(`Why they run it: "${v.why.label}"`);
     if (v.written) lines.push(`Written down: ${v.written.label} (${v.written.rank}/4)`);

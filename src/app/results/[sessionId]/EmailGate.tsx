@@ -25,7 +25,7 @@ function BookingCTA() {
       </div>
       <h2 className="text-lg font-bold text-gray-900 mb-2">Ready to talk through your results?</h2>
       <p className="text-gray-500 text-sm mb-6 max-w-sm mx-auto">
-        Book a strategy session with your VAI consultant to walk through your scores,
+        Book a free call with Bri to walk through your scores,
         identify your highest-leverage opportunities, and build your 90-day plan.
       </p>
       <a
@@ -34,7 +34,7 @@ function BookingCTA() {
         rel="noopener noreferrer"
         className="inline-block bg-vai-navy text-white text-sm font-semibold px-7 py-3 rounded-lg hover:bg-vai-navy-deep active:bg-vai-navy-deep transition-colors shadow-sm"
       >
-        Book a Session
+        Book your free call
       </a>
     </div>
   );
