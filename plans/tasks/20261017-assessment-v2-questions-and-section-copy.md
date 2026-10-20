@@ -214,13 +214,14 @@ Build decisions recorded (2026-10-19):
 - "Where to start" for an owner-run workflow says "someone on your team" where example 2 said "your assistant": one support person's role isn't asked.
 
 ### Phase 5: Test walk on localhost
-- [ ] Synthetic "Assessment review TEST" sessions for: all four workflows team-owned, owner-run, shared with an accountable person, no one accountable, a workflow they don't do, outside provider as owner, solo with no support, solo with an assistant, team readiness, completion screen
-- [ ] Each path: every question answerable honestly, counts in intros correct, scores computed
-- [ ] Each path's results pass the six checks in part 6b
-- [ ] Timed walkthroughs of the three main paths (all team-owned, mostly owner-run, solo with no support); if any runs past 20 minutes, update the time on the intake page (and anywhere else it's promised) to the real range
-- [ ] Delete the TEST sessions and their answers afterward
+- [x] (2026-10-19, Skipper, localhost on the branch with HUBSPOT_ACCESS_TOKEN blanked so no test contact reached HubSpot) Synthetic "Assessment review TEST" sessions for: all four workflows team-owned, owner-run, shared with an accountable person, no one accountable, a workflow they don't do, outside provider as owner, solo with no support, solo with an assistant, team readiness, completion screen
+- [x] Each path: every question answerable honestly, counts in intros correct, scores computed. Five full paths plus teaser: P1 team-owned all four (e6b79dad) debt 56 = worked example 1; P2 mostly owner-run with an outsourced TC via "Another person or provider" (1804a8e2) debt 58 = example 2; P3 solo no support, lender tracking not done (d705fd56) debt 69 / readiness 43 = example 3; P4 "each agent", no one accountable, not done, limited-answers label (98b58864); P5 none of the four (3853ef68) not scored, readiness only; teaser (0c791c6b) shows "3 of your 4 core workflows have no owner but you" and continues into v2 with No rows pre-filled as Me. Path lengths 74 and 53 as approved. Admin call screen not viewed (needs Bri's admin login); logic covered by verify-v2-scoring.mjs
+- [x] Each path's results pass the six checks in part 6b. One bug found and fixed (commit 5e265c9): a fractional score just under 51 displayed as 51 with no band pill and the low read; scores now round once before display, banding and the read (also fixes v1; real v1 session bbd8e227 read changes from "Stable today" to "Solid foundation" as a result)
+- [ ] (Not done: an automated walk can't time a person; needs one human timed run on a phone) Timed walkthroughs of the three main paths (all team-owned, mostly owner-run, solo with no support); if any runs past 20 minutes, update the time on the intake page (and anywhere else it's promised) to the real range
+- [ ] Delete the TEST sessions and their answers afterward (Bri; steps and SQL in `vai-va-training/output/20261019-steps-for-bri-delete-v2-test-sessions.md`)
 
 ### Phase 6: Section copy updated for v2
+- Found in the Phase 5 walk, pre-existing copy (task D scope, live today): consent line still says "VAILeverage may email you your results"; booking card promises "build your 90-day plan"; "Readiness is the average of these four" (it's weighted); part numbers skip when a workflow is "We don't do this" (Part 4 then Part 6); teaser page title has an em dash; teaser heading "Go beyond your estimate" now that it's a count
 - [ ] Owner tag and intro for the shared path (today's draft says "shared, with no one clear owner", which v2 separates)
 - [ ] Who owns what intro defines ownership as accountability within agreed boundaries
 - [ ] Solo track and About you intros match the new routing
