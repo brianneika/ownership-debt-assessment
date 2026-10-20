@@ -1,6 +1,10 @@
 import { getSupabaseServer } from '@/lib/supabase-server';
-import { buildRespondentSynthesis } from '@/lib/insight';
-import { calculateScores } from '@/lib/scoring';
+import { buildRespondentSynthesis, buildRespondentSynthesisV2 } from '@/lib/insight';
+import { calculateScores, loadV2Answers, v2SessionInput } from '@/lib/scoring';
+import { computeScoresV2 } from '@/lib/scoring-v2';
+import { buildResultsBlocks } from '@/lib/insight-v2';
+import type { V2FindingBlocks } from '@/components/results-visuals';
+import { loadScoreBands, bandFor, wholeScore } from '@/lib/score-bands';
 import { EmailGate, FullResults } from './EmailGate';
 import { BrandWave } from '@/components/BrandWave';
 
@@ -36,7 +40,8 @@ async function loadResults(supabase: SupabaseServer, sessionId: string) {
       .returns<ScoreRow[]>(),
     supabase
       .from('assessment_sessions')
-      .select('respondent_email, completed_at')
+      // '*' for instrument_version, drs_profile and the workflow modes (v2 blocks).
+      .select('*')
       .eq('id', sessionId)
       .single(),
     supabase
@@ -84,15 +89,23 @@ export default async function ResultsPage({
   const odsRow = overall.find((r) => r.dimensions?.slug === 'ods');
   const drsRow = overall.find((r) => r.dimensions?.slug === 'drs');
 
-  const ods = {
-    score: odsRow?.normalized_score ?? 0,
-    bandLabel: odsRow?.score_bands?.label ?? null,
-    bandColor: odsRow?.score_bands?.color_hex,
+  // Whole numbers first, then the band from that same number, so the score
+  // shown, the band pill and the read always agree (see src/lib/score-bands.ts).
+  const bands = await loadScoreBands(supabase);
+  const odsWhole = odsRow ? wholeScore(odsRow.normalized_score) : null;
+  const drsWhole = drsRow ? wholeScore(drsRow.normalized_score) : null;
+  const odsBand = bandFor(bands, 'ods', odsWhole);
+  const drsBand = bandFor(bands, 'drs', drsWhole);
+
+  const ods: { score: number; bandLabel: string | null; bandColor: string | undefined; notScoredText?: string } = {
+    score: odsWhole ?? 0,
+    bandLabel: odsBand?.label ?? null,
+    bandColor: odsBand?.color_hex ?? undefined,
   };
   const drs = {
-    score: drsRow?.normalized_score ?? 0,
-    bandLabel: drsRow?.score_bands?.label ?? null,
-    bandColor: drsRow?.score_bands?.color_hex,
+    score: drsWhole ?? 0,
+    bandLabel: drsBand?.label ?? null,
+    bandColor: drsBand?.color_hex ?? undefined,
   };
 
   // DRS category sub-breakdown (post-gate only), heaviest-weighted first so the
@@ -102,11 +115,33 @@ export default async function ResultsPage({
     .map((r) => ({ category: r.label, score: r.normalized_score, weight: r.weight }))
     .sort((a, b) => b.weight - a.weight);
 
-  const synthesis = buildRespondentSynthesis({
-    odsScore: odsRow?.normalized_score ?? null,
-    drsScore: drsRow?.normalized_score ?? null,
+  const isV2 = session?.instrument_version === 2;
+
+  let synthesis = buildRespondentSynthesis({
+    odsScore: odsWhole,
+    drsScore: drsWhole,
     drsCategoryBreakdown: drsBreakdown.map((d) => ({ category: d.category, normalizedScore: d.score })),
   });
+
+  // v2: the read gains a no-support version, and the page gains what the result
+  // is based on, where to start, and what it doesn't cover (scoring spec, section 7).
+  let v2Blocks: V2FindingBlocks | null = null;
+  if (isV2 && session) {
+    const answers = await loadV2Answers(supabase, sessionId);
+    const v2Session = v2SessionInput(session, answers);
+    const v2Scores = computeScoresV2(v2Session, answers);
+    v2Blocks = buildResultsBlocks(v2Session, answers, v2Scores).blocks;
+    synthesis = buildRespondentSynthesisV2({
+      odsScore: odsWhole,
+      drsScore: drsWhole,
+      noSupport: v2Scores.drsProfile === 'solo',
+      drsCategoryBreakdown: drsBreakdown.map((d) => ({ category: d.category, normalizedScore: d.score })),
+    }) as typeof synthesis;
+    if (!odsRow) {
+      ods.notScoredText =
+        "Not scored: you told us you don't do any of the four workflows we measure. Your readiness score still applies.";
+    }
+  }
 
   const alreadyHasEmail = !!session?.respondent_email;
 
@@ -121,12 +156,12 @@ export default async function ResultsPage({
           <img src="/vai-logo.svg" alt="VAI" className="inline-block h-11 w-auto mb-5" />
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Your Ownership Debt Results</h1>
           <p className="text-gray-500 text-sm">
-            Assessment complete · Your consultant will review these scores with you
+            Assessment complete · Bri will review these scores with you on your free call
           </p>
         </div>
 
         {alreadyHasEmail ? (
-          <FullResults ods={ods} drs={drs} synthesis={synthesis} drsBreakdown={drsBreakdown} />
+          <FullResults ods={ods} drs={drs} synthesis={synthesis} drsBreakdown={drsBreakdown} v2Blocks={v2Blocks} />
         ) : (
           <EmailGate
             sessionId={sessionId}
@@ -134,6 +169,7 @@ export default async function ResultsPage({
             drs={drs}
             synthesis={synthesis}
             drsBreakdown={drsBreakdown}
+            v2Blocks={v2Blocks}
           />
         )}
 
@@ -154,7 +190,7 @@ function ScoringErrorPage({ sessionId }: { sessionId: string }) {
         </div>
         <h1 className="text-2xl font-bold text-gray-900 mb-3">We hit a snag scoring your results</h1>
         <p className="text-gray-500 mb-6">
-          Your answers are saved. Tap Try again, or your consultant can pull your
+          Your answers are saved. Tap Try again, or Bri can pull your
           scores directly. Nothing was lost.
         </p>
         <a

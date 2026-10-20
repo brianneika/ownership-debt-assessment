@@ -7,6 +7,8 @@ import {
   ScoreSpectrumCards,
   SynthesisBlock,
   DrsReadinessBreakdown,
+  V2FindingsBlock,
+  type V2FindingBlocks,
   type ScoreData,
   type DrsCategoryRow,
   type Synthesis,
@@ -23,7 +25,7 @@ function BookingCTA() {
       </div>
       <h2 className="text-lg font-bold text-gray-900 mb-2">Ready to talk through your results?</h2>
       <p className="text-gray-500 text-sm mb-6 max-w-sm mx-auto">
-        Book a strategy session with your VAI consultant to walk through your scores,
+        Book a free call with Bri to walk through your scores,
         identify your highest-leverage opportunities, and build your 90-day plan.
       </p>
       <a
@@ -32,7 +34,7 @@ function BookingCTA() {
         rel="noopener noreferrer"
         className="inline-block bg-vai-navy text-white text-sm font-semibold px-7 py-3 rounded-lg hover:bg-vai-navy-deep active:bg-vai-navy-deep transition-colors shadow-sm"
       >
-        Book a Session
+        Book your free call
       </a>
     </div>
   );
@@ -44,12 +46,14 @@ export function EmailGate({
   drs,
   synthesis,
   drsBreakdown,
+  v2Blocks = null,
 }: {
   sessionId: string;
   ods: ScoreData;
   drs: ScoreData;
   synthesis: Synthesis | null;
   drsBreakdown: DrsCategoryRow[];
+  v2Blocks?: V2FindingBlocks | null;
 }) {
   const [unlocked, setUnlocked] = useState(false);
   const [email, setEmail] = useState('');
@@ -71,7 +75,7 @@ export function EmailGate({
   }
 
   if (unlocked) {
-    return <FullResults ods={ods} drs={drs} synthesis={synthesis} drsBreakdown={drsBreakdown} />;
+    return <FullResults ods={ods} drs={drs} synthesis={synthesis} drsBreakdown={drsBreakdown} v2Blocks={v2Blocks} />;
   }
 
   return (
@@ -87,6 +91,7 @@ export function EmailGate({
           goodDirection="low"
           lowLabel="Fully delegated"
           highLabel="Owner-dependent"
+          notScoredText={ods.notScoredText}
         />
       </div>
 
@@ -146,16 +151,19 @@ export function FullResults({
   drs,
   synthesis,
   drsBreakdown,
+  v2Blocks = null,
 }: {
   ods: ScoreData;
   drs: ScoreData;
   synthesis: Synthesis | null;
   drsBreakdown: DrsCategoryRow[];
+  v2Blocks?: V2FindingBlocks | null;
 }) {
   return (
     <>
       <ScoreSpectrumCards ods={ods} drs={drs} />
       {synthesis && <SynthesisBlock synthesis={synthesis} />}
+      {v2Blocks && <V2FindingsBlock blocks={v2Blocks} />}
       <DrsReadinessBreakdown rows={drsBreakdown} weakestCategory={synthesis?.weakestCategory?.category ?? null} />
       <div className="mt-4">
         <BookingCTA />

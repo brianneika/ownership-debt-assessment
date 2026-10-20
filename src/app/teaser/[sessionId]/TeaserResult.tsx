@@ -8,6 +8,7 @@ const TIER_STYLE: Record<DelegationTier, { bg: string; border: string; text: str
   low: { bg: '#fef2f2', border: '#fecaca', text: '#b91c1c' },
   developing: { bg: '#fefce8', border: '#fde68a', text: '#a16207' },
   ready: { bg: '#f0fdf4', border: '#bbf7d0', text: '#15803d' },
+  getting_started: { bg: '#f8fafc', border: '#e2e8f0', text: '#475569' },
 };
 
 function UnlockButton() {
@@ -45,38 +46,62 @@ export function TeaserResult({
           Preliminary read
         </p>
 
-        <div
-          className="font-bold tabular-nums leading-none"
-          style={{
-            fontSize: '4.5rem',
-            color: 'var(--avai-ink)',
-            letterSpacing: 'var(--avai-tracking-heading)',
-          }}
-        >
-          ~{estimate.ownerDependencePct}%
-        </div>
-        <p
-          className="text-[15px] font-semibold mt-3 max-w-xs mx-auto"
-          style={{ color: 'var(--avai-ink)', lineHeight: 'var(--avai-leading-body)' }}
-        >
-          of your core business still runs through you
-        </p>
+        {estimate.countLine !== undefined ? (
+          // v2 (Bri, 2026-10-19): a plain count of workflows with no owner but
+          // the leader, not a percentage. Rows marked "We don't do this" are left
+          // out of both numbers.
+          <>
+            <p
+              className="text-[1.5rem] font-bold max-w-sm mx-auto"
+              style={{
+                color: 'var(--avai-ink)',
+                letterSpacing: 'var(--avai-tracking-heading)',
+                lineHeight: 'var(--avai-leading-heading)',
+              }}
+            >
+              {estimate.countLine}
+            </p>
+            <p className="text-xs mt-5" style={{ color: 'var(--avai-ink-faint)' }}>
+              From your answers. The full assessment looks at how each workflow runs and gives you
+              your Ownership Debt Score.
+            </p>
+          </>
+        ) : (
+          <>
+            <div
+              className="font-bold tabular-nums leading-none"
+              style={{
+                fontSize: '4.5rem',
+                color: 'var(--avai-ink)',
+                letterSpacing: 'var(--avai-tracking-heading)',
+              }}
+            >
+              ~{estimate.ownerDependencePct}%
+            </div>
+            <p
+              className="text-[15px] font-semibold mt-3 max-w-xs mx-auto"
+              style={{ color: 'var(--avai-ink)', lineHeight: 'var(--avai-leading-body)' }}
+            >
+              of your core business still runs through you
+            </p>
 
-        <div
-          className="inline-flex items-center gap-2 mt-5 px-3 py-1 rounded-full text-xs font-semibold"
-          style={{
-            background: 'var(--avai-accent-50)',
-            border: '1px solid var(--avai-accent-100)',
-            color: 'var(--avai-accent-700)',
-          }}
-        >
-          {estimate.bandLabel}
-        </div>
+            <div
+              className="inline-flex items-center gap-2 mt-5 px-3 py-1 rounded-full text-xs font-semibold"
+              style={{
+                background: 'var(--avai-accent-50)',
+                border: '1px solid var(--avai-accent-100)',
+                color: 'var(--avai-accent-700)',
+              }}
+            >
+              {estimate.bandLabel}
+            </div>
 
-        <p className="text-xs mt-5" style={{ color: 'var(--avai-ink-faint)' }}>
-          Estimated from your answers. The full assessment sharpens this into your real
-          Ownership Debt Score.
-        </p>
+            <p className="text-xs mt-5" style={{ color: 'var(--avai-ink-faint)' }}>
+              Estimated from your answers. The full assessment sharpens this into your real
+              Ownership Debt Score.
+            </p>
+          </>
+        )}
       </div>
 
       {/* Delegation-readiness tier */}

@@ -8,14 +8,32 @@ import { getSupabaseServer } from './supabase-server';
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type WorkflowKey = 'C' | 'D' | 'E' | 'F';
-export type WorkflowMode = 'A' | 'B' | 'C';
+// 'N' = "We don't do this work" (instrument v2 only): the workflow is skipped and
+// left out of the score.
+export type WorkflowMode = 'A' | 'B' | 'C' | 'N';
+export type InstrumentVersion = 1 | 2;
+
+// The instrument new sessions start on. v1 sessions keep v1 forever
+// (assessment_sessions.instrument_version, migration 009).
+export const CURRENT_INSTRUMENT_VERSION: InstrumentVersion = 2;
 export type DrsProfile = 'team' | 'solo';
 export type AnswerType = 'scored_radio' | 'categorical_radio' | 'free_text';
 
 export interface ResponseOption {
   value: number | string;
   label: string;
+  // v2: a not-applicable choice ("This didn't come up"); never scored.
+  na?: boolean;
 }
+
+// v2: show this question only when another answer on the same page matches.
+export interface ShowIf {
+  key: string;
+  equals: string;
+}
+
+// v2: alternate wording keyed by owner answer ("each_agent").
+export type QuestionVariants = Record<string, { text?: string; options?: ResponseOption[] }>;
 
 export interface Question {
   id: number;
@@ -34,6 +52,9 @@ export interface Question {
   // Exact option labels from the live question bank. When present, the UI
   // renders these instead of the generic LIKERT_OPTIONS / CATEGORICAL_OPTIONS fallback.
   response_options: ResponseOption[] | null;
+  // v2 only (migration 009); undefined on v1 rows.
+  show_if?: ShowIf | null;
+  variants?: QuestionVariants | null;
 }
 
 export interface SavedAnswer {
@@ -66,6 +87,7 @@ export interface AssessmentSession {
   wf_e_mode: WorkflowMode | null;
   wf_f_mode: WorkflowMode | null;
   status: string;
+  instrument_version: InstrumentVersion;
 }
 
 // ─── Display constants ────────────────────────────────────────────────────────
@@ -149,6 +171,53 @@ export function answerToMode(answerValue: string): WorkflowMode {
   }
 }
 
+// ─── Instrument v2 routing ────────────────────────────────────────────────────
+
+// Owner question per workflow ("Who's accountable for keeping X moving?").
+export const V2_OWNER_KEYS: Record<WorkflowKey, string> = {
+  C: 'V2B_C',
+  D: 'V2B_D',
+  E: 'V2B_E',
+  F: 'V2B_F',
+};
+
+// v2 owner answer to path. Shared work with one accountable lead lands on a named
+// role, so it gets the team-owned questions (decided 2026-10-17).
+export function ownerAnswerToModeV2(value: string): WorkflowMode {
+  switch (value) {
+    case 'me':
+      return 'A';
+    case 'no_one':
+      return 'C';
+    case 'not_done':
+      return 'N';
+    default:
+      // tc, listing_coordinator, operations_manager, assistant_va, each_agent,
+      // other_provider, and the teaser grid's named_owner
+      return 'B';
+  }
+}
+
+// v2 readiness track: on whether support exists, nothing else (decision 5).
+// "None" = the no-support track (stored as 'solo').
+export function drsProfileFromSupportV2(supportValue: string | null | undefined): DrsProfile {
+  return supportValue === 'none' ? 'solo' : 'team';
+}
+
+// Swap in the "Each agent handles their own" wording where a question has it.
+export function applyOwnerVariant(questions: Question[], ownerValue: string | null | undefined): Question[] {
+  if (!ownerValue) return questions;
+  return questions.map((q) => {
+    const v = q.variants?.[ownerValue];
+    if (!v) return q;
+    return {
+      ...q,
+      question_text: v.text ?? q.question_text,
+      response_options: v.options ?? q.response_options,
+    };
+  });
+}
+
 // Maps B001–B004 question keys to workflow keys
 export const B_QUESTION_TO_WORKFLOW: Record<string, WorkflowKey> = {
   B001: 'C',
@@ -181,17 +250,23 @@ export function refineDrsProfile(
 
 export async function createSession(entry: 'full' | 'teaser' = 'full'): Promise<string> {
   const supabase = getSupabaseServer();
-  // Keep the full-flow insert byte-identical to the pre-teaser version so it can
-  // never break if the app deploys ahead of migration 008 — the `entry` column
-  // only gets written on the teaser path (which isn't reachable until 008 lands).
-  const insert: Record<string, string> = { status: 'in_progress' };
-  if (entry === 'teaser') insert.entry = 'teaser';
+  // The `entry` column only gets written on the teaser path (migration 008).
+  const base: Record<string, string | number> = { status: 'in_progress' };
+  if (entry === 'teaser') base.entry = 'teaser';
 
-  const { data, error } = await supabase
+  // New sessions start on the current instrument. If migration 009 hasn't run yet
+  // (instrument_version missing), fall back to a plain insert, which the column
+  // default (or its absence) makes a v1 session, so the app keeps working on v1.
+  let { data, error } = await supabase
     .from('assessment_sessions')
-    .insert(insert)
+    .insert({ ...base, instrument_version: CURRENT_INSTRUMENT_VERSION })
     .select('id')
     .single();
+
+  if (error && /instrument_version/.test(error.message)) {
+    console.error('[createSession] instrument_version not available, starting a v1 session:', error.message);
+    ({ data, error } = await supabase.from('assessment_sessions').insert(base).select('id').single());
+  }
 
   if (error || !data) throw new Error(`Failed to create session: ${error?.message}`);
   return data.id;
@@ -212,14 +287,25 @@ export async function setTeaserCompleted(sessionId: string): Promise<void> {
 
 export async function fetchSession(sessionId: string): Promise<AssessmentSession | null> {
   const supabase = getSupabaseServer();
+  // select('*') so this works whether or not migration 009 has run; a session
+  // without instrument_version is v1.
   const { data, error } = await supabase
     .from('assessment_sessions')
-    .select('id, drs_profile, wf_c_mode, wf_d_mode, wf_e_mode, wf_f_mode, status')
+    .select('*')
     .eq('id', sessionId)
-    .single<AssessmentSession>();
+    .single();
 
-  if (error) return null;
-  return data;
+  if (error || !data) return null;
+  return {
+    id: data.id,
+    drs_profile: data.drs_profile ?? null,
+    wf_c_mode: data.wf_c_mode ?? null,
+    wf_d_mode: data.wf_d_mode ?? null,
+    wf_e_mode: data.wf_e_mode ?? null,
+    wf_f_mode: data.wf_f_mode ?? null,
+    status: data.status,
+    instrument_version: data.instrument_version === 2 ? 2 : 1,
+  };
 }
 
 export async function setDrsProfile(sessionId: string, profile: DrsProfile): Promise<void> {
@@ -261,21 +347,30 @@ export async function completeSession(sessionId: string): Promise<void> {
   if (error) throw new Error(`Failed to complete session: ${error.message}`);
 }
 
-// Fetch questions for a section, optionally filtered by mode and/or drs_profile
+// Fetch questions for a section, optionally filtered by mode and/or drs_profile.
+//
+// Questions are picked by instrument version, never by is_active, so a session
+// keeps its own version's questions whatever is_active says (migration 010 only
+// relabels is_active). v1 rows are every row without the "V2" key prefix; that
+// filter works before and after migration 009.
 export async function fetchQuestions(
   section: string,
-  opts: { mode?: WorkflowMode; drsProfile?: DrsProfile } = {},
+  opts: { mode?: WorkflowMode; drsProfile?: DrsProfile; version?: InstrumentVersion } = {},
 ): Promise<Question[]> {
   const supabase = getSupabaseServer();
+  const version = opts.version ?? 1;
+  const columns =
+    'id, question_key, question_text, question_order, section, mode, answer_type, ' +
+    'is_scored, oqi_dimension, drs_category, reverse_scored, applies_to_profile, weight, response_options' +
+    (version === 2 ? ', show_if, variants' : '');
+
   let query = supabase
     .from('questions')
-    .select(
-      'id, question_key, question_text, question_order, section, mode, answer_type, ' +
-      'is_scored, oqi_dimension, drs_category, reverse_scored, applies_to_profile, weight, response_options',
-    )
+    .select(columns)
     .eq('section', section)
-    .eq('is_active', true)
     .order('question_order', { ascending: true });
+
+  query = version === 2 ? query.eq('instrument_version', 2) : query.not('question_key', 'like', 'V2%');
 
   if (opts.mode) {
     query = query.eq('mode', opts.mode);
