@@ -36,6 +36,10 @@ export interface TeaserEstimate {
   answered: number;
   // v2: workflows marked "We don't do this", left out of the headline.
   notDone?: number;
+  // v2 headline (Bri, 2026-10-19): a plain count replaces the percentage.
+  ownerOnly?: number; // rows answered "No": no owner but the leader
+  measured?: number; // rows not marked "We don't do this"
+  countLine?: string;
   // The two leader answers, 0 to 4, when present.
   authority: number | null;
   takeBack: number | null;
@@ -160,6 +164,17 @@ export function computeTeaserEstimate(answers: TeaserAnswers): TeaserEstimate {
 
 export const TEASER_NO_ONE_VALUE = 5;
 
+// The v2 headline. ownerOnly = rows answered "No"; measured = rows they do.
+export function teaserCountLine(ownerOnly: number, measured: number): string {
+  if (measured === 0) {
+    return "You told us you don't do any of the four workflows we measure. The full assessment looks at your readiness on its own.";
+  }
+  if (ownerOnly === 0) return 'None of your core workflows depend on you alone.';
+  if (measured === 1) return 'Your one core workflow has no owner but you.';
+  if (ownerOnly === measured) return `All ${measured} of your core workflows have no owner but you.`;
+  return `${ownerOnly} of your ${measured} core workflows ${ownerOnly === 1 ? 'has' : 'have'} no owner but you.`;
+}
+
 export function computeTeaserEstimateV2(answers: TeaserAnswers): TeaserEstimate {
   const authority = clampScore(answers.authority);
   const noOne = answers.takeBack === TEASER_NO_ONE_VALUE;
@@ -206,8 +221,12 @@ export function computeTeaserEstimateV2(answers: TeaserAnswers): TeaserEstimate 
   if (tier === 'ready' && pct >= 50) tier = 'developing';
 
   return {
+    // The percentage still drives the tier cap below it; it is never shown on v2.
     ownerDependencePct: pct,
     bandLabel: measured > 0 ? bandLabelFor(pct) : 'None of the four workflows',
+    ownerOnly: modeA,
+    measured,
+    countLine: teaserCountLine(modeA, measured),
     tier,
     tierLabel: TIER_LABEL[tier],
     tierBlurb: TIER_BLURB[tier],

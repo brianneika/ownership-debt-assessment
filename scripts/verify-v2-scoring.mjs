@@ -189,24 +189,30 @@ check('four-answer no red flag at rank 1', scoring.isRedFlagAnswer(ans('V2C_DECI
 
 // Teaser preview on v2: a proxy, not the debt score. Checks the two v2 changes.
 console.log('\nTeaser preview (v2)');
-const t1 = teaser.computeTeaserEstimateV2({ b: { C: 'me', D: 'me', E: 'me', F: 'not_done' }, authority: 0, takeBack: 5 });
-check('three owner-run + one not done: share of the three', t1.ownerDependencePct, 100);
-check('no one to hand work to: tier', t1.tier, 'getting_started');
-const t2 = teaser.computeTeaserEstimateV2({ b: { C: 'named_owner', D: 'named_owner', E: 'not_done', F: 'not_done' }, authority: 4, takeBack: 4 });
-check('two delegated with full authority, two not done', [t2.ownerDependencePct, t2.tier], [0, 'ready']);
-const t3 = teaser.computeTeaserEstimateV2({ b: { C: 'me', D: 'named_owner', E: 'named_owner', F: 'named_owner' }, authority: 2, takeBack: 1 });
+const t = (b, authority = 2, takeBack = 2) => teaser.computeTeaserEstimateV2({ b, authority, takeBack });
+check('3 of 4 owner-run', t({ C: 'me', D: 'me', E: 'me', F: 'named_owner' }).countLine, '3 of your 4 core workflows have no owner but you.');
+check('one not done leaves both numbers', t({ C: 'me', D: 'me', E: 'named_owner', F: 'not_done' }).countLine, '2 of your 3 core workflows have no owner but you.');
+check('1 has (singular)', t({ C: 'me', D: 'named_owner', E: 'named_owner', F: 'named_owner' }).countLine, '1 of your 4 core workflows has no owner but you.');
+check('none owner-run', t({ C: 'named_owner', D: 'named_owner', E: 'named_owner', F: 'not_done' }).countLine, 'None of your core workflows depend on you alone.');
+check('all owner-run', t({ C: 'me', D: 'me', E: 'me', F: 'me' }).countLine, 'All 4 of your core workflows have no owner but you.');
+check('all owner-run, one not done', t({ C: 'me', D: 'me', E: 'me', F: 'not_done' }).countLine, 'All 3 of your core workflows have no owner but you.');
+check('only one workflow done', t({ C: 'me', D: 'not_done', E: 'not_done', F: 'not_done' }).countLine, 'Your one core workflow has no owner but you.');
+check('all four not done', t({ C: 'not_done', D: 'not_done', E: 'not_done', F: 'not_done' }).countLine, "You told us you don't do any of the four workflows we measure. The full assessment looks at your readiness on its own.");
+check('no one to hand work to: tier', t({ C: 'me', D: 'me', E: 'me', F: 'not_done' }, 0, 5).tier, 'getting_started');
+const t3 = t({ C: 'me', D: 'named_owner', E: 'named_owner', F: 'named_owner' }, 2, 1);
 const t3v1 = teaser.computeTeaserEstimate({ b: { C: 'team_leader', D: 'named_owner', E: 'named_owner', F: 'named_owner' }, authority: 2, takeBack: 1 });
-check('nothing marked not done: same as the v1 preview', [t3.ownerDependencePct, t3.tier], [t3v1.ownerDependencePct, t3v1.tier]);
-// The three worked examples, teaser answers as they'd give them, next to the full v2 score.
+check('tier unchanged from v1 when nothing is not done', t3.tier, t3v1.tier);
+check('v1 teaser has no count line (keeps its percentage)', t3v1.countLine, undefined);
 const previews = [
   ['Example 1', { C: 'named_owner', D: 'named_owner', E: 'named_owner', F: 'named_owner' }, 2, 3, 56],
   ['Example 2', { C: 'me', D: 'me', E: 'me', F: 'named_owner' }, 1, 0, 58],
   ['Example 3', { C: 'me', D: 'me', E: 'me', F: 'not_done' }, 0, 5, 69],
 ];
 for (const [name, b, authority, takeBack, full] of previews) {
-  const e = teaser.computeTeaserEstimateV2({ b, authority, takeBack });
-  console.log(`  ${name}: preview ~${e.ownerDependencePct}% (${e.bandLabel}, tier ${e.tierLabel}); full v2 Ownership Debt ${full}`);
+  const e = t(b, authority, takeBack);
+  console.log(`  ${name}: "${e.countLine}" (tier ${e.tierLabel}); full v2 Ownership Debt ${full}`);
 }
+for (const line of [t({ C: 'me', D: 'me', E: 'me', F: 'me' }).countLine]) if (line.includes('\u2014')) { failures += 1; console.log('  FAIL em dash'); }
 
 fs.rmSync(out, { recursive: true, force: true });
 console.log(failures === 0 ? '\nAll checks passed.' : `\n${failures} check(s) failed.`);
