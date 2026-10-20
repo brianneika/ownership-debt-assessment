@@ -13,6 +13,7 @@ import { WORKFLOW_NAMES, SECTION_LABELS, type WorkflowKey, type WorkflowMode } f
 import {
   V2_GROUP_NAMES,
   v2RedFlagAnswers,
+  wholeScore,
   rankOf,
   optionLabel as v2OptionLabel,
   type V2Answer,
@@ -486,8 +487,9 @@ export interface StartHereInsight {
 // Overall ODS band × DRS band → quadrant. Shared by the coach playbook
 // (buildStartHere) and the respondent synthesis so the two never drift.
 export function classifyQuadrant(odsScore: number, drsScore: number): QuadrantKey {
-  const highOds = odsScore >= HIGH_SCORE_CUTOFF;
-  const highDrs = drsScore >= HIGH_SCORE_CUTOFF;
+  // Whole numbers first, so the read matches the number and band shown.
+  const highOds = wholeScore(odsScore) >= HIGH_SCORE_CUTOFF;
+  const highDrs = wholeScore(drsScore) >= HIGH_SCORE_CUTOFF;
   return highOds
     ? highDrs
       ? 'transfer_now'

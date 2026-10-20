@@ -23,6 +23,7 @@ import {
   type WorkflowDiagnostics,
 } from './insight';
 import { computeScoresV2 } from './scoring-v2';
+import { loadScoreBands, bandFor, wholeScore, type ScoreBand } from './score-bands';
 import { buildResultsBlocks, type V2ResultsBlocks } from './insight-v2';
 
 // Instrument version of a session row (absent before migration 009 = v1).
@@ -151,11 +152,14 @@ function unwrapOne<T>(v: T | T[] | null): T | null {
   return Array.isArray(v) ? v[0] ?? null : v;
 }
 
-function toScoreSummary(row: DimensionScoreRow | undefined): ScoreSummary | null {
+// Whole-number score and the band it falls in (read time, see ./score-bands.ts),
+// so admin shows the same number, band and read as the results page.
+function toScoreSummary(row: DimensionScoreRow | undefined, bands: ScoreBand[]): ScoreSummary | null {
   if (!row) return null;
-  const band = unwrapOne(row.score_bands);
+  const slug = unwrapOne(row.dimensions)?.slug ?? '';
+  const band = bandFor(bands, slug, row.normalized_score);
   return {
-    score: row.normalized_score,
+    score: wholeScore(row.normalized_score),
     bandLabel: band?.label ?? null,
     bandColor: band?.color_hex ?? null,
     bandDescription: band?.description ?? null,
@@ -179,7 +183,7 @@ export async function fetchCompletedSessions(): Promise<SessionListItem[]> {
 
   const sessionIds = sessions.map((s) => s.id);
 
-  const [{ data: scores }, { data: nameAnswers }] = await Promise.all([
+  const [{ data: scores }, { data: nameAnswers }, bands] = await Promise.all([
     supabase
       .from('dimension_scores')
       .select('session_id, workflow_key, normalized_score, dimensions(slug), score_bands(label, color_hex)')
@@ -191,6 +195,7 @@ export async function fetchCompletedSessions(): Promise<SessionListItem[]> {
       .select('session_id, text_value, questions!inner(question_key)')
       .in('session_id', sessionIds)
       .in('questions.question_key', ['A001', 'A002']),
+    loadScoreBands(supabase),
   ]);
 
   // Build session_id → { A001, A002 } map
@@ -235,8 +240,8 @@ export async function fetchCompletedSessions(): Promise<SessionListItem[]> {
       entry: (s as { entry?: string }).entry === 'teaser' ? 'teaser' : 'full',
       instrumentVersion: versionOf(s),
       crossVersionRetake: !!email && (versionsByEmail.get(email)?.size ?? 0) > 1,
-      ods: toScoreSummary(sc.ods),
-      drs: toScoreSummary(sc.drs),
+      ods: toScoreSummary(sc.ods, bands),
+      drs: toScoreSummary(sc.drs, bands),
     };
   });
 }
@@ -329,7 +334,7 @@ export async function fetchSessionDetail(sessionId: string): Promise<SessionDeta
     }));
   }
 
-  const [{ data: scores }, { data: answers }, { data: breakdowns }] = await Promise.all([
+  const [{ data: scores }, { data: answers }, { data: breakdowns }, bands] = await Promise.all([
     supabase
       .from('dimension_scores')
       .select('session_id, workflow_key, normalized_score, score_band_id, dimensions(slug), score_bands(label, color_hex, description)')
@@ -359,6 +364,7 @@ export async function fetchSessionDetail(sessionId: string): Promise<SessionDeta
       .from('score_breakdowns')
       .select('breakdown_type, workflow_key, label, weight, normalized_score')
       .eq('session_id', sessionId),
+    loadScoreBands(supabase),
   ]);
 
   const allAnswers = (answers ?? []) as any[];
@@ -456,8 +462,8 @@ export async function fetchSessionDetail(sessionId: string): Promise<SessionDeta
     name: WORKFLOW_NAMES[key],
     mode: wfModes[key],
     owner: workflowOwners[key],
-    ods: toScoreSummary(byWorkflow[key]?.ods),
-    oqi: toScoreSummary(byWorkflow[key]?.oqi),
+    ods: toScoreSummary(byWorkflow[key]?.ods, bands),
+    oqi: toScoreSummary(byWorkflow[key]?.oqi, bands),
     oqiBreakdown: oqiBreakdownByWorkflow[key],
     diagnostics: v2
       ? v2.diagnostics[key]
@@ -483,8 +489,10 @@ export async function fetchSessionDetail(sessionId: string): Promise<SessionDeta
   // "How we can help" copy for the overall ODS / DRS bands (dormant table
   // until migration 007's seed runs — empty arrays render as a hidden section)
   const recommendations: SessionDetail['recommendations'] = { ods: [], drs: [] };
-  const odsBandId = overall.ods?.score_band_id ?? null;
-  const drsBandId = overall.drs?.score_band_id ?? null;
+  // Band ids from the whole-number score, not the stored id (which can be null
+  // for a score between two bands, e.g. 50.6).
+  const odsBandId = bandFor(bands, 'ods', overall.ods?.normalized_score)?.id ?? null;
+  const drsBandId = bandFor(bands, 'drs', overall.drs?.normalized_score)?.id ?? null;
   const bandIds = [odsBandId, drsBandId].filter((id): id is number => id !== null);
   if (bandIds.length > 0) {
     const { data: recs } = await supabase
@@ -512,8 +520,8 @@ export async function fetchSessionDetail(sessionId: string): Promise<SessionDeta
     transactionVolume: labelFor(isV2 ? 'V2A_DEALS' : 'A004'),
     sideFocus: isV2 ? null : labelFor('A005'),
     teamSize: labelFor(isV2 ? 'V2A_SUPPORT' : 'A006'),
-    ods: toScoreSummary(overall.ods),
-    drs: toScoreSummary(overall.drs),
+    ods: toScoreSummary(overall.ods, bands),
+    drs: toScoreSummary(overall.drs, bands),
     drsProfile,
     drsCategoryBreakdown,
     workflows,

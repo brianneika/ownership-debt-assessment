@@ -49,6 +49,12 @@ export interface V2SessionInput {
 
 export const V2_WORKFLOWS: V2WorkflowKey[] = ['C', 'D', 'E', 'F'];
 
+// Scores are shown, banded and read as whole numbers (see ./score-bands.ts).
+// Used by every consumer, v1 and v2, so the number, band and read always agree.
+export function wholeScore(score: number): number {
+  return Math.round(score);
+}
+
 // Team-owned groups, keyed by the oqi_dimension slugs the rows carry. Slugs keep
 // their v1 spelling (the database check allows only these); names and weights are
 // v2's own and never mix with v1 results because scoring dispatches by version.

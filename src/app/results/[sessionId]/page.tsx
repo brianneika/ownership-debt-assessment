@@ -4,6 +4,7 @@ import { calculateScores, loadV2Answers, v2SessionInput } from '@/lib/scoring';
 import { computeScoresV2 } from '@/lib/scoring-v2';
 import { buildResultsBlocks } from '@/lib/insight-v2';
 import type { V2FindingBlocks } from '@/components/results-visuals';
+import { loadScoreBands, bandFor, wholeScore } from '@/lib/score-bands';
 import { EmailGate, FullResults } from './EmailGate';
 import { BrandWave } from '@/components/BrandWave';
 
@@ -88,15 +89,23 @@ export default async function ResultsPage({
   const odsRow = overall.find((r) => r.dimensions?.slug === 'ods');
   const drsRow = overall.find((r) => r.dimensions?.slug === 'drs');
 
+  // Whole numbers first, then the band from that same number, so the score
+  // shown, the band pill and the read always agree (see src/lib/score-bands.ts).
+  const bands = await loadScoreBands(supabase);
+  const odsWhole = odsRow ? wholeScore(odsRow.normalized_score) : null;
+  const drsWhole = drsRow ? wholeScore(drsRow.normalized_score) : null;
+  const odsBand = bandFor(bands, 'ods', odsWhole);
+  const drsBand = bandFor(bands, 'drs', drsWhole);
+
   const ods: { score: number; bandLabel: string | null; bandColor: string | undefined; notScoredText?: string } = {
-    score: odsRow?.normalized_score ?? 0,
-    bandLabel: odsRow?.score_bands?.label ?? null,
-    bandColor: odsRow?.score_bands?.color_hex,
+    score: odsWhole ?? 0,
+    bandLabel: odsBand?.label ?? null,
+    bandColor: odsBand?.color_hex ?? undefined,
   };
   const drs = {
-    score: drsRow?.normalized_score ?? 0,
-    bandLabel: drsRow?.score_bands?.label ?? null,
-    bandColor: drsRow?.score_bands?.color_hex,
+    score: drsWhole ?? 0,
+    bandLabel: drsBand?.label ?? null,
+    bandColor: drsBand?.color_hex ?? undefined,
   };
 
   // DRS category sub-breakdown (post-gate only), heaviest-weighted first so the
@@ -109,8 +118,8 @@ export default async function ResultsPage({
   const isV2 = session?.instrument_version === 2;
 
   let synthesis = buildRespondentSynthesis({
-    odsScore: odsRow?.normalized_score ?? null,
-    drsScore: drsRow?.normalized_score ?? null,
+    odsScore: odsWhole,
+    drsScore: drsWhole,
     drsCategoryBreakdown: drsBreakdown.map((d) => ({ category: d.category, normalizedScore: d.score })),
   });
 
@@ -123,8 +132,8 @@ export default async function ResultsPage({
     const v2Scores = computeScoresV2(v2Session, answers);
     v2Blocks = buildResultsBlocks(v2Session, answers, v2Scores).blocks;
     synthesis = buildRespondentSynthesisV2({
-      odsScore: odsRow ? odsRow.normalized_score : null,
-      drsScore: drsRow?.normalized_score ?? null,
+      odsScore: odsWhole,
+      drsScore: drsWhole,
       noSupport: v2Scores.drsProfile === 'solo',
       drsCategoryBreakdown: drsBreakdown.map((d) => ({ category: d.category, normalizedScore: d.score })),
     }) as typeof synthesis;

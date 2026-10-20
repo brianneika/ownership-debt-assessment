@@ -15,7 +15,7 @@
 // rules and v2 sessions never touch these.
 
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import { computeScoresV2, type V2Answer, type V2Mode } from './scoring-v2';
+import { computeScoresV2, wholeScore, type V2Answer, type V2Mode } from './scoring-v2';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -157,11 +157,14 @@ function findScoreBandId(
   dimensionId: number,
   score: number,
 ): number | null {
+  // Bands are whole-number ranges; round first so 50.6 lands in 51-70, matching
+  // what's displayed (see ./score-bands.ts). The stored score keeps its decimals.
+  const s = wholeScore(score);
   const match = bands.find(
     (b) =>
       b.dimension_id === dimensionId &&
-      score >= b.min_score &&
-      score <= b.max_score,
+      s >= Number(b.min_score) &&
+      s <= Number(b.max_score),
   );
   return match?.id ?? null;
 }

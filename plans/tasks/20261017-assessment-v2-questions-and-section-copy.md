@@ -233,6 +233,7 @@ Build decisions recorded (2026-10-19):
 - [ ] Once real v2 respondents exist, run the completion-time query and compare with the timed walks
 - [ ] Update `docs/question-bank-export.md` and `docs/reading-assessment-results.md` for v2
 
+- [x] Rounding fix from the Phase 5 walk, 2026-10-19 (pre-existing in v1): scores are rounded to whole numbers once, at read time, before display, band and read (`src/lib/score-bands.ts`, `wholeScore` in `scoring-v2.ts`), used by the results page, admin list and detail, the v1 quadrant and the v2 read; `findScoreBandId` rounds too so band ids saved from now on agree. Stored scores keep their decimals and nothing was rescored. Read-only check on all 20 completed sessions: 0 displayed numbers change; 12 scores between two bands get their band back; two reads change, both sessions showing readiness 51: TEST `e6b79dad` (Build readiness becomes Ready to start handing work off) and v1 `bbd8e227` (Stable today becomes Solid foundation)
 ## Open questions for Bri
 
 All decided by Bri, 2026-10-17.

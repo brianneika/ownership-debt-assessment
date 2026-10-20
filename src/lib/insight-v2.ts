@@ -15,6 +15,7 @@ import {
   optionLabel,
   rankOf,
   isNotApplicable,
+  wholeScore,
   type V2Answer,
   type V2Mode,
   type V2ScoringResult,
@@ -409,9 +410,9 @@ export type V2ReadKey = 'transfer_now' | 'build_readiness' | 'optimize_scale' | 
 export function classifyReadV2(ods: number | null, drs: number | null, noSupport: boolean): V2ReadKey | null {
   if (drs === null) return null;
   if (ods === null) return 'no_debt_score';
-  const highOds = ods >= 51;
+  const highOds = wholeScore(ods) >= 51;
   if (noSupport) return highOds ? 'no_support_high' : 'no_support_low';
-  const highDrs = drs >= 51;
+  const highDrs = wholeScore(drs) >= 51;
   return highOds ? (highDrs ? 'transfer_now' : 'build_readiness') : highDrs ? 'optimize_scale' : 'protect';
 }
 
