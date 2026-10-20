@@ -15,7 +15,9 @@
 
 import { answerToMode, B_QUESTION_TO_WORKFLOW, type WorkflowKey } from './assessment';
 
-export type DelegationTier = 'low' | 'developing' | 'ready';
+// 'getting_started' (v2): no one to hand work to yet, so no readiness tier is
+// claimed for a staffing fact.
+export type DelegationTier = 'low' | 'developing' | 'ready' | 'getting_started';
 
 export interface TeaserEstimate {
   // Headline: rough share of the 4 core workflows that still route through the owner.
@@ -32,6 +34,8 @@ export interface TeaserEstimate {
   modeC: number; // shared / no clear owner (legacy full-flow value)
   // Number of the 4 workflow answers we actually have.
   answered: number;
+  // v2: workflows marked "We don't do this", left out of the headline.
+  notDone?: number;
   // The two leader answers, 0 to 4, when present.
   authority: number | null;
   takeBack: number | null;
@@ -48,12 +52,15 @@ const TIER_LABEL: Record<DelegationTier, string> = {
   low: 'Low',
   developing: 'Developing',
   ready: 'Ready',
+  getting_started: 'Getting started',
 };
 
 const TIER_BLURB: Record<DelegationTier, string> = {
   low: 'Work that leaves your plate tends to come back. The gap is in the handoff, not the people.',
   developing: 'Some things stay handed off, some come back. A delegation foundation is forming.',
   ready: 'What you hand off tends to stay handed off. Your team looks ready to carry more.',
+  getting_started:
+    "You don't have anyone to hand work to yet. The full assessment looks at what to set up before your first hire.",
 };
 
 // Share of a named-owner workflow that still routes through the leader, by the
@@ -136,6 +143,79 @@ export function computeTeaserEstimate(answers: TeaserAnswers): TeaserEstimate {
     modeB,
     modeC,
     answered,
+    authority,
+    takeBack,
+  };
+}
+
+// ─── Teaser on instrument v2 ──────────────────────────────────────────────────
+// Same proxy, two v2 changes (audit section 11, scoring spec):
+//   - a row marked "We don't do this" is left out of the headline instead of
+//     counting as owner-run, so the share is of the workflows they actually do;
+//   - "I don't have anyone to hand work to yet" on the moved-something question
+//     gives the 'getting_started' tier, never "Low".
+// Grid values on V2B_C to V2B_F: 'named_owner' (Yes), 'me' (No), 'not_done'.
+// authority = V2G_DECISIONS rank 0..4; takeBack = V2G_MOVED rank 0..4, or 5 for
+// "I don't have anyone to hand work to yet".
+
+export const TEASER_NO_ONE_VALUE = 5;
+
+export function computeTeaserEstimateV2(answers: TeaserAnswers): TeaserEstimate {
+  const authority = clampScore(answers.authority);
+  const noOne = answers.takeBack === TEASER_NO_ONE_VALUE;
+  const takeBack = noOne ? null : clampScore(answers.takeBack);
+  const namedOwnerDependence = NAMED_OWNER_DEPENDENCE[authority ?? 2];
+
+  let modeA = 0;
+  let modeB = 0;
+  let modeC = 0;
+  let answered = 0;
+  let notDone = 0;
+  let dependence = 0;
+
+  for (const wfKey of ['C', 'D', 'E', 'F'] as WorkflowKey[]) {
+    const value = answers.b[wfKey];
+    if (!value) continue;
+    answered += 1;
+    if (value === 'not_done') {
+      notDone += 1;
+    } else if (value === 'me') {
+      modeA += 1;
+      dependence += 1;
+    } else if (value === 'no_one') {
+      modeC += 1;
+      dependence += SHARED_DEPENDENCE;
+    } else {
+      modeB += 1;
+      dependence += namedOwnerDependence;
+    }
+  }
+
+  // Share of the workflows they do. Rows they skipped still count as "not yet
+  // owner-run", as in v1; only "We don't do this" leaves the denominator.
+  const measured = 4 - notDone;
+  let pct = measured > 0 ? Math.round((dependence / measured) * 100) : 0;
+  pct = Math.round(pct / 5) * 5;
+
+  let tier: DelegationTier;
+  if (noOne) tier = 'getting_started';
+  else if (takeBack === null) tier = 'developing';
+  else if (takeBack <= 1) tier = 'low';
+  else if (takeBack === 2) tier = 'developing';
+  else tier = 'ready';
+  if (tier === 'ready' && pct >= 50) tier = 'developing';
+
+  return {
+    ownerDependencePct: pct,
+    bandLabel: measured > 0 ? bandLabelFor(pct) : 'None of the four workflows',
+    tier,
+    tierLabel: TIER_LABEL[tier],
+    tierBlurb: TIER_BLURB[tier],
+    modeA,
+    modeB,
+    modeC,
+    answered,
+    notDone,
     authority,
     takeBack,
   };

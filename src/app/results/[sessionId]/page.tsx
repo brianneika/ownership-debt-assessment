@@ -1,6 +1,9 @@
 import { getSupabaseServer } from '@/lib/supabase-server';
-import { buildRespondentSynthesis } from '@/lib/insight';
-import { calculateScores } from '@/lib/scoring';
+import { buildRespondentSynthesis, buildRespondentSynthesisV2 } from '@/lib/insight';
+import { calculateScores, loadV2Answers, v2SessionInput } from '@/lib/scoring';
+import { computeScoresV2 } from '@/lib/scoring-v2';
+import { buildResultsBlocks } from '@/lib/insight-v2';
+import type { V2FindingBlocks } from '@/components/results-visuals';
 import { EmailGate, FullResults } from './EmailGate';
 import { BrandWave } from '@/components/BrandWave';
 
@@ -36,7 +39,8 @@ async function loadResults(supabase: SupabaseServer, sessionId: string) {
       .returns<ScoreRow[]>(),
     supabase
       .from('assessment_sessions')
-      .select('respondent_email, completed_at')
+      // '*' for instrument_version, drs_profile and the workflow modes (v2 blocks).
+      .select('*')
       .eq('id', sessionId)
       .single(),
     supabase
@@ -84,7 +88,7 @@ export default async function ResultsPage({
   const odsRow = overall.find((r) => r.dimensions?.slug === 'ods');
   const drsRow = overall.find((r) => r.dimensions?.slug === 'drs');
 
-  const ods = {
+  const ods: { score: number; bandLabel: string | null; bandColor: string | undefined; notScoredText?: string } = {
     score: odsRow?.normalized_score ?? 0,
     bandLabel: odsRow?.score_bands?.label ?? null,
     bandColor: odsRow?.score_bands?.color_hex,
@@ -102,11 +106,33 @@ export default async function ResultsPage({
     .map((r) => ({ category: r.label, score: r.normalized_score, weight: r.weight }))
     .sort((a, b) => b.weight - a.weight);
 
-  const synthesis = buildRespondentSynthesis({
+  const isV2 = session?.instrument_version === 2;
+
+  let synthesis = buildRespondentSynthesis({
     odsScore: odsRow?.normalized_score ?? null,
     drsScore: drsRow?.normalized_score ?? null,
     drsCategoryBreakdown: drsBreakdown.map((d) => ({ category: d.category, normalizedScore: d.score })),
   });
+
+  // v2: the read gains a no-support version, and the page gains what the result
+  // is based on, where to start, and what it doesn't cover (scoring spec, section 7).
+  let v2Blocks: V2FindingBlocks | null = null;
+  if (isV2 && session) {
+    const answers = await loadV2Answers(supabase, sessionId);
+    const v2Session = v2SessionInput(session, answers);
+    const v2Scores = computeScoresV2(v2Session, answers);
+    v2Blocks = buildResultsBlocks(v2Session, answers, v2Scores).blocks;
+    synthesis = buildRespondentSynthesisV2({
+      odsScore: odsRow ? odsRow.normalized_score : null,
+      drsScore: drsRow?.normalized_score ?? null,
+      noSupport: v2Scores.drsProfile === 'solo',
+      drsCategoryBreakdown: drsBreakdown.map((d) => ({ category: d.category, normalizedScore: d.score })),
+    }) as typeof synthesis;
+    if (!odsRow) {
+      ods.notScoredText =
+        "Not scored: you told us you don't do any of the four workflows we measure. Your readiness score still applies.";
+    }
+  }
 
   const alreadyHasEmail = !!session?.respondent_email;
 
@@ -126,7 +152,7 @@ export default async function ResultsPage({
         </div>
 
         {alreadyHasEmail ? (
-          <FullResults ods={ods} drs={drs} synthesis={synthesis} drsBreakdown={drsBreakdown} />
+          <FullResults ods={ods} drs={drs} synthesis={synthesis} drsBreakdown={drsBreakdown} v2Blocks={v2Blocks} />
         ) : (
           <EmailGate
             sessionId={sessionId}
@@ -134,6 +160,7 @@ export default async function ResultsPage({
             drs={drs}
             synthesis={synthesis}
             drsBreakdown={drsBreakdown}
+            v2Blocks={v2Blocks}
           />
         )}
 

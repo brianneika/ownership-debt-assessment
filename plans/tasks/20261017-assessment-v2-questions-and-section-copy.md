@@ -1,6 +1,6 @@
 # Assessment v2: honest answers, healthy ownership, and section copy
 
-**Status:** In progress (2026-10-19): Phase 1 shipped 2026-10-18; Phases 2 and 3 approved by Bri 2026-10-19; Phase 4 (build) is next <!-- Not started | In progress | Blocked | Done -->
+**Status:** In progress (2026-10-19): Phase 1 shipped 2026-10-18; Phases 2 and 3 approved by Bri 2026-10-19; Phase 4 built on branch `assessment-v2-build` (PR open, not merged), waiting on Bri's migration run; Phase 5 next <!-- Not started | In progress | Blocked | Done -->
 
 ## Objective
 
@@ -192,10 +192,23 @@ Acknowledge comes from reflecting their situation accurately. Prepare and Let th
 - [x] Bri approves the rules and the example results: all nine decisions approved as recommended, 2026-10-19. Deliverable: `vai-va-training/output/20261019-assessment-v2-scoring-rules.md` (the build spec for Phase 4)
 
 ### Phase 4: Build v2 with versioning
-- [ ] Migration: version on sessions (existing rows = v1), v2 question rows, v1 rows inactive
-- [ ] Scoring dispatches by version; v1 sessions score exactly as before (test against existing sessions)
-- [ ] Admin version label; retake comparisons across versions flagged
-- [ ] Teaser moved to v2 and its preview score checked
+- [x] Migration `supabase/migrations/009_instrument_v2.sql` (2026-10-19, written, NOT yet run): `instrument_version` on sessions and questions (default 1, so every existing row is v1), 123 v2 question rows with new `V2...` keys inserted **inactive** so today's code can't see them, `show_if` and `variants` columns, workflow mode `N` for "We don't do this work". Safe to run before the deploy; re-runnable. Rows are generated from `scripts/v2-questions.mjs` (edit wording there, then `node scripts/v2-questions.mjs`)
+- [x] v1 rows inactive: moved to an optional **post-deploy** file, `010_instrument_v2_post_deploy.sql`, because today's code loads questions by `is_active`. The v2 code picks questions by version (v2: `instrument_version = 2`; v1: keys without the `V2` prefix), never by `is_active`, so 010 is a label only and in-progress v1 sessions keep working either way
+- [x] Scoring dispatches by version (`src/lib/scoring.ts` → `src/lib/scoring-v2.ts`). The three worked examples reproduce exactly: `node scripts/verify-v2-scoring.mjs` (30/58/58/79, 56, 48; 88/58/29/58, 58, 32; 88/75/46 + lender excluded, 69, 43; first workflow, first move and spell-out pick also match)
+- [x] v1 sessions score exactly as before: read-only check on all 15 completed sessions, main's scoring vs the branch's, 0 differences (every workflow score, overall, readiness, readiness areas and quality index). One session (`a71a9198`) has a stored readiness of 50 that both old and new code compute as 15; that predates this change
+- [x] Admin: "Instrument v1/v2" label on the list and the session page (separate from the teaser/full "Version" column); sessions sharing an email across versions flagged "not directly comparable"
+- [x] Teaser moved to v2: "We don't do this" per row (left out of the preview), "I don't have anyone to hand work to yet" (tier "Getting started", never "Low"). Preview math checked in the verify script. Finding for Bri: the preview is still a proxy and reads much higher than the v2 debt score for owner-run workflows (worked example 2: preview ~95%, v2 debt 58), because v2 scores owner-run work on hours and what slips, which the teaser doesn't ask
+- [x] Results page: "What this is based on", "Where to start", "What this doesn't cover", the no-support read, and a "not scored" state when every workflow is "We don't do this work". Draft wording from the scoring spec section 8, filled out for every case; final wording in Phase 6
+- [x] Call screen (admin): v2 red flags (bottom two on five-answer scales, bottom one on shorter), first-workflow pick skipping kept-on-purpose with the tie rule, "Spell out what they can decide without you" when two or more team-owned workflows wait on decisions (or the first one does), "Kept by choice: take the routine parts off"
+- [x] Typecheck clean; `next build` passes; lint 15 problems on the branch vs 17 on `main` (none new)
+- [ ] Bri runs 009 in the Supabase SQL Editor, then the PR is merged and deployed, then (optional) 010
+
+Build decisions recorded (2026-10-19):
+- Name and business name (A001, A002) stay shared by both versions; they're identity, not part of the scored instrument.
+- v2 team-owned groups reuse the six `oqi_dimension` slugs (the database check allows only these). Names and weights come from the session's version, so v1 and v2 group scores never mix. Coverage (EC) now holds only the backup question.
+- Readiness areas with no answers are left out and the weights renormalized (v1 counted an empty area as 0). Same result as the spec whenever every area has an answer.
+- Scoring reads the readiness track from the support answer when present (v2 routes on support alone), falling back to the session column.
+- "Where to start" for an owner-run workflow says "someone on your team" where example 2 said "your assistant": one support person's role isn't asked.
 
 ### Phase 5: Test walk on localhost
 - [ ] Synthetic "Assessment review TEST" sessions for: all four workflows team-owned, owner-run, shared with an accountable person, no one accountable, a workflow they don't do, outside provider as owner, solo with no support, solo with an assistant, team readiness, completion screen
@@ -257,6 +270,8 @@ Workflow keys use C/D/E/F for Listing launch, Seller communication, File opening
 ## Progress
 
 Running log: check things off and note decisions as you go.
+
+- [x] 2026-10-19: Phase 4 built on branch `assessment-v2-build` (PR open, not merged). Migration 009 written, not run. Verified: typecheck, build, lint (no new problems), the three worked examples, and v1 parity on all 15 completed sessions (read-only). No test sessions created; the localhost walk is Phase 5, after 009 runs
 
 - [x] 2026-10-17: plan written from the test-walk review and task C's draft; task C points here
 - [x] 2026-10-17: second review folded in: results as an acceptance requirement (6b), length as a required decision with timed walks (6a), three-situation ownership definition (2), and the reason-versus-consequence scoring safeguard (2a)

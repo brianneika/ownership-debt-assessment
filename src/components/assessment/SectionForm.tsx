@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { ScoredRadio } from './ScoredRadio';
 import { CategoricalRadio } from './CategoricalRadio';
 import { FreeTextInput } from './FreeTextInput';
@@ -26,10 +27,22 @@ export function SectionForm({
   // save lands so the last answer in the section is never lost to navigation.
   const { savedAt, flushing, handleRadioChange, handleSubmit } = usePendingAnswerSaves(sessionId);
 
+  // v2: categorical picks on this page, so a follow-up question (show_if) can
+  // appear as soon as its trigger answer is chosen.
+  const [picked, setPicked] = useState<Record<string, string>>(() => {
+    const init: Record<string, string> = {};
+    for (const q of questions) {
+      const v = savedAnswers[q.question_key]?.text_value;
+      if (q.answer_type === 'categorical_radio' && v) init[q.question_key] = v;
+    }
+    return init;
+  });
+
   return (
     <form action={nextAction} onSubmit={handleSubmit}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
         {questions.map((q) => {
+          if (q.show_if && picked[q.show_if.key] !== q.show_if.equals) return null;
           const saved = savedAnswers[q.question_key];
 
           return (
@@ -52,7 +65,10 @@ export function SectionForm({
                   questionKey={q.question_key}
                   responseOptions={q.response_options}
                   savedValue={saved?.text_value ?? null}
-                  onChange={(v) => handleRadioChange(q.id, 'categorical_radio', v)}
+                  onChange={(v) => {
+                    setPicked((prev) => ({ ...prev, [q.question_key]: v }));
+                    handleRadioChange(q.id, 'categorical_radio', v);
+                  }}
                 />
               )}
 

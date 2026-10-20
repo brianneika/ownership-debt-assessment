@@ -4,11 +4,11 @@ import { useState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { ScoredRadio } from '@/components/assessment/ScoredRadio';
 import { startTeaser } from './actions';
-import type { Question } from '@/lib/assessment';
+import type { Question, ResponseOption } from '@/lib/assessment';
 
 // One row of the named-owner grid, in display order.
 export interface GridRow {
-  questionKey: string; // B001 to B004
+  questionKey: string; // V2B_C to V2B_F
   name: string;        // workflow name
   detail: string;      // short scope line under the name
 }
@@ -16,9 +16,19 @@ export interface GridRow {
 // In-room wording for the two leader questions. The database text stays as the
 // full assessment (Section G) shows it; the teaser only overrides the display.
 const TEASER_TEXT: Record<string, string> = {
-  Q079: 'When you hand something off, do they get to make the decisions, or do decisions still come back to you for approval?',
-  Q074: 'In the last 90 days, have you moved something off your plate and kept it there without taking it back?',
+  V2G_DECISIONS: 'When you hand something off, do they get to make the decisions, or do decisions still come back to you for approval?',
 };
+
+// Teaser-only choice on the moved-something question (audit section 11), so
+// someone with no support doesn't get a "Low" tier for a staffing fact. Stored as 5.
+const NO_ONE_OPTION: ResponseOption = { value: 5, label: "I don't have anyone to hand work to yet", na: true };
+
+type GridValue = 'yes' | 'no' | 'not_done';
+const GRID_CHOICES: { value: GridValue; label: string }[] = [
+  { value: 'yes', label: 'Yes' },
+  { value: 'no', label: 'No' },
+  { value: 'not_done', label: "We don't do this" },
+];
 
 function SubmitButton({ ready }: { ready: boolean }) {
   const { pending } = useFormStatus();
@@ -40,29 +50,29 @@ function YesNo({
   onChange,
 }: {
   name: string;
-  value: 'yes' | 'no' | null;
-  onChange: (v: 'yes' | 'no') => void;
+  value: GridValue | null;
+  onChange: (v: GridValue) => void;
 }) {
   return (
-    <div className="grid grid-cols-2 gap-2 flex-shrink-0" style={{ width: '9.5rem' }}>
-      {(['yes', 'no'] as const).map((opt) => {
-        const isSelected = value === opt;
+    <div className="grid grid-cols-3 gap-2 w-full">
+      {GRID_CHOICES.map((opt) => {
+        const isSelected = value === opt.value;
         return (
           <label
-            key={opt}
-            className="avai-option flex items-center justify-center px-3 py-2.5 cursor-pointer select-none text-sm font-semibold"
+            key={opt.value}
+            className="avai-option flex items-center justify-center text-center px-2 py-2.5 cursor-pointer select-none text-sm font-semibold leading-tight"
             data-selected={isSelected || undefined}
             style={{ color: isSelected ? 'var(--avai-accent-800)' : 'var(--avai-ink-muted)' }}
           >
             <input
               type="radio"
               name={`grid_${name}`}
-              value={opt}
+              value={opt.value}
               checked={isSelected}
-              onChange={() => onChange(opt)}
+              onChange={() => onChange(opt.value)}
               className="sr-only"
             />
-            {opt === 'yes' ? 'Yes' : 'No'}
+            {opt.label}
           </label>
         );
       })}
@@ -81,7 +91,7 @@ export function TeaserForm({
 }) {
   // Selections keyed by question_key, mirrored into hidden inputs the server
   // action reads. Every row and both scored questions are required.
-  const [grid, setGrid] = useState<Record<string, 'yes' | 'no'>>({});
+  const [grid, setGrid] = useState<Record<string, GridValue>>({});
   const [scores, setScores] = useState<Record<string, string>>({});
 
   const gridDone = gridRows.filter((r) => grid[r.questionKey]).length;
@@ -122,7 +132,7 @@ export function TeaserForm({
             {gridRows.map((row) => (
               <div
                 key={row.questionKey}
-                className="flex items-center justify-between gap-3 px-4 py-3"
+                className="flex flex-col gap-2.5 px-4 py-3"
                 style={{
                   background: 'var(--avai-surface)',
                   border: '1px solid var(--avai-border)',
@@ -155,7 +165,9 @@ export function TeaserForm({
               questionId={q.id}
               questionText={TEASER_TEXT[q.question_key] ?? q.question_text}
               questionKey={q.question_key}
-              responseOptions={q.response_options}
+              responseOptions={
+                q.question_key === 'V2G_MOVED' ? [...(q.response_options ?? []), NO_ONE_OPTION] : q.response_options
+              }
               savedValue={scores[q.question_key] !== undefined ? Number(scores[q.question_key]) : null}
               onChange={(v) => setScores((prev) => ({ ...prev, [q.question_key]: v }))}
             />

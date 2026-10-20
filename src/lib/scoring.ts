@@ -9,12 +9,19 @@
 //   DRS Team:    Willingness×0.30 + DelegationQuality×0.25 + TeamCapacity×0.25 + AuthorityFramework×0.20
 //   DRS Solo:    Willingness×0.30 + TransferReadiness×0.25 + HiringReadiness×0.25 + SystemsMindset×0.20
 
-import { createClient } from '@supabase/supabase-js';
+//
+// Instrument v2 (migration 009) has its own rules in ./scoring-v2.ts. calculateScores
+// dispatches on assessment_sessions.instrument_version; v1 sessions never touch v2
+// rules and v2 sessions never touch these.
+
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { computeScoresV2, type V2Answer, type V2Mode } from './scoring-v2';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type WorkflowKey = 'C' | 'D' | 'E' | 'F';
-export type WorkflowMode = 'A' | 'B' | 'C';
+// 'N' ("We don't do this work") exists only on v2 sessions.
+export type WorkflowMode = 'A' | 'B' | 'C' | 'N';
 type OqiDimension = 'DO' | 'IE' | 'SC' | 'EC' | 'OA' | 'CT';
 export type DrsCategory =
   | 'Willingness'
@@ -27,6 +34,7 @@ export type DrsCategory =
 
 interface SessionRow {
   id: string;
+  instrument_version?: number; // absent before migration 009 = v1
   drs_profile: 'team' | 'solo' | null;
   wf_c_mode: WorkflowMode | null;
   wf_d_mode: WorkflowMode | null;
@@ -78,6 +86,12 @@ export interface ScoringResult {
   workflowOqi: Record<WorkflowKey, number | null>;
   drs: number;
   drsProfile: 'team' | 'solo';
+}
+
+// Everything calculateScores persists for a v1 session, computed without the DB.
+export interface V1Computed extends ScoringResult {
+  workflowOqiBreakdown: Record<WorkflowKey, OqiBreakdown | null>;
+  drsCategoryBreakdown: DrsCategoryScore[];
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -224,6 +238,9 @@ function calcWorkflowOds(
       return clamp(100 - ((v4 + v5) / 8) * 100, 0, 100);
     }
 
+    case 'N':
+      return null; // v2 only; never set on a v1 session
+
     case 'C': {
       const [k2, k3] = MODE_C_KEYS[wfKey];
       const rc2 = byKey.get(k2)?.score_value ?? null;
@@ -319,6 +336,50 @@ export function calcDrsCategoryBreakdown(
   });
 }
 
+// ─── v1: pure compute (what calculateScores persists) ─────────────────────────
+
+export function computeScoresV1(session: SessionRow, answers: AnswerRow[]): V1Computed {
+  const wfModes: Record<WorkflowKey, WorkflowMode | null> = {
+    C: session.wf_c_mode,
+    D: session.wf_d_mode,
+    E: session.wf_e_mode,
+    F: session.wf_f_mode,
+  };
+
+  const workflowOds: Record<WorkflowKey, number | null> = { C: null, D: null, E: null, F: null };
+  const workflowOqi: Record<WorkflowKey, number | null> = { C: null, D: null, E: null, F: null };
+  const workflowOqiBreakdown: Record<WorkflowKey, OqiBreakdown | null> = { C: null, D: null, E: null, F: null };
+
+  for (const wf of WORKFLOWS) {
+    const mode = wfModes[wf];
+    if (!mode) continue;
+    workflowOds[wf] = calcWorkflowOds(answers, wf, mode);
+    if (mode === 'B') {
+      const oqiResult = calcOqiWithBreakdown(answers, wf);
+      workflowOqi[wf] = oqiResult?.score ?? null;
+      workflowOqiBreakdown[wf] = oqiResult ?? null;
+    }
+  }
+
+  const validOds = WORKFLOWS.map((wf) => workflowOds[wf]).filter((v): v is number => v !== null);
+  if (validOds.length === 0) {
+    throw new Error('No workflow ODS values could be computed — wf_*_mode fields may not be set on the session.');
+  }
+  const overallOds = avg(validOds);
+
+  let drsProfile: 'team' | 'solo' = session.drs_profile ?? 'team';
+  if (!session.drs_profile) {
+    const modeACount = WORKFLOWS.filter((wf) => wfModes[wf] === 'A').length;
+    if (modeACount >= 3) drsProfile = 'solo';
+  }
+
+  const drs = calcDrs(answers, drsProfile);
+
+  const drsCategoryBreakdown = calcDrsCategoryBreakdown(answers, drsProfile);
+
+  return { overallOds, workflowOds, workflowOqi, workflowOqiBreakdown, drs, drsProfile, drsCategoryBreakdown };
+}
+
 // ─── Main export ──────────────────────────────────────────────────────────────
 
 export async function calculateScores(sessionId: string): Promise<ScoringResult> {
@@ -335,7 +396,8 @@ export async function calculateScores(sessionId: string): Promise<ScoringResult>
   ] = await Promise.all([
     supabase
       .from('assessment_sessions')
-      .select('id, drs_profile, wf_c_mode, wf_d_mode, wf_e_mode, wf_f_mode')
+      // '*' so instrument_version comes back when migration 009 has run; absent = v1.
+      .select('*')
       .eq('id', sessionId)
       .single<SessionRow>(),
     supabase
@@ -379,41 +441,12 @@ export async function calculateScores(sessionId: string): Promise<ScoringResult>
     throw new Error('Dimension rows missing — run schema.sql seed first.');
   }
 
-  const wfModes: Record<WorkflowKey, WorkflowMode | null> = {
-    C: session.wf_c_mode,
-    D: session.wf_d_mode,
-    E: session.wf_e_mode,
-    F: session.wf_f_mode,
-  };
-
-  const workflowOds: Record<WorkflowKey, number | null> = { C: null, D: null, E: null, F: null };
-  const workflowOqi: Record<WorkflowKey, number | null> = { C: null, D: null, E: null, F: null };
-  const workflowOqiBreakdown: Record<WorkflowKey, OqiBreakdown | null> = { C: null, D: null, E: null, F: null };
-
-  for (const wf of WORKFLOWS) {
-    const mode = wfModes[wf];
-    if (!mode) continue;
-    workflowOds[wf] = calcWorkflowOds(answers, wf, mode);
-    if (mode === 'B') {
-      const oqiResult = calcOqiWithBreakdown(answers, wf);
-      workflowOqi[wf] = oqiResult?.score ?? null;
-      workflowOqiBreakdown[wf] = oqiResult ?? null;
-    }
+  if (session.instrument_version === 2) {
+    return persistV2(supabase, session, sessionId, dimBySlug, scoreBands);
   }
 
-  const validOds = WORKFLOWS.map((wf) => workflowOds[wf]).filter((v): v is number => v !== null);
-  if (validOds.length === 0) {
-    throw new Error('No workflow ODS values could be computed — wf_*_mode fields may not be set on the session.');
-  }
-  const overallOds = avg(validOds);
-
-  let drsProfile: 'team' | 'solo' = session.drs_profile ?? 'team';
-  if (!session.drs_profile) {
-    const modeACount = WORKFLOWS.filter((wf) => wfModes[wf] === 'A').length;
-    if (modeACount >= 3) drsProfile = 'solo';
-  }
-
-  const drs = calcDrs(answers, drsProfile);
+  const { overallOds, workflowOds, workflowOqi, workflowOqiBreakdown, drs, drsProfile, drsCategoryBreakdown } =
+    computeScoresV1(session, answers);
 
   // DELETE + INSERT instead of upsert to avoid Supabase null-column conflict issues
   const { error: deleteErr } = await supabase
@@ -458,8 +491,6 @@ export async function calculateScores(sessionId: string): Promise<ScoringResult>
   // Delete existing breakdowns first (re-scoring shouldn't duplicate rows)
   await supabase.from('score_breakdowns').delete().eq('session_id', sessionId);
 
-  const drsCategoryBreakdown = calcDrsCategoryBreakdown(answers, drsProfile);
-
   const breakdownRows = [
     // DRS per-category
     ...drsCategoryBreakdown.map((cat) => ({
@@ -493,4 +524,149 @@ export async function calculateScores(sessionId: string): Promise<ScoringResult>
   }
 
   return { overallOds, workflowOds, workflowOqi, drs, drsProfile };
+}
+
+// ─── v2: compute + persist ────────────────────────────────────────────────────
+// Same tables as v1. dimension_scores: overall ODS (omitted when every workflow is
+// "We don't do this work"), overall DRS, per-workflow ODS, and per-workflow OQI for
+// team-owned workflows. score_breakdowns: readiness areas and team-owned groups,
+// with v2 weights.
+
+export async function loadV2Answers(supabase: SupabaseClient, sessionId: string): Promise<V2Answer[]> {
+  const { data, error } = await supabase
+    .from('answers')
+    .select(`
+      score_value,
+      text_value,
+      answer_type,
+      questions (
+        question_key,
+        question_text,
+        section,
+        mode,
+        answer_type,
+        oqi_dimension,
+        drs_category,
+        is_scored,
+        applies_to_profile,
+        response_options
+      )
+    `)
+    .eq('session_id', sessionId);
+  if (error) throw new Error(`Failed to fetch answers: ${error.message}`);
+  const out: V2Answer[] = [];
+  for (const row of (data ?? []) as unknown as { score_value: number | null; text_value: string | null; questions: unknown }[]) {
+    const q = Array.isArray(row.questions) ? row.questions[0] : row.questions;
+    if (!q) continue;
+    out.push({ score_value: row.score_value, text_value: row.text_value, question: q as V2Answer['question'] });
+  }
+  return out;
+}
+
+// The readiness track comes from the support answer when it's there (v2 routes on
+// support alone), so scoring can't drift from what Section G showed.
+export function v2SessionInput(
+  session: {
+    drs_profile: 'team' | 'solo' | null;
+    wf_c_mode: string | null;
+    wf_d_mode: string | null;
+    wf_e_mode: string | null;
+    wf_f_mode: string | null;
+  },
+  answers: V2Answer[] = [],
+) {
+  const support = answers.find((a) => a.question.question_key === 'V2A_SUPPORT')?.text_value;
+  return {
+    drs_profile: support ? (support === 'none' ? 'solo' : 'team') as 'team' | 'solo' : session.drs_profile,
+    modes: {
+      C: session.wf_c_mode as V2Mode | null,
+      D: session.wf_d_mode as V2Mode | null,
+      E: session.wf_e_mode as V2Mode | null,
+      F: session.wf_f_mode as V2Mode | null,
+    },
+  };
+}
+
+async function persistV2(
+  supabase: SupabaseClient,
+  session: SessionRow,
+  sessionId: string,
+  dimBySlug: Record<string, DimensionRow>,
+  scoreBands: ScoreBandRow[],
+): Promise<ScoringResult> {
+  const answers = await loadV2Answers(supabase, sessionId);
+  const result = computeScoresV2(v2SessionInput(session, answers), answers);
+
+  const odsDim = dimBySlug['ods'];
+  const oqiDim = dimBySlug['oqi'];
+  const drsDim = dimBySlug['drs'];
+
+  const rows: Record<string, unknown>[] = [];
+  if (result.overallOds !== null) {
+    rows.push({
+      session_id: sessionId, dimension_id: odsDim.id, workflow_key: null,
+      raw_score: result.overallOds, normalized_score: result.overallOds,
+      score_band_id: findScoreBandId(scoreBands, odsDim.id, result.overallOds),
+    });
+  }
+  if (result.drs !== null) {
+    rows.push({
+      session_id: sessionId, dimension_id: drsDim.id, workflow_key: null,
+      raw_score: result.drs, normalized_score: result.drs,
+      score_band_id: findScoreBandId(scoreBands, drsDim.id, result.drs),
+    });
+  }
+  for (const wf of WORKFLOWS) {
+    const w = result.workflows[wf];
+    if (w.ods !== null) {
+      rows.push({
+        session_id: sessionId, dimension_id: odsDim.id, workflow_key: wf,
+        raw_score: w.ods, normalized_score: w.ods,
+        score_band_id: findScoreBandId(scoreBands, odsDim.id, w.ods),
+      });
+    }
+    if (w.oqi !== null) {
+      rows.push({
+        session_id: sessionId, dimension_id: oqiDim.id, workflow_key: wf,
+        raw_score: w.oqi, normalized_score: w.oqi,
+        score_band_id: findScoreBandId(scoreBands, oqiDim.id, w.oqi),
+      });
+    }
+  }
+  if (rows.length === 0) {
+    throw new Error('No v2 scores could be computed: no workflow or readiness answers on the session.');
+  }
+
+  const { error: deleteErr } = await supabase.from('dimension_scores').delete().eq('session_id', sessionId);
+  if (deleteErr) throw new Error(`Failed to clear old dimension_scores: ${deleteErr.message}`);
+  const { error: insertErr } = await supabase.from('dimension_scores').insert(rows);
+  if (insertErr) throw new Error(`Failed to write dimension_scores: ${insertErr.message}`);
+
+  await supabase.from('score_breakdowns').delete().eq('session_id', sessionId);
+  const breakdownRows = [
+    ...result.drsCategories.map((c) => ({
+      session_id: sessionId, breakdown_type: 'drs' as const, workflow_key: null,
+      label: c.category, weight: c.weight, normalized_score: c.normalizedScore,
+    })),
+    ...WORKFLOWS.flatMap((wf) =>
+      result.workflows[wf].groups.map((g) => ({
+        session_id: sessionId, breakdown_type: 'oqi' as const, workflow_key: wf,
+        label: g.label, weight: g.weight, normalized_score: g.normalizedScore,
+      })),
+    ),
+  ];
+  if (breakdownRows.length > 0) {
+    const { error: bdErr } = await supabase.from('score_breakdowns').insert(breakdownRows);
+    if (bdErr) throw new Error(`Failed to write score_breakdowns: ${bdErr.message}`);
+  }
+
+  const workflowOds = Object.fromEntries(WORKFLOWS.map((wf) => [wf, result.workflows[wf].ods])) as Record<WorkflowKey, number | null>;
+  const workflowOqi = Object.fromEntries(WORKFLOWS.map((wf) => [wf, result.workflows[wf].oqi])) as Record<WorkflowKey, number | null>;
+  return {
+    overallOds: result.overallOds ?? NaN,
+    workflowOds,
+    workflowOqi,
+    drs: result.drs ?? NaN,
+    drsProfile: result.drsProfile,
+  };
 }

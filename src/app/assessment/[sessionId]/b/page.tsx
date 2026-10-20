@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { fetchQuestions, fetchSessionAnswers, WORKFLOW_SECTION_NAMES } from '@/lib/assessment';
+import { fetchQuestions, fetchSession, fetchSessionAnswers, WORKFLOW_SECTION_NAMES } from '@/lib/assessment';
 import { advanceSectionB } from '@/app/assessment/actions';
 import { SectionForm } from '@/components/assessment/SectionForm';
 import { SectionHeader } from '@/components/assessment/SectionHeader';
@@ -12,8 +12,11 @@ export default async function SectionBPage({
 }) {
   const { sessionId } = await params;
 
+  const session = await fetchSession(sessionId);
+  if (!session) notFound();
+
   const [questions, answersMap] = await Promise.all([
-    fetchQuestions('B'),
+    fetchQuestions('B', { version: session.instrument_version }),
     fetchSessionAnswers(sessionId),
   ]);
 
@@ -28,7 +31,7 @@ export default async function SectionBPage({
     <div>
       <SectionHeader
         part={2}
-        questionCount={questions.length}
+        questionCount={questions.filter((q) => !q.show_if).length}
         heading="Who owns what"
         intro="For each of the four workflows below, tell us who owns it today. Your answers shape the rest of the assessment: more questions where you've handed the work off, fewer where you run it yourself."
       />

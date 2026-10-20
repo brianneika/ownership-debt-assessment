@@ -7,6 +7,8 @@ import {
   ScoreSpectrumCards,
   SynthesisBlock,
   DrsReadinessBreakdown,
+  V2FindingsBlock,
+  type V2FindingBlocks,
   type ScoreData,
   type DrsCategoryRow,
   type Synthesis,
@@ -44,12 +46,14 @@ export function EmailGate({
   drs,
   synthesis,
   drsBreakdown,
+  v2Blocks = null,
 }: {
   sessionId: string;
   ods: ScoreData;
   drs: ScoreData;
   synthesis: Synthesis | null;
   drsBreakdown: DrsCategoryRow[];
+  v2Blocks?: V2FindingBlocks | null;
 }) {
   const [unlocked, setUnlocked] = useState(false);
   const [email, setEmail] = useState('');
@@ -71,7 +75,7 @@ export function EmailGate({
   }
 
   if (unlocked) {
-    return <FullResults ods={ods} drs={drs} synthesis={synthesis} drsBreakdown={drsBreakdown} />;
+    return <FullResults ods={ods} drs={drs} synthesis={synthesis} drsBreakdown={drsBreakdown} v2Blocks={v2Blocks} />;
   }
 
   return (
@@ -87,6 +91,7 @@ export function EmailGate({
           goodDirection="low"
           lowLabel="Fully delegated"
           highLabel="Owner-dependent"
+          notScoredText={ods.notScoredText}
         />
       </div>
 
@@ -146,16 +151,19 @@ export function FullResults({
   drs,
   synthesis,
   drsBreakdown,
+  v2Blocks = null,
 }: {
   ods: ScoreData;
   drs: ScoreData;
   synthesis: Synthesis | null;
   drsBreakdown: DrsCategoryRow[];
+  v2Blocks?: V2FindingBlocks | null;
 }) {
   return (
     <>
       <ScoreSpectrumCards ods={ods} drs={drs} />
       {synthesis && <SynthesisBlock synthesis={synthesis} />}
+      {v2Blocks && <V2FindingsBlock blocks={v2Blocks} />}
       <DrsReadinessBreakdown rows={drsBreakdown} weakestCategory={synthesis?.weakestCategory?.category ?? null} />
       <div className="mt-4">
         <BookingCTA />

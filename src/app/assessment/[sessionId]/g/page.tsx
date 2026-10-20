@@ -4,6 +4,7 @@ import {
   fetchQuestions,
   fetchSessionAnswers,
   refineDrsProfile,
+  drsProfileFromSupportV2,
 } from '@/lib/assessment';
 import { advanceWorkflow } from '@/app/assessment/actions';
 import { SectionForm } from '@/components/assessment/SectionForm';
@@ -27,6 +28,7 @@ export default async function SectionGPage({
 
   if (!session) notFound();
 
+  const version = session.instrument_version;
   const a006Value = answersMap.get('A006')?.text_value ?? '';
   const modes: Record<'C' | 'D' | 'E' | 'F', WorkflowMode | null> = {
     C: session.wf_c_mode,
@@ -34,9 +36,13 @@ export default async function SectionGPage({
     E: session.wf_e_mode,
     F: session.wf_f_mode,
   };
-  const drsProfile = refineDrsProfile(a006Value, modes);
+  // v2: the track depends only on whether support exists (decision 5).
+  const drsProfile =
+    version === 2
+      ? drsProfileFromSupportV2(answersMap.get('V2A_SUPPORT')?.text_value)
+      : refineDrsProfile(a006Value, modes);
 
-  const questions = await fetchQuestions('G', { drsProfile });
+  const questions = await fetchQuestions('G', { drsProfile, version });
 
   if (questions.length === 0) notFound();
 
@@ -45,7 +51,10 @@ export default async function SectionGPage({
 
   const nextAction = advanceWorkflow.bind(null, sessionId, 'h');
 
-  const profileLabel = drsProfile === 'solo' ? 'Solo owner track' : 'Team leader track';
+  const profileLabel =
+    version === 2
+      ? drsProfile === 'solo' ? 'No support yet' : 'Team track'
+      : drsProfile === 'solo' ? 'Solo owner track' : 'Team leader track';
 
   return (
     <div>

@@ -13,7 +13,11 @@ import {
   refineDrsProfile,
   answerToMode,
   B_QUESTION_TO_WORKFLOW,
+  V2_OWNER_KEYS,
+  ownerAnswerToModeV2,
+  drsProfileFromSupportV2,
   type WorkflowKey,
+  type WorkflowMode,
 } from '@/lib/assessment';
 import { calculateScores } from '@/lib/scoring';
 import { getSupabaseServer } from '@/lib/supabase-server';
@@ -70,10 +74,29 @@ export async function saveRadioAnswer(
 
 // ─── Section A → finalize + advance ──────────────────────────────────────────
 
+// Saves any free-text fields (named ft_<question_id>) posted with a section.
+async function saveFreeTextFields(sessionId: string, formData: FormData) {
+  const entries = [...formData.entries()].filter(([k]) => k.startsWith('ft_'));
+  await Promise.all(
+    entries.map(async ([key, value]) => {
+      const questionId = parseInt(key.replace('ft_', ''), 10);
+      const text = String(value ?? '').trim();
+      if (!questionId || !text) return;
+      await saveAnswer(sessionId, questionId, { answer_type: 'free_text', text_value: text });
+    }),
+  );
+}
+
 // Reads A006 from DB, sets drs_profile, advances to Section B.
 export async function advanceSectionA(sessionId: string) {
-  // fetchSessionAnswers is now keyed by question_key — look up directly by key
-  const answers = await fetchSessionAnswers(sessionId);
+  const [session, answers] = await Promise.all([fetchSession(sessionId), fetchSessionAnswers(sessionId)]);
+
+  // v2: the readiness track depends on whether support exists, nothing else.
+  if (session?.instrument_version === 2) {
+    await setDrsProfile(sessionId, drsProfileFromSupportV2(answers.get('V2A_SUPPORT')?.text_value));
+    redirect(`/assessment/${sessionId}/b`);
+  }
+
   const a006Value = answers.get('A006')?.text_value ?? '';
 
   const profile = detectDrsProfileFromA006(a006Value);
@@ -86,11 +109,28 @@ export async function advanceSectionA(sessionId: string) {
 
 // Reads B001–B004 from DB, computes and saves workflow modes,
 // refines drs_profile if needed, redirects to Workflow C.
-export async function advanceSectionB(sessionId: string) {
+export async function advanceSectionB(sessionId: string, formData?: FormData) {
+  const session = await fetchSession(sessionId);
+
+  if (session?.instrument_version === 2) {
+    // Role boxes for "Another person or provider" are free text on this page.
+    if (formData) await saveFreeTextFields(sessionId, formData);
+    const answers = await fetchSessionAnswers(sessionId);
+    const modes: Partial<Record<WorkflowKey, WorkflowMode>> = {};
+    for (const [wf, qKey] of Object.entries(V2_OWNER_KEYS) as [WorkflowKey, string][]) {
+      const value = answers.get(qKey)?.text_value;
+      if (value) modes[wf] = ownerAnswerToModeV2(value);
+    }
+    await setWorkflowModes(sessionId, modes);
+    // No 2-person override in v2 (decision 5): support alone picks the track.
+    await setDrsProfile(sessionId, drsProfileFromSupportV2(answers.get('V2A_SUPPORT')?.text_value));
+    redirect(`/assessment/${sessionId}/c`);
+  }
+
   // fetchSessionAnswers is keyed by question_key — look up B001–B004 and A006 directly
   const answers = await fetchSessionAnswers(sessionId);
 
-  const modes: Partial<Record<WorkflowKey, 'A' | 'B' | 'C'>> = {};
+  const modes: Partial<Record<WorkflowKey, WorkflowMode>> = {};
   for (const [qKey, wfKey] of Object.entries(B_QUESTION_TO_WORKFLOW)) {
     const textValue = answers.get(qKey)?.text_value;
     if (textValue) {
@@ -124,7 +164,6 @@ export async function advanceWorkflow(
   // Save any free_text answers passed in form (TBx3 fields)
   const freeTextEntries = [...formData.entries()].filter(([k]) => k.startsWith('ft_'));
   if (freeTextEntries.length > 0) {
-    const supabase = getSupabaseServer();
     await Promise.all(
       freeTextEntries.map(async ([key, value]) => {
         const questionId = parseInt(key.replace('ft_', ''), 10);
@@ -143,6 +182,19 @@ export async function advanceWorkflow(
 
 export async function submitAssessment(sessionId: string, formData: FormData) {
   const supabase = getSupabaseServer();
+  const session = await fetchSession(sessionId);
+
+  if (session?.instrument_version === 2) {
+    // v2 final questions: the two optional notes are the only free text here.
+    await saveFreeTextFields(sessionId, formData);
+    await completeSession(sessionId);
+    try {
+      await calculateScores(sessionId);
+    } catch (err) {
+      console.error('[submitAssessment] calculateScores failed:', err);
+    }
+    redirect(`/results/${sessionId}`);
+  }
 
   // Q089 and Q090 are free_text fields named ft_<question_id> in the form.
   // Look up their IDs so we can read the right form field names.

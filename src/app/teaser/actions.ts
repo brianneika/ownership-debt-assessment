@@ -7,29 +7,37 @@ import {
   setDrsProfile,
   setWorkflowModes,
   setTeaserCompleted,
-  answerToMode,
-  B_QUESTION_TO_WORKFLOW,
+  ownerAnswerToModeV2,
   type WorkflowKey,
+  type WorkflowMode,
 } from '@/lib/assessment';
 import { getSupabaseServer } from '@/lib/supabase-server';
 import { upsertHubspotContact } from '@/lib/hubspot';
+import { TEASER_NO_ONE_VALUE } from '@/lib/teaser';
 
-// Teaser v2 (plans/tasks/20260911-teaser-named-owner-grid.md):
-//   grid rows  B001 to B004  -> 'yes' | 'no'   (stored as named_owner | team_leader)
-//   authority  Q079          -> '0'..'4'       (stored as score_value, same as Section G)
-//   take back  Q074          -> '0'..'4'       (stored as score_value, same as Section G)
-const TEASER_GRID_KEYS = ['B001', 'B002', 'B003', 'B004'] as const;
-const TEASER_AUTHORITY_KEY = 'Q079';
-const TEASER_TAKE_BACK_KEY = 'Q074';
+// Teaser on instrument v2 (plans/tasks/20261017-assessment-v2-questions-and-section-copy.md):
+//   grid rows  V2B_C to V2B_F -> 'yes' | 'no' | 'not_done'
+//              (stored as named_owner | me | not_done, the full flow's v2 owner values)
+//   authority  V2G_DECISIONS  -> '0'..'4'  (stored as score_value, same as Section G)
+//   take back  V2G_MOVED      -> '0'..'4', or '5' for "I don't have anyone to hand work to yet"
+// The v1 teaser (B001 to B004, Q079, Q074) is retired with v1; v1 teaser sessions
+// already in progress still read through /teaser/[sessionId] on v1 keys.
+const TEASER_GRID_KEYS = ['V2B_C', 'V2B_D', 'V2B_E', 'V2B_F'] as const;
+const TEASER_AUTHORITY_KEY = 'V2G_DECISIONS';
+const TEASER_TAKE_BACK_KEY = 'V2G_MOVED';
 
-// Grid "Yes" is stored as this value on B001 to B004. answerToMode maps it to
-// Mode B; the full flow's section intros fall back to "your team member" because
-// it matches no role option, and Section B lets the leader pick the actual role.
-const NAMED_OWNER_VALUE = 'named_owner';
+const GRID_TO_VALUE: Record<string, string> = {
+  yes: 'named_owner', // a named owner exists; the full flow's "Who owns what" asks the role
+  no: 'me',
+  not_done: 'not_done',
+};
 
-function parseScore(raw: string): number | null {
-  if (!/^[0-4]$/.test(raw)) return null;
-  return Number(raw);
+const GRID_TO_WORKFLOW: Record<string, WorkflowKey> = { V2B_C: 'C', V2B_D: 'D', V2B_E: 'E', V2B_F: 'F' };
+
+function parseScore(raw: string, max = 4): number | null {
+  if (!/^[0-9]$/.test(raw)) return null;
+  const n = Number(raw);
+  return n <= max ? n : null;
 }
 
 // ─── Start the teaser ─────────────────────────────────────────────────────────
@@ -40,11 +48,11 @@ export async function startTeaser(formData: FormData) {
   const grid: Record<string, string> = {};
   for (const key of TEASER_GRID_KEYS) {
     const v = ((formData.get(key) as string) ?? '').trim();
-    if (v !== 'yes' && v !== 'no') return; // all rows required; the client guards this too
-    grid[key] = v === 'yes' ? NAMED_OWNER_VALUE : 'team_leader';
+    if (!GRID_TO_VALUE[v]) return; // all rows required; the client guards this too
+    grid[key] = GRID_TO_VALUE[v];
   }
   const authority = parseScore(((formData.get(TEASER_AUTHORITY_KEY) as string) ?? '').trim());
-  const takeBack = parseScore(((formData.get(TEASER_TAKE_BACK_KEY) as string) ?? '').trim());
+  const takeBack = parseScore(((formData.get(TEASER_TAKE_BACK_KEY) as string) ?? '').trim(), TEASER_NO_ONE_VALUE);
   if (authority === null || takeBack === null) return;
 
   const sessionId = await createSession('teaser');
@@ -80,17 +88,16 @@ export async function startTeaser(formData: FormData) {
       : Promise.resolve(),
   ]);
 
-  // Pre-route: set workflow modes now (same logic as advanceSectionB).
-  const modes: Partial<Record<WorkflowKey, 'A' | 'B' | 'C'>> = {};
-  for (const [bKey, wfKey] of Object.entries(B_QUESTION_TO_WORKFLOW)) {
-    modes[wfKey as WorkflowKey] = answerToMode(grid[bKey]);
+  // Pre-route: set workflow modes now (same mapping as the full flow's v2 Section B).
+  const modes: Partial<Record<WorkflowKey, WorkflowMode>> = {};
+  for (const key of TEASER_GRID_KEYS) {
+    modes[GRID_TO_WORKFLOW[key]] = ownerAnswerToModeV2(grid[key]);
   }
   await setWorkflowModes(sessionId, modes);
 
-  // The teaser no longer asks team size. Four "No" rows read as a solo operator
-  // for now; Section A (A006) and Section B refine this on unlock.
-  const allOwnerRun = Object.values(modes).every((m) => m === 'A');
-  await setDrsProfile(sessionId, allOwnerRun ? 'solo' : 'team');
+  // The teaser doesn't ask support size. "No one to hand work to" reads as the
+  // no-support track for now; Section A's support question settles it on unlock.
+  await setDrsProfile(sessionId, takeBack === TEASER_NO_ONE_VALUE ? 'solo' : 'team');
 
   await setTeaserCompleted(sessionId);
 

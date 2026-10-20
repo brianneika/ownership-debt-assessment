@@ -13,6 +13,18 @@ export interface ScoreData {
   score: number;
   bandLabel: string | null;
   bandColor: string | undefined;
+  // v2: shown instead of a number when there is no score (e.g. no Ownership Debt
+  // Score because every workflow is "We don't do this work").
+  notScoredText?: string;
+}
+
+// v2 results blocks (spec section 7): what the result is based on, one place to
+// start, and what the score doesn't cover. Draft wording until task Phase 6.
+export interface V2FindingBlocks {
+  basedOn: string[];
+  whereToStart: string | null;
+  doesntCover: string[];
+  closing: string;
 }
 
 export interface DrsCategoryRow {
@@ -50,6 +62,7 @@ export function ScoreSpectrumCard({
   goodDirection,
   lowLabel,
   highLabel,
+  notScoredText,
 }: {
   title: string;
   subtitle: string;
@@ -59,6 +72,7 @@ export function ScoreSpectrumCard({
   goodDirection: 'low' | 'high';
   lowLabel: string;
   highLabel: string;
+  notScoredText?: string;
 }) {
   const pos = Math.min(Math.max(score, 0), 100);
   // Gradient always runs bad → good in the direction the "you" marker moves as
@@ -78,6 +92,10 @@ export function ScoreSpectrumCard({
       </div>
       <p className="text-xs text-gray-400 mb-5">{subtitle}</p>
 
+      {notScoredText ? (
+        <p className="text-sm text-gray-600 leading-relaxed">{notScoredText}</p>
+      ) : (
+      <>
       <div className="flex items-end gap-3 mb-5">
         <span className="text-5xl font-bold text-gray-900 tabular-nums">{score.toFixed(0)}</span>
         <span className="text-gray-400 text-sm mb-1.5">/ 100</span>
@@ -99,6 +117,8 @@ export function ScoreSpectrumCard({
         <span>{lowLabel}</span>
         <span>{highLabel}</span>
       </div>
+      </>
+      )}
     </div>
   );
 }
@@ -116,6 +136,7 @@ export function ScoreSpectrumCards({ ods, drs }: { ods: ScoreData; drs: ScoreDat
         goodDirection="low"
         lowLabel="Fully delegated"
         highLabel="Owner-dependent"
+        notScoredText={ods.notScoredText}
       />
       <ScoreSpectrumCard
         title="Delegation Readiness Score"
@@ -156,6 +177,8 @@ export function SynthesisBlock({ synthesis }: { synthesis: Synthesis }) {
   );
 }
 
+const COUNT_WORDS: Record<number, string> = { 2: 'two', 3: 'three', 4: 'four' };
+
 // DRS sub-breakdown so the driving low sub-score is no longer invisible. Bars
 // read higher = better (more readiness), matching the DRS card direction.
 export function DrsReadinessBreakdown({
@@ -172,7 +195,7 @@ export function DrsReadinessBreakdown({
         Your delegation readiness, broken down
       </p>
       <p className="text-xs text-gray-400 mb-5">
-        Readiness is the average of these four. Higher is better on each.
+        Readiness is the average of these {COUNT_WORDS[rows.length] ?? rows.length}. Higher is better on each.
       </p>
       <div className="space-y-4">
         {rows.map((cat) => {
@@ -202,6 +225,33 @@ export function DrsReadinessBreakdown({
           );
         })}
       </div>
+    </div>
+  );
+}
+
+// v2: what the result is based on, where to start, and what it doesn't cover.
+export function V2FindingsBlock({ blocks }: { blocks: V2FindingBlocks }) {
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-7 mb-6 space-y-5">
+      {blocks.basedOn.length > 0 && (
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1.5">What this is based on</p>
+          <p className="text-sm text-gray-700 leading-relaxed">{blocks.basedOn.join(' ')}</p>
+        </div>
+      )}
+      {blocks.whereToStart && (
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-widest text-vai-navy mb-1.5">Where to start</p>
+          <p className="text-sm text-gray-800 leading-relaxed">{blocks.whereToStart}</p>
+        </div>
+      )}
+      {blocks.doesntCover.length > 0 && (
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1.5">What this doesn&apos;t cover</p>
+          <p className="text-sm text-gray-600 leading-relaxed">{blocks.doesntCover.join(' ')}</p>
+        </div>
+      )}
+      <p className="text-sm text-gray-500">{blocks.closing}</p>
     </div>
   );
 }

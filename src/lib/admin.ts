@@ -7,6 +7,8 @@ import { getSupabaseServer } from './supabase-server';
 import { WORKFLOW_NAMES, type WorkflowKey } from './assessment';
 import {
   calcDrsCategoryBreakdown,
+  loadV2Answers,
+  v2SessionInput,
   type AnswerRow,
   type DrsCategoryScore,
   type WorkflowMode,
@@ -14,10 +16,26 @@ import {
 import {
   extractRedFlags,
   extractWorkflowDiagnostics,
+  buildV2CallScreen,
   type InsightAnswer,
   type RedFlag,
+  type StartHereInsightV2,
   type WorkflowDiagnostics,
 } from './insight';
+import { computeScoresV2 } from './scoring-v2';
+import { buildResultsBlocks, type V2ResultsBlocks } from './insight-v2';
+
+// Instrument version of a session row (absent before migration 009 = v1).
+function versionOf(row: { instrument_version?: number | null } | null | undefined): 1 | 2 {
+  return row?.instrument_version === 2 ? 2 : 1;
+}
+
+// Another completed session by the same email, for retake comparisons.
+export interface RelatedSession {
+  sessionId: string;
+  completedAt: string | null;
+  instrumentVersion: 1 | 2;
+}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -34,6 +52,12 @@ export interface SessionListItem {
   businessName: string;
   completedAt: string | null;
   entry: 'full' | 'teaser'; // how the session began (origin marker, migration 008)
+  // Which question set and scoring rules (migration 009). Not the same thing as
+  // `entry`, which the dashboard's existing "Version" column shows.
+  instrumentVersion: 1 | 2;
+  // Same email has completed sessions on another instrument version: scores are
+  // not directly comparable across versions.
+  crossVersionRetake: boolean;
   ods: ScoreSummary | null;
   drs: ScoreSummary | null;
 }
@@ -80,6 +104,12 @@ export interface SectionHDetail {
 
 export interface SessionDetail {
   sessionId: string;
+  instrumentVersion: 1 | 2;
+  // Other completed sessions by the same email (retakes), newest first.
+  relatedSessions: RelatedSession[];
+  // v2 only: call-screen plan and the respondent's results blocks.
+  startHereV2: StartHereInsightV2 | null;
+  v2Blocks: V2ResultsBlocks | null;
   name: string;
   businessName: string;
   completedAt: string | null;
@@ -139,7 +169,8 @@ export async function fetchCompletedSessions(): Promise<SessionListItem[]> {
 
   const { data: sessions, error: sessionsErr } = await supabase
     .from('assessment_sessions')
-    .select('id, completed_at, entry')
+    // '*' so instrument_version is read when migration 009 has run (absent = v1).
+    .select('*')
     .eq('status', 'completed')
     .order('completed_at', { ascending: false });
 
@@ -182,8 +213,19 @@ export async function fetchCompletedSessions(): Promise<SessionListItem[]> {
     scoresBySession.set(row.session_id, entry);
   }
 
+  // Versions completed per email, to flag retakes that cross instrument versions.
+  const versionsByEmail = new Map<string, Set<number>>();
+  for (const s of sessions) {
+    const email = (s.respondent_email ?? '').trim().toLowerCase();
+    if (!email) continue;
+    const set = versionsByEmail.get(email) ?? new Set<number>();
+    set.add(versionOf(s));
+    versionsByEmail.set(email, set);
+  }
+
   return sessions.map((s) => {
     const names = namesBySession.get(s.id) ?? { name: '(unnamed)', businessName: '(no business name)' };
+    const email = (s.respondent_email ?? '').trim().toLowerCase();
     const sc = scoresBySession.get(s.id) ?? {};
     return {
       sessionId: s.id,
@@ -191,6 +233,8 @@ export async function fetchCompletedSessions(): Promise<SessionListItem[]> {
       businessName: names.businessName || '(no business name)',
       completedAt: s.completed_at,
       entry: (s as { entry?: string }).entry === 'teaser' ? 'teaser' : 'full',
+      instrumentVersion: versionOf(s),
+      crossVersionRetake: !!email && (versionsByEmail.get(email)?.size ?? 0) > 1,
       ods: toScoreSummary(sc.ods),
       drs: toScoreSummary(sc.drs),
     };
@@ -258,11 +302,32 @@ export async function fetchSessionDetail(sessionId: string): Promise<SessionDeta
 
   const { data: session, error: sessionErr } = await supabase
     .from('assessment_sessions')
-    .select('id, completed_at, drs_profile, wf_c_mode, wf_d_mode, wf_e_mode, wf_f_mode')
+    // '*' for instrument_version and respondent_email (retake check).
+    .select('*')
     .eq('id', sessionId)
     .single();
 
   if (sessionErr || !session) return null;
+  const instrumentVersion = versionOf(session);
+
+  // Other completed sessions by the same email (a retake). Scores from another
+  // instrument version are not directly comparable; the page says so.
+  let relatedSessions: RelatedSession[] = [];
+  const email = (session.respondent_email ?? '').trim().toLowerCase();
+  if (email) {
+    const { data: others } = await supabase
+      .from('assessment_sessions')
+      .select('*')
+      .eq('status', 'completed')
+      .ilike('respondent_email', email)
+      .neq('id', sessionId)
+      .order('completed_at', { ascending: false });
+    relatedSessions = (others ?? []).map((o) => ({
+      sessionId: o.id,
+      completedAt: o.completed_at,
+      instrumentVersion: versionOf(o),
+    }));
+  }
 
   const [{ data: scores }, { data: answers }, { data: breakdowns }] = await Promise.all([
     supabase
@@ -312,8 +377,10 @@ export async function fetchSessionDetail(sessionId: string): Promise<SessionDeta
     if (rawValue === null || rawValue === undefined) return null;
     const match = options.find((o) => String(o.value) === String(rawValue));
     if (match) return match.label;
-    // Teaser grid "Yes" is stored on B001 to B004 without a role.
+    // Teaser grid "Yes" is stored on the owner questions without a role.
     if (rawValue === 'named_owner') return 'Named owner (role not given)';
+    // v2 teaser: "I don't have anyone to hand work to yet" is stored as 5 on V2G_MOVED.
+    if (questionKey === 'V2G_MOVED' && Number(rawValue) === 5) return "I don't have anyone to hand work to yet (teaser)";
     return String(rawValue);
   }
 
@@ -371,6 +438,19 @@ export async function fetchSessionDetail(sessionId: string): Promise<SessionDeta
     return [{ score_value: a.score_value, text_value: a.text_value, answer_type: a.answer_type, question: q }];
   });
 
+  // v2: per-workflow reads, call-screen plan, red flags and results blocks come
+  // from the v2 rules; v1 sessions keep the v1 helpers below, unchanged.
+  let v2: ReturnType<typeof buildV2CallScreen> | null = null;
+  let v2Blocks: V2ResultsBlocks | null = null;
+  if (instrumentVersion === 2) {
+    const v2Answers = await loadV2Answers(supabase, sessionId);
+    const v2Session = v2SessionInput(session, v2Answers);
+    const v2Scores = computeScoresV2(v2Session, v2Answers);
+    v2 = buildV2CallScreen({ session: v2Session, answers: v2Answers, scores: v2Scores });
+    v2Blocks = buildResultsBlocks(v2Session, v2Answers, v2Scores).blocks;
+    for (const view of v2.views) workflowOwners[view.key] = view.owner?.label ?? null;
+  }
+
   const workflows: WorkflowDetail[] = (['C', 'D', 'E', 'F'] as WorkflowKey[]).map((key) => ({
     key,
     name: WORKFLOW_NAMES[key],
@@ -379,7 +459,9 @@ export async function fetchSessionDetail(sessionId: string): Promise<SessionDeta
     ods: toScoreSummary(byWorkflow[key]?.ods),
     oqi: toScoreSummary(byWorkflow[key]?.oqi),
     oqiBreakdown: oqiBreakdownByWorkflow[key],
-    diagnostics: wfModes[key] ? extractWorkflowDiagnostics(insightAnswers, key, wfModes[key]!) : null,
+    diagnostics: v2
+      ? v2.diagnostics[key]
+      : wfModes[key] ? extractWorkflowDiagnostics(insightAnswers, key, wfModes[key]!) : null,
   }));
 
   const drsProfile = session.drs_profile ?? null;
@@ -394,7 +476,7 @@ export async function fetchSessionDetail(sessionId: string): Promise<SessionDeta
           weight: r.weight,
           normalizedScore: r.normalized_score,
         }))
-      : drsProfile
+      : drsProfile && instrumentVersion === 1
         ? calcDrsCategoryBreakdown(allAnswers as AnswerRow[], drsProfile)
         : [];
 
@@ -416,28 +498,33 @@ export async function fetchSessionDetail(sessionId: string): Promise<SessionDeta
     }
   }
 
+  const isV2 = instrumentVersion === 2;
   return {
     sessionId,
+    instrumentVersion,
+    relatedSessions,
+    startHereV2: v2?.startHere ?? null,
+    v2Blocks,
     name: textFor('A001') ?? '(unnamed)',
     businessName: textFor('A002') ?? '(no business name)',
     completedAt: session.completed_at,
-    businessModel: labelFor('A003'),
-    transactionVolume: labelFor('A004'),
-    sideFocus: labelFor('A005'),
-    teamSize: labelFor('A006'),
+    businessModel: labelFor(isV2 ? 'V2A_SETUP' : 'A003'),
+    transactionVolume: labelFor(isV2 ? 'V2A_DEALS' : 'A004'),
+    sideFocus: isV2 ? null : labelFor('A005'),
+    teamSize: labelFor(isV2 ? 'V2A_SUPPORT' : 'A006'),
     ods: toScoreSummary(overall.ods),
     drs: toScoreSummary(overall.drs),
     drsProfile,
     drsCategoryBreakdown,
     workflows,
     sectionH: {
-      urgency: labelFor('Q087'),
-      urgencyValue: findAnswer('Q087')?.score_value ?? null,
-      goal: labelFor('Q088'),
-      consultantNote: textFor('Q089'),
-      successVision: textFor('Q090'),
+      urgency: labelFor(isV2 ? 'V2H_URGENCY' : 'Q087'),
+      urgencyValue: findAnswer(isV2 ? 'V2H_URGENCY' : 'Q087')?.score_value ?? null,
+      goal: labelFor(isV2 ? 'V2H_GOAL' : 'Q088'),
+      consultantNote: textFor(isV2 ? 'V2H_NOTE' : 'Q089'),
+      successVision: textFor(isV2 ? 'V2H_SUCCESS' : 'Q090'),
     },
-    redFlags: extractRedFlags(insightAnswers),
+    redFlags: v2 ? v2.redFlags : extractRedFlags(insightAnswers),
     recommendations,
   };
 }

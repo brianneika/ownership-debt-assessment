@@ -8,6 +8,7 @@ const TIER_STYLE: Record<DelegationTier, { bg: string; border: string; text: str
   low: { bg: '#fef2f2', border: '#fecaca', text: '#b91c1c' },
   developing: { bg: '#fefce8', border: '#fde68a', text: '#a16207' },
   ready: { bg: '#f0fdf4', border: '#bbf7d0', text: '#15803d' },
+  getting_started: { bg: '#f8fafc', border: '#e2e8f0', text: '#475569' },
 };
 
 function UnlockButton() {
@@ -61,6 +62,11 @@ export function TeaserResult({
         >
           of your core business still runs through you
         </p>
+        {!!estimate.notDone && estimate.notDone < 4 && (
+          <p className="text-xs mt-2" style={{ color: 'var(--avai-ink-faint)' }}>
+            Based on the {4 - estimate.notDone === 1 ? 'one workflow' : `${['', '', 'two', 'three'][4 - estimate.notDone]} workflows`} you do.
+          </p>
+        )}
 
         <div
           className="inline-flex items-center gap-2 mt-5 px-3 py-1 rounded-full text-xs font-semibold"
