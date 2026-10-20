@@ -1,6 +1,6 @@
 # Assessment v2: honest answers, healthy ownership, and section copy
 
-**Status:** In progress (2026-10-19): Phase 1 shipped 2026-10-18; Phase 2 approved by Bri 2026-10-19; Phase 3 (scoring rules) is next <!-- Not started | In progress | Blocked | Done -->
+**Status:** In progress (2026-10-19): Phase 1 shipped 2026-10-18; Phases 2 and 3 approved by Bri 2026-10-19; Phase 4 (build) is next <!-- Not started | In progress | Blocked | Done -->
 
 ## Objective
 
@@ -182,14 +182,14 @@ Acknowledge comes from reflecting their situation accurately. Prepare and Let th
 - [x] Bri approves wording, the length decision and the eight decisions in section 13 of the audit: all eight approved as recommended, 2026-10-19 (walked one at a time with before and after wording; log under Progress)
 
 ### Phase 3: Scoring rules for v2
-- [ ] "This didn't come up": left out of the average; if too few answers remain in a dimension, the result says so instead of scoring it
-- [ ] "We don't do this work": workflow skipped, left out of the overall score, named on the results page
-- [ ] New owner choices mapped to paths ("Another person or provider", accountable-but-shared, no one accountable)
-- [ ] Diagnostic readiness question handled outside the scored scale; readiness weights rebalanced and written down
-- [ ] Solo routing rule rewritten around whether support exists
-- [ ] Safeguard (part 2a): no support and keeping a workflow by choice never lower a score by themselves; the score carries the operational consequence, the reason is reported beside it
-- [ ] Results design (part 6b): finding, basis, practical priority, missing evidence, reason respected; written as example results for the three main paths, alongside the four plain-language reads and band labels
-- [ ] Bri approves the rules and the example results
+- [x] "This didn't come up": left out of the average. Changed with Bri's approval: no group can empty out, so a workflow with 3 or 4 of its 4 "didn't come up" answers is scored and labeled "based on limited answers" instead of left unscored
+- [x] "We don't do this work": workflow skipped, left out of the overall score, named on the results page
+- [x] New owner choices mapped to paths ("Another person or provider", accountable-but-shared, no one accountable)
+- [x] Diagnostic readiness question handled outside the scored scale; readiness weights written down (team track unchanged 30/25/25/20; no-support track folds Transfer readiness into Systems mindset, 30/35/35)
+- [x] Solo routing rule rewritten around whether support exists
+- [x] Safeguard (part 2a): no support and keeping a workflow by choice never lower a score by themselves; the score carries the operational consequence, the reason is reported beside it
+- [x] Results design (part 6b): finding, basis, practical priority, missing evidence, reason respected; written as example results for the three main paths, alongside the four plain-language reads and band labels
+- [x] Bri approves the rules and the example results: all nine decisions approved as recommended, 2026-10-19. Deliverable: `vai-va-training/output/20261019-assessment-v2-scoring-rules.md` (the build spec for Phase 4)
 
 ### Phase 4: Build v2 with versioning
 - [ ] Migration: version on sessions (existing rows = v1), v2 question rows, v1 rows inactive
@@ -263,3 +263,4 @@ Running log: check things off and note decisions as you go.
 - [x] 2026-10-17: Bri decided Q6 (no cutting to hit the time; change the promise if needed) and Q7 (yes, name undefined decision rights as the priority). Q1 to Q5 decided the same day, all as recommended
 - [x] 2026-10-19: Phase 2 audit written, waiting on Bri. Two scoring findings for Phase 3: owner-run debt score uses only process + ready person (the reason) and never hours (the consequence); shared debt score is half capability (a reason). Also: "their readiness vs my comfort" scores backwards today (blaming your own comfort earns top willingness)
 - [x] 2026-10-19: Bri approved all eight audit decisions, as recommended: (1) team-owned set 18 to 13; (2) owner-run set 5 to 6 with "When you're tied up" added and the obstacle box optional; (3) "Each agent handles their own" as an owner answer, team-owned questions with "your agents"; (4) cut primary side focus, no agent-count question; (5) readiness routing on support only, 2-person override dropped; (6) "your consultant" becomes "Bri" in the final optional question; (7) 74 questions as the longest-path ceiling, time promise unchanged until the Phase 5 timed walks; (8) owner-run and no-one-accountable debt scores built from the consequence (hours, tied-up, fall-through), process/person/capability reported as the "why"; exact math comes back to Bri in Phase 3. Audit section 13 marked approved
+- [x] 2026-10-19: Phase 3 scoring rules written (checked by Karen, two examples corrected) and approved by Bri, all nine as recommended: (1) team-owned group weights Decisions 25, Running the work 20, Systems 18, Standards 15, Coverage 12, Track record 10; (2) owner-run debt = hours (half) + "when you're tied up" (half); (3) no-one-accountable debt = 25 + fall-through in the last 60 days; (4) no-support readiness in three areas, 30/35/35; (5) "can the business afford a hire" stays scored, the one named exception to budget-as-reason; (6) bands and the 51 line unchanged until 15 to 20 real v2 respondents; (7) results page adds "what this is based on", "where to start", "what this doesn't cover" and a no-support read, wording in Phase 6; (8) kept on purpose: counts in the score, never the first workflow, new call-screen move "Kept by choice: take the routine parts off"; (9) thin workflows scored and labeled, not left unscored. Answer scales spread evenly over 0 to 4; red flags are the bottom two on five-answer scales, bottom one on three- and four-answer scales
