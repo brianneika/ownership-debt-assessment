@@ -203,7 +203,8 @@ Acknowledge comes from reflecting their situation accurately. Prepare and Let th
 - [x] Typecheck clean; `next build` passes; lint 15 problems on the branch vs 17 on `main` (none new)
 - [x] Bri decided the three open review items, 2026-10-19: (a) the teaser preview shows a plain count instead of a percentage before ship ("3 of your 4 core workflows have no owner but you."; rows marked "We don't do this" leave both numbers; readiness tier unchanged; v1 teaser sessions keep the percentage); (b) Bob's backup time windows approved (seller communication "a few days", file opening "a day", lender tracking "a day near closing"); (c) "someone on your team" in Where to start approved
 - [x] Teaser count built, code only (009 untouched), 2026-10-19. The v2 preview also drops the percentage-based band pill ("Owner-heavy" etc.), which could contradict the count. HubSpot checked: it receives email, name, company, consent date and the admin results link only, never the preview, so nothing changed there. The preview isn't shown in admin or any email
-- [ ] Bri runs 009 in the Supabase SQL Editor, then the PR is merged and deployed, then (optional) 010
+- [x] 009 run 2026-10-19 on the Freedom Assessment Supabase project (ref stntvaxmdlimvlkzjuwl, confirmed against scripts/setup-env.js): Skipper ran it in Bri's Chrome with her explicit one-time approval, after a read-only pre-check (142 questions, all active, no V2 rows). Pasted text verified byte-for-byte against the branch file before Run. Checks after: v1 142 questions / 142 active, v2 123 / 0 active, all 65 sessions v1. Live site /, /assessment, /teaser return 200
+- [ ] Phase 5 localhost walk, then merge and deploy (Bri, `npx vercel --prod` from the folder on main), then (optional) 010
 
 Build decisions recorded (2026-10-19):
 - Name and business name (A001, A002) stay shared by both versions; they're identity, not part of the scored instrument.
