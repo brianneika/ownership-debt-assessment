@@ -2,6 +2,7 @@ import { getSupabaseServer } from '@/lib/supabase-server';
 import { buildRespondentSynthesis } from '@/lib/insight';
 import { calculateScores } from '@/lib/scoring';
 import { EmailGate, FullResults } from './EmailGate';
+import { TrackOnce } from '@/components/TrackOnce';
 import { BrandWave } from '@/components/BrandWave';
 
 interface ScoreRow {
@@ -125,6 +126,7 @@ export default async function ResultsPage({
           </p>
         </div>
 
+        {alreadyHasEmail && <TrackOnce event="CompleteRegistration" sessionKey={sessionId} />}
         {alreadyHasEmail ? (
           <FullResults ods={ods} drs={drs} synthesis={synthesis} drsBreakdown={drsBreakdown} />
         ) : (
