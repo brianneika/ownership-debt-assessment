@@ -2,6 +2,7 @@
 
 import { useFormStatus } from 'react-dom';
 import { unlockFullAssessment } from '../actions';
+import { trackMetaEvent } from '@/lib/meta-pixel';
 import type { TeaserEstimate, DelegationTier } from '@/lib/teaser';
 
 const TIER_STYLE: Record<DelegationTier, { bg: string; border: string; text: string }> = {
@@ -102,7 +103,11 @@ export function TeaserResult({
       </div>
 
       {/* Unlock gate — the conversion point */}
-      <form action={unlock} className="avai-card p-6">
+      <form
+        action={unlock}
+        onSubmit={() => trackMetaEvent('Lead', `${sessionId}-Lead`)}
+        className="avai-card p-6"
+      >
         <p
           className="text-[11px] font-bold uppercase tracking-widest mb-2"
           style={{ color: 'var(--avai-ink-faint)' }}
@@ -147,6 +152,11 @@ export function TeaserResult({
         <p className="text-xs text-center mt-4" style={{ color: 'var(--avai-ink-faint)' }}>
           By continuing, you agree that Vai Holdings, LLC (VAI) may email you about your
           assessment results and occasional delegation insights. You can unsubscribe anytime.
+          See our{' '}
+          <a href="https://www.vaileverage.com/privacy" target="_blank" rel="noopener noreferrer" className="underline">
+            Privacy Policy
+          </a>
+          .
         </p>
       </form>
     </div>

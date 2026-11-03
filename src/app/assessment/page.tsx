@@ -159,6 +159,11 @@ export default function AssessmentLandingPage() {
               <p className="text-[13px] text-center mt-4" style={{ color: 'var(--avai-ink-muted)' }}>
                 You’ll enter your email at the end to view your full results.
               </p>
+              <p className="text-xs text-center mt-2" style={{ color: 'var(--avai-ink-faint)' }}>
+                <a href="https://www.vaileverage.com/privacy" target="_blank" rel="noopener noreferrer" className="underline">
+                  Privacy Policy
+                </a>
+              </p>
             </form>
           </div>
 

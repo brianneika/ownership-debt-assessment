@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { captureEmail } from './actions';
+import { trackMetaEvent, trackMetaEventOnce } from '@/lib/meta-pixel';
 import {
   ScoreSpectrumCard,
   ScoreSpectrumCards,
@@ -56,6 +57,11 @@ export function EmailGate({
   const [error, setError] = useState('');
   const [pending, startTransition] = useTransition();
 
+  // Reaching the results page = finished the assessment.
+  useEffect(() => {
+    trackMetaEventOnce('CompleteRegistration', sessionId);
+  }, [sessionId]);
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const trimmed = email.trim();
@@ -66,6 +72,7 @@ export function EmailGate({
     setError('');
     startTransition(async () => {
       await captureEmail(sessionId, trimmed);
+      trackMetaEvent('Lead', `${sessionId}-Lead`);
       setUnlocked(true);
     });
   }
@@ -134,7 +141,11 @@ export function EmailGate({
 
         <p className="mt-3 text-xs text-gray-400">
           By submitting, you agree that VAILeverage may email you your results and
-          occasional delegation insights. Unsubscribe anytime.
+          occasional delegation insights. Unsubscribe anytime. See our{' '}
+          <a href="https://www.vaileverage.com/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-600">
+            Privacy Policy
+          </a>
+          .
         </p>
       </div>
     </>
