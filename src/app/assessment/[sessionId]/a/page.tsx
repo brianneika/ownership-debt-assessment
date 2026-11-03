@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { fetchQuestions, fetchSessionAnswers } from '@/lib/assessment';
+import { fetchQuestions, fetchSession, fetchSessionAnswers } from '@/lib/assessment';
 import { advanceSectionA } from '@/app/assessment/actions';
 import { SectionForm } from '@/components/assessment/SectionForm';
 import { SectionHeader } from '@/components/assessment/SectionHeader';
@@ -12,8 +12,11 @@ export default async function SectionAPage({
 }) {
   const { sessionId } = await params;
 
+  const session = await fetchSession(sessionId);
+  if (!session) notFound();
+
   const [questions, answersMap] = await Promise.all([
-    fetchQuestions('A'),
+    fetchQuestions('A', { version: session.instrument_version }),
     fetchSessionAnswers(sessionId),
   ]);
 

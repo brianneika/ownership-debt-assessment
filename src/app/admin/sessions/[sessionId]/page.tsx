@@ -3,11 +3,18 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { fetchSessionDetail, fetchSessionName, type WorkflowDetail } from '@/lib/admin';
-import { buildStartHere, buildRespondentSynthesis, OQI_DIMENSION_NAMES, RED_FLAG_THRESHOLD } from '@/lib/insight';
+import {
+  buildStartHere,
+  buildRespondentSynthesis,
+  buildRespondentSynthesisV2,
+  oqiDimensionNames,
+  RED_FLAG_THRESHOLD,
+} from '@/lib/insight';
 import {
   ScoreSpectrumCards,
   SynthesisBlock,
   DrsReadinessBreakdown,
+  V2FindingsBlock,
 } from '@/components/results-visuals';
 import PrintControls from './PrintControls';
 
@@ -46,6 +53,27 @@ const MODE_LABELS: Record<string, string> = {
   B: 'Mode B — Team-Led (Full OQI)',
   C: 'Mode C — Shared / No Owner (Role Clarity)',
 };
+
+// Instrument v2 paths (no "shared" path: shared work with a clear lead is team-owned).
+const MODE_LABELS_V2: Record<string, string> = {
+  A: 'Owner-run: scored on hours and what happens when they are tied up',
+  B: 'Team-owned: 13 questions in six groups',
+  C: 'No one accountable: scored on what fell through',
+  N: "We don't do this work: left out of the score",
+};
+
+function InstrumentBadge({ version }: { version: 1 | 2 }) {
+  return (
+    <span
+      className={`px-2 py-0.5 rounded-full text-xs font-medium border ${
+        version === 2 ? 'bg-teal-50 text-teal-700 border-teal-200' : 'bg-amber-50 text-amber-700 border-amber-200'
+      }`}
+      title="Which question set and scoring rules this session used"
+    >
+      Instrument v{version}
+    </span>
+  );
+}
 
 // CSS-only hover tooltip — no JS state, shows on :hover/:focus via group-hover
 function InfoTooltip({ text }: { text: string }) {
@@ -107,13 +135,42 @@ function AnswerRow({ label, value, emphasize }: { label: string; value: string; 
 }
 
 // Mode-appropriate answer detail, collapsed by default (CSS-only via <details>)
-function WorkflowAnswers({ wf }: { wf: WorkflowDetail }) {
+function WorkflowAnswers({ wf, version }: { wf: WorkflowDetail; version: 1 | 2 }) {
   const d = wf.diagnostics;
-  if (!d) return null;
+  if (!d || d.mode === 'N') return null;
 
   let body: ReactNode = null;
 
-  if (d.mode === 'A') {
+  if (d.mode === 'A' && version === 2) {
+    // v2: hours and "tied up" carry the score; the rest is the why. Kept on
+    // purpose and "I don't have support" are never highlighted as problems.
+    const quiet = !!d.keptOnPurpose;
+    body = (
+      <div className="space-y-2.5">
+        {d.hoursPerWeek && <AnswerRow label="Owner's time on this workflow" value={`${d.hoursPerWeek} / week`} />}
+        {d.tiedUp && <AnswerRow label="When they're tied up" value={d.tiedUp} />}
+        {d.reasonNotDelegated && <AnswerRow label="Why they run it" value={d.reasonNotDelegated} />}
+        {d.process && (
+          <AnswerRow
+            label="Written down"
+            value={`${d.process.label} (${d.process.value}/4)`}
+            emphasize={!quiet && d.process.value <= RED_FLAG_THRESHOLD}
+          />
+        )}
+        {d.readyPerson && (
+          <AnswerRow
+            label="Someone who could take it"
+            value={`${d.readyPerson.label} (${d.readyPerson.value}/4)`}
+            emphasize={!quiet && d.readyPerson.value === 1}
+          />
+        )}
+        {d.obstacle && <AnswerRow label="What would make a handoff hardest (their words)" value={`“${d.obstacle}”`} />}
+        {d.move && (
+          <AnswerRow label="First move for this workflow" value={d.move.headline} />
+        )}
+      </div>
+    );
+  } else if (d.mode === 'A') {
     body = (
       <div className="space-y-2.5">
         {d.hoursPerWeek && <AnswerRow label="Owner's time on this workflow" value={`${d.hoursPerWeek} / week`} />}
@@ -142,7 +199,7 @@ function WorkflowAnswers({ wf }: { wf: WorkflowDetail }) {
         {d.capacity && (
           <AnswerRow
             label="Could someone own it if assigned?"
-            value={`${d.capacity.label} (${d.capacity.value}/4)`}
+            value={`${d.capacity.label} (${d.capacity.value}/${d.capacity.max ?? 4})`}
             emphasize={d.capacity.value <= RED_FLAG_THRESHOLD}
           />
         )}
@@ -158,9 +215,15 @@ function WorkflowAnswers({ wf }: { wf: WorkflowDetail }) {
   } else {
     body =
       d.lowAnswers.length === 0 ? (
-        <p className="text-xs text-gray-400">No answers scored ≤{RED_FLAG_THRESHOLD} in this workflow.</p>
+        <div className="space-y-2.5">
+          {d.howItRuns && <AnswerRow label="How it runs" value={d.howItRuns} />}
+          <p className="text-xs text-gray-400">
+            {version === 2 ? 'No red-flag answers in this workflow.' : `No answers scored ≤${RED_FLAG_THRESHOLD} in this workflow.`}
+          </p>
+        </div>
       ) : (
         <div className="space-y-2.5">
+          {d.howItRuns && <AnswerRow label="How it runs" value={d.howItRuns} />}
           {d.lowAnswers.map((a, i) => (
             <div key={i}>
               <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 mb-0.5">{a.dimension}</p>
@@ -195,9 +258,15 @@ export default async function SessionDetailPage({
 
   if (!detail) notFound();
 
-  const profileLabel = detail.drsProfile === 'solo' ? 'Solo Owner' : detail.drsProfile === 'team' ? 'Team Leader' : 'Unknown';
+  const isV2 = detail.instrumentVersion === 2;
+  const dimNames = oqiDimensionNames(detail.instrumentVersion);
+  const crossVersion = detail.relatedSessions.filter((r) => r.instrumentVersion !== detail.instrumentVersion);
 
-  const startHere = buildStartHere({
+  const profileLabel = isV2
+    ? detail.drsProfile === 'solo' ? 'No support yet' : detail.drsProfile === 'team' ? 'Has support' : 'Unknown'
+    : detail.drsProfile === 'solo' ? 'Solo Owner' : detail.drsProfile === 'team' ? 'Team Leader' : 'Unknown';
+
+  const startHere = isV2 ? detail.startHereV2 : buildStartHere({
     odsScore: detail.ods?.score ?? null,
     drsScore: detail.drs?.score ?? null,
     drsCategoryBreakdown: detail.drsCategoryBreakdown,
@@ -214,14 +283,17 @@ export default async function SessionDetailPage({
   // Client-voice synthesis + client-safe readiness breakdown — rendered only in
   // the client PDF (see .print-client-only sections below), so the printed
   // client report mirrors what the respondent sees on /results.
-  const synthesis = buildRespondentSynthesis({
+  const synthesisInput = {
     odsScore: detail.ods?.score ?? null,
     drsScore: detail.drs?.score ?? null,
     drsCategoryBreakdown: detail.drsCategoryBreakdown.map((c) => ({
       category: c.category,
       normalizedScore: c.normalizedScore,
     })),
-  });
+  };
+  const synthesis = isV2
+    ? buildRespondentSynthesisV2({ ...synthesisInput, noSupport: detail.drsProfile === 'solo' })
+    : buildRespondentSynthesis(synthesisInput);
 
   // Heaviest-weighted first, matching the /results reading order.
   const clientDrsRows = [...detail.drsCategoryBreakdown]
@@ -265,8 +337,35 @@ export default async function SessionDetailPage({
               <h1 className="text-2xl font-bold text-gray-900">{detail.name}</h1>
               <p className="text-gray-500 text-sm mt-0.5">{detail.businessName}</p>
             </div>
-            <span className="text-xs text-gray-400">Completed {formatDate(detail.completedAt)}</span>
+            <div className="flex flex-col items-end gap-1.5">
+              <span className="text-xs text-gray-400">Completed {formatDate(detail.completedAt)}</span>
+              <span data-audience="internal"><InstrumentBadge version={detail.instrumentVersion} /></span>
+            </div>
           </div>
+
+          {/* Retakes: scores from another instrument version are not directly comparable. */}
+          {detail.relatedSessions.length > 0 && (
+            <div className="mb-3 text-xs" data-audience="internal">
+              <p className="text-gray-500 mb-1">Other completed sessions with this email:</p>
+              <ul className="space-y-0.5">
+                {detail.relatedSessions.map((r) => (
+                  <li key={r.sessionId} className="text-gray-600">
+                    <Link href={`/admin/sessions/${r.sessionId}`} className="underline hover:text-gray-900">
+                      {formatDate(r.completedAt)}
+                    </Link>{' '}
+                    · Instrument v{r.instrumentVersion}
+                  </li>
+                ))}
+              </ul>
+              {crossVersion.length > 0 && (
+                <p className="mt-1.5 px-2.5 py-1.5 rounded-md bg-amber-50 border border-amber-200 text-amber-800">
+                  Not directly comparable: {crossVersion.length === 1 ? 'one of these sessions' : 'some of these sessions'} used
+                  instrument v{crossVersion[0].instrumentVersion}, with different questions and scoring rules. Compare
+                  workflows and answers, not the scores.
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Business profile chips */}
           <div className="flex flex-wrap gap-2 pt-3 border-t border-gray-50">
@@ -330,6 +429,26 @@ export default async function SessionDetailPage({
                     ))}
                   </ul>
                 )}
+              </div>
+            )}
+
+            {isV2 && detail.startHereV2 && detail.startHereV2.keptByChoice.length > 0 && (
+              <div className="pt-3 border-t border-gray-50">
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 mb-1">Kept by choice</p>
+                {detail.startHereV2.keptByChoice.map((k) => (
+                  <div key={k.name} className="mb-2">
+                    <p className="text-sm font-semibold text-gray-900">{k.name}: {k.move.headline}</p>
+                    <p className="text-xs text-gray-600 mt-0.5">{k.move.detail}</p>
+                    <ol className="mt-1.5 space-y-1">
+                      {k.move.steps.map((step, i) => (
+                        <li key={i} className="text-xs text-gray-700 flex gap-2">
+                          <span className="shrink-0 w-4 h-4 rounded-full bg-indigo-50 text-indigo-600 text-[10px] font-bold flex items-center justify-center mt-px">{i + 1}</span>
+                          {step}
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                ))}
               </div>
             )}
 
@@ -401,6 +520,7 @@ export default async function SessionDetailPage({
         {synthesis && (
           <div className="print-client-only report-section-flow">
             <SynthesisBlock synthesis={synthesis} />
+            {isV2 && detail.v2Blocks && <V2FindingsBlock blocks={detail.v2Blocks} />}
             <DrsReadinessBreakdown
               rows={clientDrsRows}
               weakestCategory={synthesis.weakestCategory?.category ?? null}
@@ -412,9 +532,9 @@ export default async function SessionDetailPage({
             numbers without framing. Static copy, always renders in client mode. */}
         <p className="print-client-only report-section text-xs text-gray-500">
           <span className="font-semibold text-gray-700">How to read these:</span>{' '}
-          Ownership Debt Score — lower is better (less of the business depends on you).
+          Ownership Debt Score: lower is better (less of the business depends on you).
           {' · '}
-          Delegation Readiness Score — higher is better (the team is more ready to take work on).
+          Delegation Readiness Score: higher is better (the team is more ready to take work on).
         </p>
 
         {/* Workflow breakdown */}
@@ -430,7 +550,13 @@ export default async function SessionDetailPage({
                 {wf.owner && (
                   <p className="text-xs text-gray-500 mb-1">Owner: <span className="font-medium text-gray-700">{wf.owner}</span></p>
                 )}
-                <p className="text-xs text-gray-400 mb-3">{wf.mode ? MODE_LABELS[wf.mode] : 'Mode not set'}</p>
+                <p className="text-xs text-gray-400 mb-3">{wf.mode ? (isV2 ? MODE_LABELS_V2 : MODE_LABELS)[wf.mode] : 'Mode not set'}</p>
+                {isV2 && wf.diagnostics?.mode === 'A' && wf.diagnostics.keptOnPurpose && (
+                  <p className="text-xs text-teal-700 mb-2">Kept on purpose: counts in the score, never the first workflow.</p>
+                )}
+                {isV2 && wf.diagnostics?.mode === 'B' && wf.diagnostics.limited && (
+                  <p className="text-xs text-amber-700 mb-2">Based on limited answers ({wf.diagnostics.naCount} didn&apos;t come up).</p>
+                )}
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
@@ -478,7 +604,7 @@ export default async function SessionDetailPage({
                           {wf.oqiBreakdown.map((d) => (
                             <div key={d.label}>
                               <div className="flex justify-between items-center mb-0.5">
-                                <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">{OQI_DIMENSION_NAMES[d.label] ?? d.label}</span>
+                                <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">{dimNames[d.label] ?? d.label}</span>
                                 <span className="text-[10px] text-gray-400 tabular-nums">{d.normalizedScore.toFixed(0)}</span>
                               </div>
                               <div className="h-1 bg-gray-100 rounded-full overflow-hidden">
@@ -495,7 +621,7 @@ export default async function SessionDetailPage({
                   )}
                 </div>
 
-                <WorkflowAnswers wf={wf} />
+                <WorkflowAnswers wf={wf} version={detail.instrumentVersion} />
               </div>
             ))}
           </div>
@@ -508,7 +634,13 @@ export default async function SessionDetailPage({
             <span className={`px-2 py-0.5 rounded-full text-xs font-semibold border ${detail.redFlags.length > 0 ? 'bg-red-50 text-red-700 border-red-200' : 'bg-green-50 text-green-700 border-green-200'}`}>
               {detail.redFlags.length}
             </span>
-            <InfoTooltip text={`Every scored answer at ${RED_FLAG_THRESHOLD} or below (after reverse-scoring) — the call's talking-point list.`} />
+            <InfoTooltip
+              text={
+                isV2
+                  ? "The bottom two answers on five-answer questions and the bottom answer on shorter ones. Never not-applicable answers, unscored questions, or workflows kept on purpose. The call's talking-point list."
+                  : `Every scored answer at ${RED_FLAG_THRESHOLD} or below (after reverse-scoring): the call's talking-point list.`
+              }
+            />
           </div>
 
           {detail.redFlags.length === 0 ? (

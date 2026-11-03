@@ -1,6 +1,6 @@
 import '../assessment/assessment-theme.css';
 import { notFound } from 'next/navigation';
-import { fetchQuestions, WORKFLOW_NAMES, B_QUESTION_TO_WORKFLOW } from '@/lib/assessment';
+import { fetchQuestions, WORKFLOW_NAMES, type WorkflowKey } from '@/lib/assessment';
 import { TeaserForm, type GridRow } from './TeaserForm';
 import { BrandWave } from '@/components/BrandWave';
 
@@ -21,20 +21,20 @@ const WORKFLOW_DETAIL: Record<string, string> = {
 };
 
 export default async function TeaserLandingPage() {
+  // The teaser runs on instrument v2 (owner picks on V2B_C to V2B_F, plus two
+  // readiness questions), the same rows the full v2 assessment pre-fills from.
   const [bQuestions, gQuestions] = await Promise.all([
-    fetchQuestions('B'),
-    fetchQuestions('G'),
+    fetchQuestions('B', { version: 2 }),
+    fetchQuestions('G', { version: 2 }),
   ]);
 
-  const gridRows: GridRow[] = (['B001', 'B002', 'B003', 'B004'] as const)
-    .filter((key) => bQuestions.some((q) => q.question_key === key))
-    .map((key) => {
-      const wf = B_QUESTION_TO_WORKFLOW[key];
-      return { questionKey: key, name: WORKFLOW_NAMES[wf], detail: WORKFLOW_DETAIL[wf] };
-    });
+  const gridRows: GridRow[] = (['C', 'D', 'E', 'F'] as WorkflowKey[])
+    .map((wf) => ({ wf, key: `V2B_${wf}` }))
+    .filter(({ key }) => bQuestions.some((q) => q.question_key === key))
+    .map(({ wf, key }) => ({ questionKey: key, name: WORKFLOW_NAMES[wf], detail: WORKFLOW_DETAIL[wf] }));
 
-  const authority = gQuestions.find((q) => q.question_key === 'Q079');
-  const takeBack = gQuestions.find((q) => q.question_key === 'Q074');
+  const authority = gQuestions.find((q) => q.question_key === 'V2G_DECISIONS');
+  const takeBack = gQuestions.find((q) => q.question_key === 'V2G_MOVED');
 
   if (gridRows.length !== 4 || !authority || !takeBack) notFound();
 

@@ -36,6 +36,30 @@ function VersionBadge({ entry }: { entry: 'full' | 'teaser' }) {
   );
 }
 
+// Which question set and scoring rules a session used (migration 009). Separate
+// from the Version column above, which is the teaser/full entry point.
+function InstrumentBadge({ version, crossVersion }: { version: 1 | 2; crossVersion: boolean }) {
+  return (
+    <span className="inline-flex flex-col gap-1">
+      <span
+        className={`px-2 py-0.5 rounded-full text-xs font-medium border w-fit ${
+          version === 2 ? 'bg-teal-50 text-teal-700 border-teal-200' : 'bg-amber-50 text-amber-700 border-amber-200'
+        }`}
+      >
+        v{version}
+      </span>
+      {crossVersion && (
+        <span
+          className="text-[10px] font-medium text-amber-700"
+          title="This email also completed the other instrument version. Scores are not directly comparable across versions."
+        >
+          Retake across versions: not comparable
+        </span>
+      )}
+    </span>
+  );
+}
+
 export default async function AdminDashboard() {
   const [sessions, funnel, adminUsers] = await Promise.all([
     fetchCompletedSessions(),
@@ -129,6 +153,7 @@ export default async function AdminDashboard() {
                   <th className="text-left font-semibold text-gray-500 px-5 py-3 text-xs uppercase tracking-wider">Respondent</th>
                   <th className="text-left font-semibold text-gray-500 px-5 py-3 text-xs uppercase tracking-wider">Business</th>
                   <th className="text-left font-semibold text-gray-500 px-5 py-3 text-xs uppercase tracking-wider">Version</th>
+                  <th className="text-left font-semibold text-gray-500 px-5 py-3 text-xs uppercase tracking-wider">Instrument</th>
                   <th className="text-left font-semibold text-gray-500 px-5 py-3 text-xs uppercase tracking-wider">Completed</th>
                   <th className="text-left font-semibold text-gray-500 px-5 py-3 text-xs uppercase tracking-wider">ODS</th>
                   <th className="text-left font-semibold text-gray-500 px-5 py-3 text-xs uppercase tracking-wider">DRS</th>
@@ -151,6 +176,11 @@ export default async function AdminDashboard() {
                     <td className="px-5 py-4">
                       <Link href={`/admin/sessions/${s.sessionId}`} className="block">
                         <VersionBadge entry={s.entry} />
+                      </Link>
+                    </td>
+                    <td className="px-5 py-4">
+                      <Link href={`/admin/sessions/${s.sessionId}`} className="block">
+                        <InstrumentBadge version={s.instrumentVersion} crossVersion={s.crossVersionRetake} />
                       </Link>
                     </td>
                     <td className="px-5 py-4">

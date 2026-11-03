@@ -10,6 +10,25 @@
 // backs a real call. See plans/tasks/20260718-admin-call-prep-insight.md.
 
 import { WORKFLOW_NAMES, SECTION_LABELS, type WorkflowKey, type WorkflowMode } from './assessment';
+import {
+  V2_GROUP_NAMES,
+  v2RedFlagAnswers,
+  wholeScore,
+  rankOf,
+  optionLabel as v2OptionLabel,
+  type V2Answer,
+  type V2ScoringResult,
+  type V2SessionInput,
+} from './scoring-v2';
+import {
+  buildWorkflowViews,
+  buildPlan,
+  moveKindFor,
+  weakestGroups,
+  classifyReadV2,
+  V2_READS,
+  type V2WorkflowView,
+} from './insight-v2';
 
 // ─── Thresholds ───────────────────────────────────────────────────────────────
 
@@ -126,6 +145,7 @@ export function extractRedFlags(answers: InsightAnswer[]): RedFlag[] {
 export interface ScoredAnswerDetail {
   value: number; // raw 0–4
   label: string;
+  max?: number; // v2: top of the scale when it isn't 4
 }
 
 export interface ModeADiagnostics {
@@ -135,6 +155,10 @@ export interface ModeADiagnostics {
   obstacle: string | null;             // TBx3 free text, verbatim
   process: ScoredAnswerDetail | null;  // TBx4 — documented process
   readyPerson: ScoredAnswerDetail | null; // TBx5 — someone ready to own it
+  // v2 only
+  tiedUp?: string | null; // what happens when the leader is tied up
+  keptOnPurpose?: boolean;
+  move?: { headline: string; detail: string; steps: string[] } | null;
 }
 
 export interface ModeBLowAnswer {
@@ -147,6 +171,10 @@ export interface ModeBLowAnswer {
 export interface ModeBDiagnostics {
   mode: 'B';
   lowAnswers: ModeBLowAnswer[]; // scored ≤ RED_FLAG_THRESHOLD, grouped by dimension order
+  // v2 only
+  howItRuns?: string | null;
+  limited?: boolean;
+  naCount?: number;
 }
 
 export interface ModeCDiagnostics {
@@ -156,7 +184,12 @@ export interface ModeCDiagnostics {
   fallthrough: ScoredAnswerDetail | null;   // RCx3 raw value — high = more fallthrough
 }
 
-export type WorkflowDiagnostics = ModeADiagnostics | ModeBDiagnostics | ModeCDiagnostics;
+// v2: "We don't do this work"
+export interface ModeNDiagnostics {
+  mode: 'N';
+}
+
+export type WorkflowDiagnostics = ModeADiagnostics | ModeBDiagnostics | ModeCDiagnostics | ModeNDiagnostics;
 
 export function extractWorkflowDiagnostics(
   answers: InsightAnswer[],
@@ -212,6 +245,8 @@ export function extractWorkflowDiagnostics(
         fallthrough: scoredDetail(findByKey(answers, `RC${wfKey}3`)),
       };
     }
+    case 'N':
+      return { mode: 'N' };
   }
 }
 
@@ -302,7 +337,7 @@ const RESPONDENT_QUADRANTS: Record<QuadrantKey, { headline: string; body: string
 // explain the weakest lever by name without giving away the coaching steps.
 const RESPONDENT_CATEGORY_DESC: Record<string, string> = {
   'Willingness': 'how ready you feel to let go of outcomes, not just tasks',
-  'Delegation Quality': 'how clearly work gets handed off, with a real definition of done',
+  'Delegation Quality': 'how clearly work gets handed off, with a clear picture of what done well looks like',
   'Team Capacity': 'whether your team has room to take on more ownership',
   'Authority Framework': 'written guardrails so your team knows what they can decide without you',
   'Transfer Readiness': 'how ready one workflow is to hand to a new owner',
@@ -452,8 +487,9 @@ export interface StartHereInsight {
 // Overall ODS band × DRS band → quadrant. Shared by the coach playbook
 // (buildStartHere) and the respondent synthesis so the two never drift.
 export function classifyQuadrant(odsScore: number, drsScore: number): QuadrantKey {
-  const highOds = odsScore >= HIGH_SCORE_CUTOFF;
-  const highDrs = drsScore >= HIGH_SCORE_CUTOFF;
+  // Whole numbers first, so the read matches the number and band shown.
+  const highOds = wholeScore(odsScore) >= HIGH_SCORE_CUTOFF;
+  const highDrs = wholeScore(drsScore) >= HIGH_SCORE_CUTOFF;
   return highOds
     ? highDrs
       ? 'transfer_now'
@@ -507,7 +543,7 @@ export function buildStartHere(input: StartHereInput): StartHereInsight | null {
 
 function describeWhyStuck(wf: StartHereWorkflowInput): string[] {
   const d = wf.diagnostics;
-  if (!d) return [];
+  if (!d || d.mode === 'N') return [];
   const lines: string[] = [];
 
   if (d.mode === 'A') {
@@ -539,7 +575,7 @@ function describeWhyStuck(wf: StartHereWorkflowInput): string[] {
 // The gap-type decision table: TBx4 = documented process, TBx5 = person ready.
 function deriveFirstMove(wf: StartHereWorkflowInput): StartHereInsight['firstMove'] {
   const d = wf.diagnostics;
-  if (!d) return null;
+  if (!d || d.mode === 'N') return null;
 
   if (d.mode === 'A') {
     const p = d.process?.value ?? null;
@@ -647,4 +683,278 @@ function deriveFirstMove(wf: StartHereWorkflowInput): StartHereInsight['firstMov
       'Review outcomes weekly for the first month; the next assessment retake should show this workflow’s score move.',
     ],
   };
+}
+
+// ─── Instrument v2 (call screen) ───────────────────────────────────────────────
+// v2 rules: vai-va-training/output/20261019-assessment-v2-scoring-rules.md,
+// sections 5 and 6. The per-workflow reads and the first-workflow pick live in
+// ./insight-v2 (pure); this part adds the coach-facing move copy and maps v2
+// onto the shapes the admin page already renders.
+
+export function oqiDimensionNames(version: 1 | 2): Record<string, string> {
+  return version === 2 ? V2_GROUP_NAMES : OQI_DIMENSION_NAMES;
+}
+
+const V2_GROUP_STEPS: Record<string, string> = {
+  DO: 'List the decisions in this workflow that still wait on the leader. Write down which are theirs and which still come up, and share it.',
+  IE: "For 30 days the owner brings a recommendation, not a question, and the leader approves or adjusts. Routine updates go out without the leader's review.",
+  SC: 'Run a two-week sprint: write the workflow as a checklist and template every routine email in it.',
+  EC: 'Name and train a backup who can keep the workflow moving for a day without the owner or the leader.',
+  OA: 'Agree on 2 or 3 outcomes that say the workflow went well, and check them in a weekly 15-minute review.',
+  CT: "Set a 90-day run with milestones and mark each one as it's hit, so confidence rests on a track record.",
+};
+
+type Move = { headline: string; detail: string; steps: string[] };
+
+function spellOutMove(names: string[]): Move {
+  const list = names.length <= 1 ? names[0] ?? '' : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
+  return {
+    headline: 'Spell out what they can decide without you',
+    detail:
+      `${list} ${names.length > 1 ? 'wait' : 'waits'} on the leader for decisions because no one has written down which ones are theirs. ` +
+      'The people can already do the work; they are waiting for permission.',
+    steps: [
+      `List the decisions in ${list} that currently wait on the leader.`,
+      "For each, write whether it's theirs or still comes to the leader, on one page, and share it.",
+      'Run it for 30 days. Anything brought to the leader that was theirs gets pointed back to the page.',
+      'Review the page at 30 days and move more decisions over as they earn them.',
+    ],
+  };
+}
+
+function keptByChoiceMove(name: string): Move {
+  return {
+    headline: 'Kept by choice: take the routine parts off',
+    detail: `The leader runs ${name} on purpose. Keep the judgment calls with them and move the admin around it.`,
+    steps: [
+      `List the parts of ${name} that need the leader's judgment, and the parts that are routine admin.`,
+      'Template the routine emails and updates.',
+      'Hand the routine admin to a VA with AI, with the leader keeping the judgment calls.',
+      'Check the hours at 30 days: they should drop while the leader keeps the parts they chose to keep.',
+    ],
+  };
+}
+
+function v2Diagnostics(v: V2WorkflowView, answers: V2Answer[], session: V2SessionInput): WorkflowDiagnostics | null {
+  if (!v.mode) return null;
+  if (v.mode === 'N') return { mode: 'N' };
+  if (v.mode === 'A') {
+    return {
+      mode: 'A',
+      hoursPerWeek: v.hours?.label ?? null,
+      reasonNotDelegated: v.why?.label ?? null,
+      obstacle: v.obstacle,
+      process: v.written ? { value: v.written.rank, label: v.written.label } : null,
+      readyPerson: v.someone ? { value: v.someone.rank, label: v.someone.label } : null,
+      tiedUp: v.tiedUp?.label ?? null,
+      keptOnPurpose: v.keptOnPurpose,
+      move: v2Move(v),
+    };
+  }
+  if (v.mode === 'C') {
+    return {
+      mode: 'C',
+      noOwnerReason: v.noOwnerWhy,
+      capacity: v.couldOwn ? { value: v.couldOwn.rank, label: v.couldOwn.label, max: v.couldOwn.n - 1 } : null,
+      // v1 direction (higher = more falls through) so the existing display reads the same.
+      fallthrough: v.fallThrough ? { value: 4 - v.fallThrough.rank, label: v.fallThrough.label } : null,
+    };
+  }
+  const flagged = v2RedFlagAnswers(answers, session).filter(
+    (a) => a.question.section === v.key && a.question.mode === 'B',
+  );
+  const order = Object.keys(V2_GROUP_NAMES);
+  return {
+    mode: 'B',
+    lowAnswers: flagged
+      .map((a) => ({
+        dimension: V2_GROUP_NAMES[a.question.oqi_dimension ?? ''] ?? a.question.oqi_dimension ?? '',
+        questionText: a.question.question_text ?? a.question.question_key,
+        answerLabel: v2OptionLabel(a) ?? String(a.score_value),
+        effectiveScore: rankOf(a)?.rank ?? 0,
+        _order: order.indexOf(a.question.oqi_dimension ?? ''),
+      }))
+      .sort((x, y) => x._order - y._order)
+      .map(({ _order, ...rest }) => { void _order; return rest; }),
+    howItRuns: v.howItRuns?.label ?? null,
+    limited: v.limited,
+    naCount: v.naCount,
+  };
+}
+
+function v2Move(v: V2WorkflowView): Move | null {
+  const name = WORKFLOW_NAMES[v.key];
+  const kind = moveKindFor(v);
+  if (kind === 'kept_by_choice') return keptByChoiceMove(name);
+  if (kind === 'spell_out') return spellOutMove([name]);
+  if (v.mode === 'A' || v.mode === 'C') {
+    // Same decision tables as v1 ("I don't have support right now" ranks 0, so it
+    // lands on "Capacity first"; "could someone own it" now or with training
+    // ranks 2 or 3, so it lands on "Name a single owner").
+    return deriveFirstMove({
+      key: v.key,
+      name,
+      mode: v.mode,
+      odsScore: v.ods,
+      diagnostics: v2DiagnosticsBare(v),
+      oqiBreakdown: [],
+    });
+  }
+  const lowest = weakestGroups(v, 2);
+  if (lowest.length === 0) return null;
+  return {
+    headline: `Strengthen ${lowest.map((g) => g.name).join(' and ')}`,
+    detail: `${name} has an accountable owner. The debt comes from how the workflow runs, not who runs it.`,
+    steps: [
+      ...lowest.map((g) => V2_GROUP_STEPS[g.label]).filter((s): s is string => Boolean(s)),
+      "Review outcomes weekly for the first month; the next retake should show this workflow's score move.",
+    ],
+  };
+}
+
+// Diagnostics for the v1 decision tables, without recursion into moves.
+function v2DiagnosticsBare(v: V2WorkflowView): WorkflowDiagnostics | null {
+  if (v.mode === 'A') {
+    return {
+      mode: 'A',
+      hoursPerWeek: v.hours?.label ?? null,
+      reasonNotDelegated: v.why?.label ?? null,
+      obstacle: v.obstacle,
+      process: v.written ? { value: v.written.rank, label: v.written.label } : null,
+      readyPerson: v.someone ? { value: v.someone.rank, label: v.someone.label } : null,
+    };
+  }
+  if (v.mode === 'C') {
+    return {
+      mode: 'C',
+      noOwnerReason: v.noOwnerWhy,
+      capacity: v.couldOwn ? { value: v.couldOwn.rank, label: v.couldOwn.label } : null,
+      fallthrough: v.fallThrough ? { value: 4 - v.fallThrough.rank, label: v.fallThrough.label } : null,
+    };
+  }
+  return null;
+}
+
+function v2WhyStuck(v: V2WorkflowView): string[] {
+  const lines: string[] = [];
+  if (v.mode === 'A') {
+    if (v.hours) lines.push(`Hours a week: ${v.hours.label}`);
+    if (v.tiedUp) lines.push(`When they're tied up: ${v.tiedUp.label}`);
+    if (v.why) lines.push(`Why they run it: "${v.why.label}"`);
+    if (v.written) lines.push(`Written down: ${v.written.label} (${v.written.rank}/4)`);
+    if (v.someone) lines.push(`Someone who could take it: ${v.someone.label} (${v.someone.rank}/4)`);
+    if (v.obstacle) lines.push(`What would make a handoff hardest, in their words: "${v.obstacle}"`);
+  } else if (v.mode === 'C') {
+    if (v.noOwnerWhy) lines.push(`Why no one owns it: "${v.noOwnerWhy}"`);
+    if (v.couldOwn) lines.push(`Could someone own it: ${v.couldOwn.label}`);
+    if (v.fallThrough) lines.push(`Fell through in the last 60 days: ${v.fallThrough.label}`);
+  } else if (v.mode === 'B') {
+    if (v.howItRuns) lines.push(`How it runs: "${v.howItRuns.label}"`);
+    const lowest = weakestGroups(v, 2);
+    if (lowest.length > 0) {
+      lines.push('Weakest groups: ' + lowest.map((g) => `${g.name} (${g.normalizedScore.toFixed(0)})`).join(' and '));
+    }
+    if (v.limited) lines.push('Scored on limited answers: most event questions did not come up.');
+  }
+  return lines;
+}
+
+export interface StartHereInsightV2 extends StartHereInsight {
+  // Workflows the leader keeps on purpose, each with "Kept by choice" (never the first workflow).
+  keptByChoice: { name: string; move: Move }[];
+  // Set when "spell out what they can decide" goes first across these workflows.
+  spellOutWorkflows: string[];
+}
+
+export function buildV2CallScreen(input: {
+  session: V2SessionInput;
+  answers: V2Answer[];
+  scores: V2ScoringResult;
+}): {
+  views: V2WorkflowView[];
+  diagnostics: Record<WorkflowKey, WorkflowDiagnostics | null>;
+  startHere: StartHereInsightV2 | null;
+  redFlags: RedFlag[];
+} {
+  const { session, answers, scores } = input;
+  const views = buildWorkflowViews(session, answers, scores);
+  const plan = buildPlan(views);
+
+  const diagnostics = Object.fromEntries(
+    views.map((v) => [v.key, v2Diagnostics(v, answers, session)]),
+  ) as Record<WorkflowKey, WorkflowDiagnostics | null>;
+
+  let startHere: StartHereInsightV2 | null = null;
+  if (scores.drs !== null) {
+    const key = classifyQuadrant(scores.overallOds ?? 0, scores.drs);
+    const quadrant: QuadrantCopy = { key, ...QUADRANTS[key] };
+    let readinessLever: StartHereInsight['readinessLever'] = null;
+    if (key === 'build_readiness' && scores.drsCategories.length > 0) {
+      const weakest = [...scores.drsCategories].sort((a, b) => a.normalizedScore - b.normalizedScore)[0];
+      const lever = READINESS_LEVERS[weakest.category];
+      readinessLever = {
+        category: weakest.category,
+        score: weakest.normalizedScore,
+        move: lever?.move ?? 'Coach the weakest readiness category first.',
+        steps: lever?.steps ?? [],
+      };
+    }
+    const top = plan.firstWorkflow;
+    const spellOutNames = plan.spellOut.map((v) => WORKFLOW_NAMES[v.key]);
+    startHere = {
+      quadrant,
+      readinessLever,
+      firstWorkflow:
+        top && top.ods !== null
+          ? { key: top.key, name: WORKFLOW_NAMES[top.key], odsScore: top.ods, whyStuck: v2WhyStuck(top) }
+          : null,
+      firstMove: plan.firstMoveKind === 'spell_out' ? spellOutMove(spellOutNames) : top ? v2Move(top) : null,
+      keptByChoice: views
+        .filter((v) => v.mode === 'A' && v.keptOnPurpose)
+        .map((v) => ({ name: WORKFLOW_NAMES[v.key], move: keptByChoiceMove(WORKFLOW_NAMES[v.key]) })),
+      spellOutWorkflows: plan.firstMoveKind === 'spell_out' ? spellOutNames : [],
+    };
+  }
+
+  const redFlags: RedFlag[] = v2RedFlagAnswers(answers, session)
+    .map((a) => ({
+      questionKey: a.question.question_key,
+      questionText: a.question.question_text ?? a.question.question_key,
+      section: a.question.section,
+      contextLabel: contextLabel(a.question.section),
+      answerLabel: v2OptionLabel(a) ?? String(a.score_value),
+      effectiveScore: rankOf(a)?.rank ?? 0,
+    }))
+    .sort((x, y) => {
+      if (x.effectiveScore !== y.effectiveScore) return x.effectiveScore - y.effectiveScore;
+      const xs = SECTION_SORT_ORDER.indexOf(x.section);
+      const ys = SECTION_SORT_ORDER.indexOf(y.section);
+      if (xs !== ys) return xs - ys;
+      return x.questionKey.localeCompare(y.questionKey);
+    });
+
+  return { views, diagnostics, startHere, redFlags };
+}
+
+// Respondent read for v2: today's four reads lightly reworded, plus a version for
+// people with no support yet (spec section 7).
+export function buildRespondentSynthesisV2(input: {
+  odsScore: number | null;
+  drsScore: number | null;
+  noSupport: boolean;
+  drsCategoryBreakdown: { category: string; normalizedScore: number }[];
+}): { quadrant: string; headline: string; body: string; weakestCategory: RespondentSynthesis['weakestCategory'] } | null {
+  const key = classifyReadV2(input.odsScore, input.drsScore, input.noSupport);
+  if (!key) return null;
+  const copy = V2_READS[key];
+  let weakestCategory: RespondentSynthesis['weakestCategory'] = null;
+  if (input.drsCategoryBreakdown.length > 0) {
+    const weakest = [...input.drsCategoryBreakdown].sort((a, b) => a.normalizedScore - b.normalizedScore)[0];
+    weakestCategory = {
+      category: weakest.category,
+      score: weakest.normalizedScore,
+      descriptor: RESPONDENT_CATEGORY_DESC[weakest.category] ?? 'the lowest-scoring readiness category',
+    };
+  }
+  return { quadrant: key, headline: copy.headline, body: copy.body, weakestCategory };
 }

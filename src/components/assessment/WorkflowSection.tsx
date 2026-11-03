@@ -13,6 +13,15 @@ const MODE_TAGS: Record<WorkflowMode, string> = {
   A: 'You run it',
   B: 'Team-led',
   C: 'Shared',
+  N: '',
+};
+
+// v2: shared work with a clear lead is team-led now; "C" means no one is accountable.
+const MODE_TAGS_V2: Record<WorkflowMode, string> = {
+  A: 'You run it',
+  B: 'Team-led',
+  C: 'No one accountable',
+  N: '',
 };
 
 const WORKFLOW_PART: Record<WorkflowKey, number> = { C: 3, D: 4, E: 5, F: 6 };
@@ -28,6 +37,18 @@ function workflowIntro(name: string, mode: WorkflowMode, ownerRole: string | und
   return isLast ? `Last workflow. ${intro}` : intro;
 }
 
+// v2 intros. Draft wording until the section copy step (task Phase 6).
+function workflowIntroV2(name: string, mode: WorkflowMode, ownerPhrase: string | undefined, plural: boolean, isLast: boolean) {
+  const who = ownerPhrase ?? 'your team member';
+  const intro =
+    mode === 'A'
+      ? `You told us you run ${name}. These questions look at how much of your time and attention it takes.`
+      : mode === 'B'
+      ? `You told us ${who} ${plural ? 'keep' : 'keeps'} ${name} moving. These questions look at what they handle independently and where they need your involvement.`
+      : `You told us no one in particular is accountable for ${name}. These questions look at what happens to the work.`;
+  return isLast ? `Last workflow. ${intro}` : intro;
+}
+
 interface Props {
   sessionId: string;
   workflowKey: WorkflowKey;
@@ -38,6 +59,12 @@ interface Props {
   nextLabel?: string;
   /** Role picked in "Who owns what" (team-led workflows only), e.g. "Transaction Coordinator". */
   ownerRole?: string;
+  /** v2 only: owner wording for the intro, e.g. "your listing coordinator" or "your agents". */
+  ownerPhrase?: string;
+  ownerPlural?: boolean;
+  version?: 1 | 2;
+  /** v2 only: the last workflow this respondent sees (later ones may be skipped). */
+  isLast?: boolean;
 }
 
 export function WorkflowSection({
@@ -49,9 +76,17 @@ export function WorkflowSection({
   nextAction,
   nextLabel = 'Next',
   ownerRole,
+  ownerPhrase,
+  ownerPlural = false,
+  version = 1,
+  isLast,
 }: Props) {
   const name = WORKFLOW_SECTION_NAMES[workflowKey];
-  const intro = workflowIntro(name, mode, ownerRole, workflowKey === 'F');
+  const intro =
+    version === 2
+      ? workflowIntroV2(name.toLowerCase(), mode, ownerPhrase, ownerPlural, isLast ?? workflowKey === 'F')
+      : workflowIntro(name, mode, ownerRole, workflowKey === 'F');
+  const tag = (version === 2 ? MODE_TAGS_V2 : MODE_TAGS)[mode] || undefined;
   const { savedAt, flushing, handleRadioChange, handleSubmit } = usePendingAnswerSaves(sessionId);
 
   return (
@@ -60,7 +95,7 @@ export function WorkflowSection({
         part={WORKFLOW_PART[workflowKey]}
         questionCount={questions.length}
         heading={name}
-        tag={MODE_TAGS[mode]}
+        tag={tag}
         intro={intro}
       />
 

@@ -48,6 +48,13 @@ create table questions (
                        check (applies_to_profile in ('both','team','solo')),
   weight             numeric(4,2) not null default 1.0,
   is_active          boolean not null default true,
+  -- Migration 009: which instrument the row belongs to (1 = original, 2 = v2,
+  -- keys prefixed "V2"). The app picks questions by version, not by is_active.
+  instrument_version int not null default 1 check (instrument_version in (1, 2)),
+  -- Migration 009 (v2 only): show only when another answer on the page matches,
+  -- and alternate wording keyed by owner answer ("each_agent").
+  show_if            jsonb,
+  variants           jsonb,
   created_at         timestamptz not null default now(),
   unique(question_order)
 );
@@ -175,11 +182,15 @@ create table assessment_sessions (
                    check (status in ('in_progress','completed','abandoned')),
   -- Set when A006 is answered; drives DRS category weighting
   drs_profile    text check (drs_profile in ('team','solo')),
-  -- Set after Section B; drives which question set loads for C–F
-  wf_c_mode      text check (wf_c_mode in ('A','B','C')),
-  wf_d_mode      text check (wf_d_mode in ('A','B','C')),
-  wf_e_mode      text check (wf_e_mode in ('A','B','C')),
-  wf_f_mode      text check (wf_f_mode in ('A','B','C')),
+  -- Set after Section B; drives which question set loads for C–F.
+  -- 'N' (migration 009, v2 only) = "We don't do this work": skipped, not scored.
+  wf_c_mode      text check (wf_c_mode in ('A','B','C','N')),
+  wf_d_mode      text check (wf_d_mode in ('A','B','C','N')),
+  wf_e_mode      text check (wf_e_mode in ('A','B','C','N')),
+  wf_f_mode      text check (wf_f_mode in ('A','B','C','N')),
+  -- Migration 009: instrument the session was taken on. Scoring dispatches on it,
+  -- so v1 sessions are never rescored with v2 rules.
+  instrument_version int not null default 1 check (instrument_version in (1, 2)),
   -- Captured at the results email gate (migration 003)
   respondent_email text,
   -- When the respondent granted VAI email consent by submitting the gate
