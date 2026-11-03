@@ -16,6 +16,7 @@ import {
   type WorkflowKey,
 } from '@/lib/assessment';
 import { calculateScores } from '@/lib/scoring';
+import { syncHubspotScores } from '@/lib/hubspot';
 import { getSupabaseServer } from '@/lib/supabase-server';
 
 // ─── Landing page ─────────────────────────────────────────────────────────────
@@ -172,6 +173,28 @@ export async function submitAssessment(sessionId: string, formData: FormData) {
     scoring = await calculateScores(sessionId);
   } catch (err) {
     console.error('[submitAssessment] calculateScores failed:', err);
+  }
+
+  // Teaser path: the email was captured before scoring, so the results gate
+  // (which normally syncs the scores) is skipped. Send the scores now.
+  if (scoring) {
+    try {
+      const { data: session } = await getSupabaseServer()
+        .from('assessment_sessions')
+        .select('respondent_email')
+        .eq('id', sessionId)
+        .single();
+      if (session?.respondent_email) {
+        await Promise.race([
+          syncHubspotScores(session.respondent_email, { ods: scoring.overallOds, drs: scoring.drs }),
+          new Promise<void>((_, reject) =>
+            setTimeout(() => reject(new Error('hubspot timeout')), 5000),
+          ),
+        ]);
+      }
+    } catch (err) {
+      console.error('[submitAssessment] hubspot score sync failed:', err);
+    }
   }
 
   redirect(`/results/${sessionId}`);

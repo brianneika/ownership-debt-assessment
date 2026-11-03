@@ -13,6 +13,7 @@ import {
 } from '@/lib/assessment';
 import { getSupabaseServer } from '@/lib/supabase-server';
 import { upsertHubspotContact } from '@/lib/hubspot';
+import { readUtmCookie } from '@/lib/utm';
 
 // Teaser v2 (plans/tasks/20260911-teaser-named-owner-grid.md):
 //   grid rows  B001 to B004  -> 'yes' | 'no'   (stored as named_owner | team_leader)
@@ -143,10 +144,12 @@ export async function unlockFullAssessment(sessionId: string, formData: FormData
       .eq('id', sessionId);
   }
 
-  // Sync the lead to HubSpot, side channel, never blocks the handoff.
+  // Sync the lead to HubSpot, side channel, never blocks the handoff. Scores
+  // don't exist yet on this path; submitAssessment sends them at the end.
   try {
+    const utm = await readUtmCookie();
     await Promise.race([
-      upsertHubspotContact(sessionId, email, name, businessName, consentedAt),
+      upsertHubspotContact(sessionId, email, name, businessName, consentedAt, { utm }),
       new Promise<void>((_, reject) =>
         setTimeout(() => reject(new Error('hubspot timeout')), 5000),
       ),

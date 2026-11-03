@@ -2,6 +2,7 @@
 
 import { getSupabaseServer } from '@/lib/supabase-server';
 import { upsertHubspotContact } from '@/lib/hubspot';
+import { readUtmCookie } from '@/lib/utm';
 
 export async function captureEmail(sessionId: string, email: string): Promise<void> {
   const trimmed = email.trim().toLowerCase();
@@ -23,9 +24,26 @@ export async function captureEmail(sessionId: string, email: string): Promise<vo
       .eq('id', sessionId);
   }
 
-  // Sync the lead to HubSpot now that we have a real email. Contact info only —
-  // scores stay in Supabase; the full picture lives at /admin/sessions/[id].
+  // Sync the lead to HubSpot now that we have a real email: contact info, the
+  // two headline scores, and the ad's UTM tags. The full picture still lives at
+  // /admin/sessions/[id].
   try {
+    const [utm, { data: overall }] = await Promise.all([
+      readUtmCookie(),
+      supabase
+        .from('dimension_scores')
+        .select('normalized_score, dimensions!inner(slug)')
+        .eq('session_id', sessionId)
+        .is('workflow_key', null)
+        .in('dimensions.slug', ['ods', 'drs']),
+    ]);
+    const scores: { ods?: number | null; drs?: number | null } = {};
+    for (const row of (overall ?? []) as { normalized_score: number; dimensions: { slug: string } | { slug: string }[] }[]) {
+      const d = Array.isArray(row.dimensions) ? row.dimensions[0] : row.dimensions;
+      if (d?.slug === 'ods') scores.ods = row.normalized_score;
+      if (d?.slug === 'drs') scores.drs = row.normalized_score;
+    }
+
     const { data: answers } = await supabase
       .from('answers')
       .select('text_value, questions!inner(question_key)')
@@ -41,7 +59,7 @@ export async function captureEmail(sessionId: string, email: string): Promise<vo
     }
 
     await Promise.race([
-      upsertHubspotContact(sessionId, trimmed, fullName, companyName, consentedAt),
+      upsertHubspotContact(sessionId, trimmed, fullName, companyName, consentedAt, { utm, scores }),
       new Promise<void>((_, reject) =>
         setTimeout(() => reject(new Error('hubspot timeout')), 5000),
       ),
