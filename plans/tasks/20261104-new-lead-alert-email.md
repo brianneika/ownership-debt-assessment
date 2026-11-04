@@ -1,6 +1,6 @@
 # New-lead alert email to Bri (Resend)
 
-**Status:** In progress (2026-11-04): code done; waiting on Resend key in Vercel + deploy
+**Status:** Done (2026-11-04)
 
 ## Objective
 
@@ -48,6 +48,6 @@ minutes (her follow-up rule: every new lead, 9 to 5 Mountain).
 - [x] Offline test of `lead-alert.ts`: no env sends nothing; with env, correct
       sender, recipients, subject, text, escaped HTML; a network error is logged
       and swallowed.
-- [ ] Bri adds the env vars in Vercel.
-- [ ] Merge + deploy (Bri).
-- [ ] Live test: one TEST assessment → alert arrives; delete the TEST contact.
+- [x] Bri added RESEND_API_KEY (Secret) and LEAD_ALERT_TO (Config, brianne@vaileverage.com) in Vercel Production.
+- [x] PR #4 merged; Bri deployed with vercel --prod.
+- [x] Live test 2026-11-04: TEST assessment from a Meta-tagged link; no errors in logs; Bri confirmed the alert arrived; TEST contact deleted in HubSpot (restorable).
