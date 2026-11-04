@@ -17,6 +17,8 @@ import {
 } from '@/lib/assessment';
 import { calculateScores } from '@/lib/scoring';
 import { syncHubspotScores } from '@/lib/hubspot';
+import { sendLeadAlert } from '@/lib/lead-alert';
+import { readUtmCookie } from '@/lib/utm';
 import { getSupabaseServer } from '@/lib/supabase-server';
 
 // ─── Landing page ─────────────────────────────────────────────────────────────
@@ -185,12 +187,42 @@ export async function submitAssessment(sessionId: string, formData: FormData) {
         .eq('id', sessionId)
         .single();
       if (session?.respondent_email) {
-        await Promise.race([
-          syncHubspotScores(session.respondent_email, { ods: scoring.overallOds, drs: scoring.drs }),
-          new Promise<void>((_, reject) =>
-            setTimeout(() => reject(new Error('hubspot timeout')), 5000),
-          ),
+        const email = session.respondent_email as string;
+        const scores = { ods: scoring.overallOds, drs: scoring.drs };
+
+        // The lead is finished now, so this is when Bri gets the alert.
+        const [utm, { data: answers }] = await Promise.all([
+          readUtmCookie(),
+          getSupabaseServer()
+            .from('answers')
+            .select('text_value, questions!inner(question_key)')
+            .eq('session_id', sessionId)
+            .in('questions.question_key', ['A001', 'A002']),
         ]);
+        let fullName: string | null = null;
+        let companyName: string | null = null;
+        for (const row of (answers ?? []) as any[]) {
+          const q = Array.isArray(row.questions) ? row.questions[0] : row.questions;
+          if (q?.question_key === 'A001') fullName = row.text_value ?? null;
+          if (q?.question_key === 'A002') companyName = row.text_value ?? null;
+        }
+
+        const [hubspot, alert] = await Promise.allSettled([
+          Promise.race([
+            syncHubspotScores(email, scores),
+            new Promise<void>((_, reject) =>
+              setTimeout(() => reject(new Error('hubspot timeout')), 5000),
+            ),
+          ]),
+          Promise.race([
+            sendLeadAlert({ sessionId, email, fullName, companyName, scores, utm }),
+            new Promise<void>((_, reject) =>
+              setTimeout(() => reject(new Error('lead alert timeout')), 5000),
+            ),
+          ]),
+        ]);
+        if (hubspot.status === 'rejected') console.error('[submitAssessment] hubspot score sync failed:', hubspot.reason);
+        if (alert.status === 'rejected') console.error('[submitAssessment] lead alert failed:', alert.reason);
       }
     } catch (err) {
       console.error('[submitAssessment] hubspot score sync failed:', err);
