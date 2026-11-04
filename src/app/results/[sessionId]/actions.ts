@@ -2,6 +2,7 @@
 
 import { getSupabaseServer } from '@/lib/supabase-server';
 import { upsertHubspotContact } from '@/lib/hubspot';
+import { sendLeadAlert } from '@/lib/lead-alert';
 import { readUtmCookie } from '@/lib/utm';
 
 export async function captureEmail(sessionId: string, email: string): Promise<void> {
@@ -58,12 +59,24 @@ export async function captureEmail(sessionId: string, email: string): Promise<vo
       if (q?.question_key === 'A002') companyName = row.text_value ?? null;
     }
 
-    await Promise.race([
-      upsertHubspotContact(sessionId, trimmed, fullName, companyName, consentedAt, { utm, scores }),
-      new Promise<void>((_, reject) =>
-        setTimeout(() => reject(new Error('hubspot timeout')), 5000),
-      ),
+    // HubSpot sync and Bri's new-lead alert run side by side; one failing
+    // never stops the other.
+    const [hubspot, alert] = await Promise.allSettled([
+      Promise.race([
+        upsertHubspotContact(sessionId, trimmed, fullName, companyName, consentedAt, { utm, scores }),
+        new Promise<void>((_, reject) =>
+          setTimeout(() => reject(new Error('hubspot timeout')), 5000),
+        ),
+      ]),
+      Promise.race([
+        sendLeadAlert({ sessionId, email: trimmed, fullName, companyName, scores, utm }),
+        new Promise<void>((_, reject) =>
+          setTimeout(() => reject(new Error('lead alert timeout')), 5000),
+        ),
+      ]),
     ]);
+    if (hubspot.status === 'rejected') console.error('[captureEmail] hubspot sync failed:', hubspot.reason);
+    if (alert.status === 'rejected') console.error('[captureEmail] lead alert failed:', alert.reason);
   } catch (err) {
     console.error('[captureEmail] hubspot sync failed:', err);
   }
