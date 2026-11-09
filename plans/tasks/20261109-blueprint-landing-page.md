@@ -1,6 +1,6 @@
 # Blueprint landing page: two ways to start
 
-**Status:** In progress (deployed 2026-11-09; migration 009 waiting on Bri)
+**Status:** In progress (deployed 2026-11-09; migration 009 run by Bri 2026-11-09; live phone test pending)
 
 ## Objective
 
@@ -73,7 +73,7 @@ Body: A new lead just downloaded the Blueprint. Call within 5 minutes. Name, Pho
 ## Progress
 
 - [x] Brianne approves the copy (2026-11-09)
-- [ ] Supabase `blueprint_leads` migration
+- [x] Supabase `blueprint_leads` migration (Bri ran 009 in SQL Editor, 2026-11-09)
 - [x] `/blueprint` page and server action
 - [x] `/blueprint/thanks` page and PDF in `public/`
 - [x] Blueprint alert email
