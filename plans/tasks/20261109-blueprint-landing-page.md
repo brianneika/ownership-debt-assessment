@@ -1,6 +1,6 @@
 # Blueprint landing page: two ways to start
 
-**Status:** In progress (deployed 2026-11-09; migration 009 run by Bri 2026-11-09; live phone test pending)
+**Status:** Done 2026-11-09 (follow-up emails are a separate task)
 
 ## Objective
 
@@ -77,5 +77,6 @@ Body: A new lead just downloaded the Blueprint. Call within 5 minutes. Name, Pho
 - [x] `/blueprint` page and server action
 - [x] `/blueprint/thanks` page and PDF in `public/`
 - [x] Blueprint alert email
-- [ ] Test end to end: page, Lead in Meta Test Events, alert, download
-- [ ] Deploy, then repoint the ads (Claude in Chrome prompt)
+- [x] Test end to end: Bri's live phone test 2026-11-09. Thanks page, PDF download, alert email with tap-to-call, and a blueprint_leads row with cold1/video2 all worked.
+- [x] Deployed with `npx vercel deploy --prod` (a push to main does not auto-deploy). Ads point at /blueprint.
+- Follow-up: day-2 brochure and day-5 assessment emails (Ren360 Smart Campaign on the "Blueprint Lead" tag); Ren360 API sync once REN sends the key.
