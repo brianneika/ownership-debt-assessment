@@ -67,6 +67,17 @@ export async function sendLeadAlert(lead: LeadAlert): Promise<void> {
     '</table>' +
     (resultsUrl ? `<p><a href="${escapeHtml(resultsUrl)}">Open full results</a></p>` : '');
 
+  await sendAlertEmail(key, to, `New lead: ${name} (${company})`, text, html);
+}
+
+// Shared Resend call for every alert. Never throws.
+async function sendAlertEmail(
+  key: string,
+  to: string,
+  subject: string,
+  text: string,
+  html: string,
+): Promise<void> {
   try {
     const res = await fetch(RESEND_URL, {
       method: 'POST',
@@ -77,7 +88,7 @@ export async function sendLeadAlert(lead: LeadAlert): Promise<void> {
       body: JSON.stringify({
         from: process.env.LEAD_ALERT_FROM || DEFAULT_FROM,
         to: to.split(',').map((s) => s.trim()).filter(Boolean),
-        subject: `New lead: ${name} (${company})`,
+        subject,
         text,
         html,
       }),
@@ -88,4 +99,57 @@ export async function sendLeadAlert(lead: LeadAlert): Promise<void> {
   } catch (err) {
     console.error('[lead-alert] fetch threw:', err);
   }
+}
+
+// ─── Blueprint download alert (task 20261109-blueprint-landing-page) ─────────
+
+export type BlueprintLeadAlert = {
+  firstName: string;
+  email: string;
+  phone: string;
+  utm: Utm;
+};
+
+export async function sendBlueprintAlert(lead: BlueprintLeadAlert): Promise<void> {
+  const key = process.env.RESEND_API_KEY;
+  const to = process.env.LEAD_ALERT_TO;
+  if (!key || !to) return;
+
+  const source = [lead.utm.source, lead.utm.medium].filter(Boolean).join(' / ') || 'Direct (no ad tags)';
+  const ad = [lead.utm.campaign, lead.utm.content].filter(Boolean).join(' / ') || 'None';
+  const telHref = `tel:${lead.phone.replace(/[^\d+]/g, '')}`;
+
+  const rows: [string, string][] = [
+    ['Name', lead.firstName],
+    ['Phone', lead.phone],
+    ['Email', lead.email],
+    ['Source', source],
+    ['Campaign / ad', ad],
+  ];
+  const reminder = 'Add them in Ren360 with the tag "Blueprint Lead."';
+
+  const text = [
+    'A new lead just downloaded the Blueprint. Call within 5 minutes.',
+    '',
+    ...rows.map(([k, v]) => `${k}: ${v}`),
+    '',
+    reminder,
+  ].join('\n');
+
+  const html =
+    '<p>A new lead just downloaded the Blueprint. <strong>Call within 5 minutes.</strong></p>' +
+    '<table cellpadding="4">' +
+    rows
+      .map(([k, v]) => {
+        const cell =
+          k === 'Phone'
+            ? `<a href="${escapeHtml(telHref)}">${escapeHtml(v)}</a>`
+            : escapeHtml(v);
+        return `<tr><td><strong>${escapeHtml(k)}</strong></td><td>${cell}</td></tr>`;
+      })
+      .join('') +
+    '</table>' +
+    `<p>${escapeHtml(reminder)}</p>`;
+
+  await sendAlertEmail(key, to, `New Blueprint download: ${lead.firstName}`, text, html);
 }
